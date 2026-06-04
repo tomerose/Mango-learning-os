@@ -1,27 +1,28 @@
-import { GraduationCap } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 export function BrandCard() {
   return (
-    <div className="md:hidden mt-1 mb-2">
-      <div className="rounded-2xl bg-gradient-to-br from-primary/[0.06] via-primary/[0.03] to-background px-5 py-4 shadow-sm">
+    <div className="md:hidden mt-4 mb-2">
+      <div className="glass-card rounded-2xl px-5 py-4">
         <div className="flex items-center gap-3">
-          <span className="bg-primary/10 flex size-10 shrink-0 items-center justify-center rounded-2xl shadow-sm">
-            <GraduationCap className="text-primary size-5" strokeWidth={1.5} />
-          </span>
+          <div className="size-10 rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 flex items-center justify-center shadow-md">
+            <Sparkles className="size-5 text-white" strokeWidth={1.5} />
+          </div>
           <div className="min-w-0">
             <p className="text-[15px] font-bold tracking-tight">
               第三自习室
-              <span className="text-primary font-normal mx-1.5 opacity-50">·</span>
-              <span className="font-semibold text-muted-foreground text-[13px]">Mango</span>
+              <span className="text-muted-foreground/30 mx-2 font-light">|</span>
+              <span className="font-semibold text-muted-foreground/60 text-xs">Mango</span>
             </p>
-            <p className="text-muted-foreground text-[11px] leading-snug mt-0.5 font-medium">
-              AI 驱动的学习操作系统 — 把焦虑变成准备
+            <p className="text-muted-foreground/50 text-[11px] leading-snug mt-0.5">
+              AI 驱动的学习操作系统
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-1.5 mt-4">
+        <div className="flex flex-wrap gap-1.5 mt-4 pt-3 border-t border-foreground/[0.04]">
           {["UIBE", "金融AI", "学术英语", "量化思维", "认知科学"].map(tag => (
-            <span key={tag} className="bg-secondary/60 rounded-full px-2.5 py-1 text-[10px] text-muted-foreground font-medium">
+            <span key={tag}
+              className="bg-foreground/[0.03] rounded-full px-2.5 py-1 text-[10px] text-muted-foreground/60 font-medium">
               {tag}
             </span>
           ))}

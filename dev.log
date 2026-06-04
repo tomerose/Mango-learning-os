@@ -81,3 +81,8 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
 [middleware] getUser error: Auth session missing!
  GET /dashboard 200 in 261ms
 [middleware] getUser error: Auth session missing!
+ ✓ Compiled in 902ms (1196 modules)
+ ✓ Compiled in 508ms (1195 modules)
+ ✓ Compiled in 911ms (1195 modules)
+ ✓ Compiled in 1033ms (1195 modules)
+ ✓ Compiled in 491ms (1195 modules)
