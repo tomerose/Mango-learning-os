@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { seedStats } from "@/lib/mock-data";
@@ -13,7 +13,6 @@ import {
   fetchReflections,
   fetchQuizAttempts,
   fetchProfile,
-  seedNewUser,
   setTaskDone,
   insertNote,
   deleteNote as deleteNoteCloud,
@@ -40,22 +39,22 @@ import type {
   WeakArea,
 } from "@/lib/types";
 
-// ─────────────────────────────────────────────────────────────
+// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 // Dual-mode persistence store.
 //
-//   • cloud  — Supabase configured AND a user session exists. Reads/writes
+//   鈥?cloud  鈥?Supabase configured AND a user session exists. Reads/writes
 //              the database; XP lives in the profiles row. First login on
 //              an empty account is seeded with the demo content.
-//   • guest  — no Supabase env (or no session). Falls back to localStorage,
+//   鈥?guest  鈥?no Supabase env (or no session). Falls back to localStorage,
 //              exactly as before, so the product still runs with zero config.
 //
 // Mode is decided once on mount. The useStore() surface is identical in both
 // modes, so no component knows or cares which backend is live.
 //
 // Action side-effects (network writes) fire OUTSIDE the setState updater,
-// reading current state from stateRef — otherwise React Strict Mode's
+// reading current state from stateRef 鈥?otherwise React Strict Mode's
 // double-invoked updaters would double-fire writes (e.g. double XP).
-// ─────────────────────────────────────────────────────────────
+// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 const STORAGE_KEY = "ai-learning-os::v3";
 const XP_PER_TASK = 30;
@@ -150,7 +149,7 @@ function deriveStats(s: StoreState): DashboardStats {
     };
   }
 
-  // guest — preserve the original seed-based display, only XP + task counts move
+  // guest 鈥?preserve the original seed-based display, only XP + task counts move
   return {
     ...seedStats,
     totalXp: seedStats.totalXp + s.xp,
@@ -170,7 +169,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     stateRef.current = state;
   }, [state]);
 
-  // ── Mode detection + initial load ──────────────────────────
+  // 鈹€鈹€ Mode detection + initial load 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   React.useEffect(() => {
     let cancelled = false;
 
@@ -190,7 +189,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         data: { user },
       } = await supabase.auth.getUser();
 
-      // Configured but no session = the visitor chose "继续以游客身份"
+      // Configured but no session = the visitor chose "缁х画浠ユ父瀹㈣韩浠?
       // (middleware let them through on the guest cookie). Run on
       // localStorage just like the unconfigured guest path.
       if (!user) {
@@ -202,8 +201,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Cloud path.
-      let [tasks, notes, flashcards, reflections, quizAttempts] =
+      // Cloud path — clean slate, no auto-seed.
+      const [tasks, notes, flashcards, reflections, quizAttempts] =
         await Promise.all([
           fetchTasks(),
           fetchNotes(),
@@ -212,23 +211,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           fetchQuizAttempts(),
         ]);
       const profile = await fetchProfile(user.id);
-
-      // First login on a fresh account → seed demo content, then refetch.
-      if (
-        tasks.length === 0 &&
-        notes.length === 0 &&
-        flashcards.length === 0
-      ) {
-        await seedNewUser(user.id);
-        [tasks, notes, flashcards, reflections, quizAttempts] =
-          await Promise.all([
-            fetchTasks(),
-            fetchNotes(),
-            fetchFlashcards(),
-            fetchReflections(),
-            fetchQuizAttempts(),
-          ]);
-      }
 
       if (cancelled) return;
       setState({
@@ -255,7 +237,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // ── Persist (guest mode only; cloud lives in the DB) ───────
+  // 鈹€鈹€ Persist (guest mode only; cloud lives in the DB) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   React.useEffect(() => {
     if (!hydrated || state.mode !== "guest") return;
     try {
@@ -269,11 +251,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
     } catch {
-      // storage full / disabled — degrade to in-memory only
+      // storage full / disabled 鈥?degrade to in-memory only
     }
   }, [state, hydrated]);
 
-  // ── Actions ────────────────────────────────────────────────
+  // 鈹€鈹€ Actions 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   const toggleTask = React.useCallback((id: string) => {
     const prev = stateRef.current;
     const task = prev.tasks.find((t) => t.id === id);
@@ -311,7 +293,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             {
               ...note,
               id: `n-${p.notes.length}-${Date.now()}`,
-              updatedLabel: "刚刚",
+              updatedLabel: "鍒氬垰",
             },
             ...p.notes,
           ],
@@ -342,7 +324,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         setState((p) => ({
           ...p,
           reflections: [
-            { ...r, id: `r-${p.reflections.length}-${Date.now()}`, dateLabel: "今天" },
+            { ...r, id: `r-${p.reflections.length}-${Date.now()}`, dateLabel: "浠婂ぉ" },
             ...p.reflections,
           ],
         }));
@@ -375,7 +357,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Record a graded quiz run. XP scales with the score (correct × per-task/6,
+  // Record a graded quiz run. XP scales with the score (correct 脳 per-task/6,
   // a light reward) so quizzing nudges the same progression as tasks/reviews.
   const recordQuiz = React.useCallback(
     (a: Omit<QuizAttempt, "id" | "createdAt">) => {
