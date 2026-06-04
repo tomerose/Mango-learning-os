@@ -53,7 +53,7 @@ export function StatCard({ icon: Icon, label, value, sub, color = "var(--chart-1
       </div>
       <p className="heading-xl mt-1">{value}</p>
       {sub && <div className="mt-1">{sub}</div>}
-    </Card>
+    </ShadcnCard>
   );
 }
 

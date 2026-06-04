@@ -10,55 +10,11 @@
      · optimizePackageImports
 
  ✓ Starting...
- ✓ Ready in 2.3s
- ✓ Compiled /middleware in 489ms (188 modules)
+ ✓ Ready in 2.4s
+ ✓ Compiled /middleware in 484ms (188 modules)
 [middleware] getUser error: Auth session missing!
  ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 4.8s (1119 modules)
- GET /dashboard 200 in 5284ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /login in 454ms (1127 modules)
- GET /login 200 in 649ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 168ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 138ms
-[middleware] getUser error: Auth session missing!
- GET /login 200 in 48ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 132ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /api/guest in 437ms (1131 modules)
- HEAD /api/guest 307 in 527ms
- ✓ Compiled in 195ms (480 modules)
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /login in 85ms (665 modules)
- GET /login 200 in 292ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 164ms
-[middleware] getUser error: Auth session missing!
- ○ Compiling /ai-tutor ...
- ✓ Compiled /ai-tutor in 603ms (1253 modules)
- GET /ai-tutor 200 in 923ms
-[middleware] getUser error: Auth session missing!
- GET /ai-tutor 200 in 130ms
-[middleware] getUser error: Auth session missing!
- ○ Compiling /exam-mode ...
- ✓ Compiled /exam-mode in 899ms (1239 modules)
- GET /exam-mode 200 in 1225ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /knowledge-hub in 437ms (1283 modules)
- GET /knowledge-hub 200 in 733ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /mango-dna in 271ms (1288 modules)
- GET /mango-dna 200 in 568ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /study-planner in 279ms (1300 modules)
- GET /study-planner 200 in 520ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /profile in 499ms (1334 modules)
- GET /profile 200 in 740ms
- ✓ Compiled in 203ms (579 modules)
- ✓ Compiled in 174ms (579 modules)
- ✓ Compiled in 161ms (579 modules)
- ✓ Compiled in 211ms (579 modules)
+ ✓ Compiled /dashboard in 3.8s (1119 modules)
+ GET /dashboard 200 in 4234ms
+ ✓ Compiled in 225ms (470 modules)
+ ✓ Compiled in 173ms (470 modules)
