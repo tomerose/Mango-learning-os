@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SWRegister } from "@/components/sw-register";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  viewportFit: "cover", // iOS safe-area insets (notch, home indicator)
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -43,6 +44,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
@@ -52,6 +57,7 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
+        <SWRegister />
       </body>
     </html>
   );

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="40" fill="#4f46e5"/>
+  <path d="M56 68 L96 48 L136 68 V124 L96 144 L56 124 Z" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+  <line x1="96" y1="80" x2="96" y2="112" stroke="#c7d2fe" stroke-width="5" stroke-linecap="round"/>
+  <line x1="80" y1="96" x2="112" y2="96" stroke="#c7d2fe" stroke-width="5" stroke-linecap="round"/>
+  <text x="96" y="160" text-anchor="middle" fill="#fff" font-size="18" font-family="system-ui" font-weight="700">MANGO</text>
+</svg>

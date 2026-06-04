@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/sidebar";
+import { MobileNav } from "@/components/mobile-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { StoreProvider } from "@/lib/store";
@@ -18,10 +19,12 @@ export default function DashboardLayout({
             <ThemeToggle />
             <UserMenu />
           </header>
-          <main className="flex-1 px-4 py-6 md:px-8 md:py-8">
+          <main className="flex-1 px-4 py-4 pb-20 md:px-8 md:py-8 md:pb-8">
             <div className="mx-auto w-full max-w-6xl">{children}</div>
           </main>
         </div>
+        {/* Mobile bottom tab bar — app-style navigation */}
+        <MobileNav />
       </div>
     </StoreProvider>
   );
