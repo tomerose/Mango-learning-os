@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { completeChat, extractJson } from "@/lib/ai/client";
 import { buildQuizPrompt } from "@/lib/ai/prompts";
+import { createRateLimiter } from "@/lib/rate-limit";
 import type { QuizQuestion, SubjectId } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -15,6 +16,9 @@ const VALID_SUBJECTS: SubjectId[] = [
 ];
 
 const VALID_DIFFICULTY = ["easy", "medium", "hard"] as const;
+
+// Rate limit: 10 quiz generations per IP per minute (more expensive than chat)
+const limiter = createRateLimiter({ requests: 10, window: 60000 });
 
 // Deterministic fallback when no API key is configured, so the quiz UI
 // is fully demoable offline.
@@ -46,6 +50,27 @@ function isValidQuestion(q: unknown): q is QuizQuestion {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limiting (use forwarded IP from Vercel/proxy or fall back to "unknown")
+  const clientId =
+    req.headers.get("x-forwarded-for")?.split(",")[0] ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+  if (!limiter.check(clientId)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429, headers: { "Retry-After": "60" } }
+    );
+  }
+
+  // Content-Type check
+  const contentType = req.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    return NextResponse.json(
+      { error: "Content-Type must be application/json" },
+      { status: 415 }
+    );
+  }
+
   let body: {
     subject?: string;
     topic?: string;

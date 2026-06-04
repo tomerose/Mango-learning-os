@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 
 import { streamChat, type ChatMessage } from "@/lib/ai/client";
 import { buildTutorMessages } from "@/lib/ai/prompts";
+import { createRateLimiter } from "@/lib/rate-limit";
 import type { SubjectId } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -14,7 +15,30 @@ const VALID_SUBJECTS: SubjectId[] = [
   "english",
 ];
 
+// Rate limit: 20 requests per IP per minute (prevents abuse)
+const limiter = createRateLimiter({ requests: 20, window: 60000 });
+
 export async function POST(req: NextRequest) {
+  // Rate limiting (use forwarded IP from Vercel/proxy or fall back to "unknown")
+  const clientId =
+    req.headers.get("x-forwarded-for")?.split(",")[0] ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+  if (!limiter.check(clientId)) {
+    return new Response("Too many requests. Please try again later.", {
+      status: 429,
+      headers: { "Retry-After": "60" },
+    });
+  }
+
+  // Content-Type check
+  const contentType = req.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    return new Response("Content-Type must be application/json", {
+      status: 415,
+    });
+  }
+
   let body: { subject?: string; messages?: ChatMessage[] };
   try {
     body = await req.json();
