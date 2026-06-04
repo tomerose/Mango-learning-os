@@ -25,16 +25,21 @@ export function UserMenu() {
 
   React.useEffect(() => {
     if (!configured) return;
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      const user = data.user;
-      if (user) {
-        setEmail(user.email ?? null);
-        setDisplayName(
-          (user.user_metadata?.display_name as string | undefined) ?? null
-        );
-      }
-    });
+
+    try {
+      const supabase = createClient();
+      supabase.auth.getUser().then(({ data }) => {
+        const user = data.user;
+        if (user) {
+          setEmail(user.email ?? null);
+          setDisplayName(
+            (user.user_metadata?.display_name as string | undefined) ?? null
+          );
+        }
+      });
+    } catch (err) {
+      console.error("[UserMenu] Failed to init Supabase:", err);
+    }
   }, [configured]);
 
   const initial = displayName?.[0] ?? email?.[0]?.toUpperCase() ?? "林";
