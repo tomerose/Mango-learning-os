@@ -32,9 +32,12 @@ export default function DashboardLayout({
       <div className="bg-background flex md:hidden min-h-screen flex-col">
         {/* Mobile top bar */}
         <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between border-b bg-background/90 backdrop-blur px-4">
-          <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-sm">
-            <img src="/apple-touch-icon.png" alt="" className="size-5 rounded-md" />
-            Mango学
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <img src="/apple-touch-icon.png" alt="" className="size-6 rounded-lg" />
+            <div className="flex flex-col leading-none">
+              <span className="font-semibold text-sm">第三自习室</span>
+              <span className="text-[10px] text-muted-foreground">把焦虑变成准备</span>
+            </div>
           </Link>
           <div className="flex items-center gap-1">
             <ThemeToggle />

@@ -8,6 +8,7 @@ import { TodayTasks } from "@/components/dashboard/today-tasks";
 import { WeeklyGoals } from "@/components/dashboard/weekly-goals";
 import { SubjectProgress } from "@/components/dashboard/subject-progress";
 import { ActivityFeedLive } from "@/components/dashboard/activity-feed-live";
+import { BrandCard } from "@/components/dashboard/brand-card";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -88,6 +89,10 @@ export function DashboardContent() {
           </Suspense>
         </Widget>
       </div>
+
+      <Widget>
+        <BrandCard />
+      </Widget>
     </div>
   );
 }
