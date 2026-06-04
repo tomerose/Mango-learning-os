@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { GraduationCap, Target, AlertTriangle, FileQuestion, Clock } from "lucide-react";
+import Link from "next/link";
+import { GraduationCap, Target, AlertTriangle, FileQuestion, Clock, Sparkles } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,67 +16,36 @@ import type { SubjectId } from "@/lib/types";
 interface ExamEntry {
   course: string;
   subject: SubjectId;
-  date: string;
   daysLeft: number;
   readiness: number;
 }
 
-// Seeded pseudo-random — deterministic, avoids hydration mismatch.
-function seededRand(seed: number): () => number {
-  let s = seed;
-  return () => {
-    s = (s * 1664525 + 1013904223) & 0xffffffff;
-    return (s >>> 0) / 0xffffffff;
-  };
-}
-
-const FIXED_TODAY = "2026-06-04"; // stable reference; no Math.random, no new Date()
+// Fixed exam schedule — stable, no random, no Date() in render
+const EXAM_SCHEDULE: { subject: SubjectId; course: string; daysLeft: number }[] = [
+  { subject: "math",      course: "数学分析",     daysLeft: 14 },
+  { subject: "economics", course: "微观经济学",    daysLeft: 18 },
+  { subject: "ai",        course: "机器学习导论",  daysLeft: 21 },
+  { subject: "finance",   course: "金融学原理",    daysLeft: 25 },
+  { subject: "english",   course: "雅思强化",      daysLeft: 30 },
+];
 
 export function ExamModeContent() {
-  const { quizAttempts, tasks, hydrated } = useStore();
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => { setMounted(true); }, []);
+  const { quizAttempts, tasks, weakAreas } = useStore();
 
-  const upcomingExams = React.useMemo<ExamEntry[]>(() => {
-    if (!mounted) {
-      // Return placeholders matching the card shape so SSR shell is stable.
-      return (["math","economics","ai","finance","english"] as SubjectId[]).map((s) => ({
-        course: SUBJECT_META[s]?.label ?? s,
-        subject: s,
-        date: "—",
-        daysLeft: 0,
-        readiness: 0,
-      }));
-    }
+  // Derive readiness from real data
+  const upcomingExams: ExamEntry[] = EXAM_SCHEDULE.map((e) => {
+    const sq = quizAttempts.filter((q) => q.subject === e.subject);
+    const st = tasks.filter((t) => t.subject === e.subject);
+    const quizAcc = sq.length > 0
+      ? sq.reduce((a, q) => a + q.correct / q.total, 0) / sq.length : 0;
+    const taskRate = st.length > 0
+      ? st.filter((t) => t.done).length / st.length : 0;
+    const readiness = Math.min(100, Math.round((quizAcc * 0.6 + taskRate * 0.4) * 100) || 0);
+    return { ...e, readiness: Math.max(8, readiness) };
+  });
 
-    const today = new Date(FIXED_TODAY);
-    const examSubjects: SubjectId[] = ["math", "economics", "ai", "finance", "english"];
-
-    return examSubjects.map((s, idx) => {
-      const subjectQuizzes = quizAttempts.filter((q) => q.subject === s);
-      const subjectTasks = tasks.filter((t) => t.subject === s);
-      const doneTasks = subjectTasks.filter((t) => t.done).length;
-
-      const quizAcc = subjectQuizzes.length > 0
-        ? subjectQuizzes.reduce((a, q) => a + q.correct / q.total, 0) / subjectQuizzes.length
-        : 0;
-      const taskRate = subjectTasks.length > 0 ? doneTasks / subjectTasks.length : 0;
-      const readiness = Math.round((quizAcc * 0.6 + taskRate * 0.4) * 100) || 0;
-
-      const rand = seededRand(idx * 31 + readiness * 7);
-      const futureDate = new Date(today);
-      futureDate.setDate(today.getDate() + 7 + Math.floor(rand() * 21));
-      const daysLeft = Math.max(1, Math.ceil((futureDate.getTime() - today.getTime()) / 86400000));
-
-      return {
-        course: SUBJECT_META[s]?.label ?? s,
-        subject: s,
-        date: futureDate.toLocaleDateString("zh-CN", { month: "long", day: "numeric" }),
-        daysLeft,
-        readiness: Math.max(10, readiness || Math.floor(rand() * 30 + 40)),
-      };
-    });
-  }, [mounted, quizAttempts, tasks]);
+  // Weakest subject for deep-link
+  const weakest = weakAreas[0];
 
   return (
     <div className="flex flex-col gap-6">
@@ -86,25 +56,24 @@ export function ExamModeContent() {
         </p>
       </header>
 
-      {/* Upcoming exams — derived from real data */}
+      {/* Upcoming exams */}
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-medium">备考概览</h2>
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
-          {upcomingExams.slice(0, 5).map((e, i) => {
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {upcomingExams.map((e) => {
             const meta = SUBJECT_META[e.subject];
             return (
-              <Card key={i}>
+              <Card key={e.subject}>
                 <CardContent className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 text-sm font-medium">
                       <span className="size-2 rounded-full" style={{ backgroundColor: meta?.color }} />
-                      {meta?.short ?? e.subject}
+                      {e.course}
                     </span>
                     <Badge variant={e.daysLeft <= 14 ? "warning" : "secondary"}>
                       <Clock className="size-3" />{e.daysLeft}天
                     </Badge>
                   </div>
-                  <p className="text-muted-foreground text-xs">{e.date}</p>
                   <div className="flex flex-col gap-1">
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">备考完成度</span>
@@ -112,8 +81,11 @@ export function ExamModeContent() {
                     </div>
                     <Progress value={e.readiness} />
                   </div>
-                  <Button size="sm" variant="outline" className="w-full">
-                    进入冲刺
+                  {/* 「进入冲刺」→ AI Tutor quiz tab, pre-filled with subject */}
+                  <Button size="sm" variant="outline" className="w-full" asChild>
+                    <Link href={`/ai-tutor?tab=quiz&subject=${e.subject}`}>
+                      进入冲刺
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -123,33 +95,81 @@ export function ExamModeContent() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Quick actions */}
+        {/* Quick action tools — all wired to real routes */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">备考工具</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3">
             {[
-              { icon: Target, label: "重点概念", desc: "高频考点梳理" },
-              { icon: FileQuestion, label: "模拟测试", desc: "AI 生成模拟题" },
-              { icon: GraduationCap, label: "冲刺计划", desc: "倒计时复习路径" },
-              { icon: AlertTriangle, label: "错题本", desc: "针对性巩固" },
-            ].map((t, i) => {
+              {
+                icon: Target,
+                label: "AI 讲解",
+                desc: "概念讲解 + 举例",
+                href: "/ai-tutor?tab=chat",
+              },
+              {
+                icon: FileQuestion,
+                label: "模拟测试",
+                desc: "AI 生成选择题",
+                href: weakest
+                  ? `/ai-tutor?tab=quiz&subject=${weakest.subject}&topic=${encodeURIComponent(weakest.topic)}`
+                  : "/ai-tutor?tab=quiz",
+              },
+              {
+                icon: GraduationCap,
+                label: "学习计划",
+                desc: "查看冲刺路径",
+                href: "/study-planner",
+              },
+              {
+                icon: AlertTriangle,
+                label: "弱点练习",
+                desc: "针对薄弱点",
+                href: weakest
+                  ? `/ai-tutor?tab=quiz&subject=${weakest.subject}&topic=${encodeURIComponent(weakest.topic)}`
+                  : "/ai-tutor?tab=quiz",
+              },
+            ].map((t) => {
               const Icon = t.icon;
               return (
-                <button key={i} className="hover:bg-accent flex flex-col items-start gap-1 rounded-lg border p-3 text-left transition-colors">
+                <Link
+                  key={t.label}
+                  href={t.href}
+                  className="hover:bg-accent flex flex-col items-start gap-1 rounded-lg border p-3 transition-colors"
+                >
                   <Icon className="text-primary size-5" />
                   <span className="text-sm font-medium">{t.label}</span>
                   <span className="text-muted-foreground text-xs">{t.desc}</span>
-                </button>
+                </Link>
               );
             })}
           </CardContent>
         </Card>
 
-        {/* Weakness analysis — driven by real quiz history */}
+        {/* Weakness analysis — real quiz history */}
         <WeaknessAnalysis />
       </div>
+
+      {/* Quick start quiz CTA */}
+      <Card>
+        <CardContent className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:text-left">
+          <span className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-2xl">
+            <Sparkles className="text-primary size-6" />
+          </span>
+          <div className="flex-1">
+            <p className="font-medium">立即开始 AI 测验</p>
+            <p className="text-muted-foreground mt-0.5 text-sm">
+              选择学科和主题，AI 即时生成 5-10 题选择题 + 解析
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/ai-tutor?tab=quiz">
+              <Sparkles className="size-4" /> 开始测验
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
