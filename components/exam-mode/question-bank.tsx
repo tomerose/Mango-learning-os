@@ -1,21 +1,13 @@
 "use client";
 
 import * as React from "react";
-import {
-  Plus, Trash2, Save, X, Play, BookOpen,
-  Sparkles, Download, Loader2, AlertCircle, CheckCircle2,
-} from "lucide-react";
+import { Plus, Trash2, Save, X, Play, BookOpen } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
 import { useSubjects } from "@/lib/subjects";
 import type { ExamQuestion, QuestionType } from "@/lib/types";
 
@@ -51,26 +43,6 @@ export function QuestionBank({ questions, onAdd, onUpdate, onDelete, onStartPrac
   const [expl, setExpl] = React.useState("");
   const [diff, setDiff] = React.useState<"easy" | "medium" | "hard">("medium");
 
-  // AI generation dialog state
-  const [genOpen, setGenOpen] = React.useState(false);
-  const [genSubj, setGenSubj] = React.useState(subjects[0]?.id ?? "");
-  const [genTopic, setGenTopic] = React.useState("");
-  const [genCount, setGenCount] = React.useState(5);
-  const [genDifficulty, setGenDifficulty] = React.useState<"easy" | "medium" | "hard">("medium");
-  const [genTypes, setGenTypes] = React.useState<Set<QuestionType>>(new Set<QuestionType>(["mcq"]));
-  const [genExtra, setGenExtra] = React.useState("");
-  const [genLoading, setGenLoading] = React.useState(false);
-  const [genError, setGenError] = React.useState("");
-  const [genProgress, setGenProgress] = React.useState(0);
-  const [genResult, setGenResult] = React.useState("");
-
-  // Import dialog state
-  const [impOpen, setImpOpen] = React.useState(false);
-  const [impUrl, setImpUrl] = React.useState("");
-  const [impLoading, setImpLoading] = React.useState(false);
-  const [impError, setImpError] = React.useState("");
-  const [impResult, setImpResult] = React.useState("");
-
   function resetForm() {
     setSubj(subjects[0]?.id ?? "");
     setTopic(""); setQtype("mcq"); setStem("");
@@ -96,111 +68,6 @@ export function QuestionBank({ questions, onAdd, onUpdate, onDelete, onStartPrac
     });
   }
 
-  // ── AI Generation ─────────────────────────────────────────
-  async function handleGenerate() {
-    if (!genTopic.trim()) { setGenError("请输入主题"); return; }
-    setGenLoading(true); setGenError(""); setGenResult("");
-    setGenProgress(20);
-
-    try {
-      const typesStr = [...genTypes].join(",");
-      const res = await fetch("/api/exam/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subject: genSubj, topic: genTopic.trim(),
-          count: genCount, difficulty: genDifficulty,
-          types: typesStr, extra: genExtra.trim(),
-        }),
-      });
-      setGenProgress(70);
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || `生成失败 (${res.status})`);
-
-      // Add all generated questions
-      let added = 0;
-      for (const q of data.questions ?? []) {
-        onAdd(q);
-        added++;
-      }
-      setGenProgress(100);
-      setGenResult(`成功生成 ${added} 道题目，已加入题库`);
-      setTimeout(() => setGenOpen(false), 1500);
-    } catch (err) {
-      setGenError(err instanceof Error ? err.message : "生成失败，请重试");
-    } finally {
-      setGenLoading(false);
-    }
-  }
-
-  function toggleGenType(t: QuestionType) {
-    setGenTypes(prev => {
-      const next = new Set(prev);
-      next.has(t) ? next.delete(t) : next.add(t);
-      if (next.size === 0) next.add(t); // keep at least one
-      return next;
-    });
-  }
-
-  // ── Import from URL ───────────────────────────────────────
-  async function handleImport() {
-    if (!impUrl.trim()) { setImpError("请输入 URL"); return; }
-    setImpLoading(true); setImpError(""); setImpResult("");
-
-    try {
-      // Try direct fetch (CORS-proxy via our own API)
-      const url = impUrl.trim();
-      let json: unknown;
-
-      // If it's a GitHub raw URL, use our API
-      if (url.includes("github.com") || url.includes("raw.githubusercontent.com")) {
-        const res = await fetch(`/api/exam/github-sync?url=${encodeURIComponent(url)}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || `导入失败 (${res.status})`);
-        json = data.questions;
-      } else {
-        // Try direct fetch
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`请求失败: ${res.status}`);
-        json = await res.json();
-      }
-
-      const arr = Array.isArray(json) ? json : (json as Record<string,unknown>)?.questions ?? [];
-      if (!Array.isArray(arr)) throw new Error("无法解析 — 期望 JSON 数组或 {questions:[...]} 格式");
-
-      let added = 0;
-      for (const item of arr) {
-        if (!item.question || item.answer === undefined) continue;
-        onAdd({
-          subject: (item.subject as string) ?? genSubj,
-          topic: (item.topic as string) ?? "导入",
-          type: (["mcq","fill_blank","problem"].includes(item.type as string) ? item.type : "mcq") as QuestionType,
-          question: String(item.question),
-          options: Array.isArray(item.options) ? item.options as string[] : [],
-          answer: String(item.answer),
-          explanation: (item.explanation as string) ?? "",
-          difficulty: (["easy","medium","hard"].includes(item.difficulty as string) ? item.difficulty : "medium") as "easy"|"medium"|"hard",
-        });
-        added++;
-      }
-
-      if (added === 0) throw new Error("未找到有效题目");
-
-      setImpResult(`成功导入 ${added} 道题目，已加入题库`);
-      setTimeout(() => setImpOpen(false), 1500);
-    } catch (err) {
-      setImpError(err instanceof Error ? err.message : "导入失败");
-    } finally {
-      setImpLoading(false);
-    }
-  }
-
-  // Sample import URL for quick test
-  function fillSampleUrl() {
-    setImpUrl("https://raw.githubusercontent.com/tomerose/Mango-learning-os/main/data/exam-questions.json");
-  }
-
   const filtered = questions.filter(q => !subj || q.subject === subj);
 
   // ── Render ────────────────────────────────────────────────
@@ -222,100 +89,6 @@ export function QuestionBank({ questions, onAdd, onUpdate, onDelete, onStartPrac
           {selected.size > 0 && (
             <Button size="sm" variant="outline" onClick={() => setSelected(new Set())}>取消选择</Button>
           )}
-
-          {/* AI 生成按钮 */}
-          <Dialog open={genOpen} onOpenChange={setGenOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" variant="outline" className="gap-1">
-                <Sparkles className="size-3.5" /> AI 生成题库
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2"><Sparkles className="size-4" />AI 生成题库</DialogTitle>
-                <DialogDescription>输入学科、主题和要求，AI 自动批量生成题目并加入题库。</DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col gap-3">
-                <div className="flex gap-2">
-                  <select value={genSubj} onChange={e => setGenSubj(e.target.value)}
-                    className="rounded-md border px-2 py-1.5 text-sm bg-background flex-1">
-                    {subjects.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-                  </select>
-                  <select value={genCount} onChange={e => setGenCount(Number(e.target.value))}
-                    className="rounded-md border px-2 py-1.5 text-sm bg-background w-20">
-                    {[3,5,8,10,15].map(n => <option key={n} value={n}>{n}题</option>)}
-                  </select>
-                </div>
-                <Input value={genTopic} onChange={e => setGenTopic(e.target.value)}
-                  placeholder="主题，如「Transformer 自注意力机制」" autoFocus />
-                <div className="flex gap-1">
-                  {DIFFICULTIES.map(d => (
-                    <button key={d} onClick={() => setGenDifficulty(d)}
-                      className={`rounded-md border px-2 py-1 text-xs ${genDifficulty === d ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-accent"}`}>
-                      {{easy:"简单",medium:"中等",hard:"困难"}[d]}</button>
-                  ))}
-                </div>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs text-muted-foreground">题目类型（可多选）</span>
-                  <div className="flex gap-1">
-                    {QUESTION_TYPES.map(t => (
-                      <button key={t.id} onClick={() => toggleGenType(t.id)}
-                        className={`rounded-md border px-3 py-1 text-xs font-medium ${genTypes.has(t.id) ? "bg-primary text-primary-foreground border-transparent" : "hover:bg-accent text-muted-foreground"}`}>
-                        {t.label}</button>
-                    ))}
-                  </div>
-                </div>
-                <Textarea value={genExtra} onChange={e => setGenExtra(e.target.value)}
-                  placeholder="额外要求（可选）如：侧重应用场景、包含公式计算…"
-                  className="min-h-16 text-sm" />
-                {genLoading && <Progress value={genProgress} className="h-1.5" />}
-                {genError && <p className="text-destructive text-xs flex items-center gap-1"><AlertCircle className="size-3"/>{genError}</p>}
-                {genResult && <p className="text-success text-xs flex items-center gap-1"><CheckCircle2 className="size-3"/>{genResult}</p>}
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setGenOpen(false)}>取消</Button>
-                <Button onClick={handleGenerate} disabled={genLoading || !genTopic.trim()}>
-                  {genLoading ? <><Loader2 className="size-4 animate-spin"/>生成中…</> : <><Sparkles className="size-4"/>生成 {genCount} 题</>}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {/* 导入按钮 */}
-          <Dialog open={impOpen} onOpenChange={setImpOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" variant="outline" className="gap-1">
-                <Download className="size-3.5" /> 导入
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2"><Download className="size-4"/>一键导入题库</DialogTitle>
-                <DialogDescription>从 GitHub raw URL 或其他 JSON 地址批量导入题目。</DialogDescription>
-              </DialogHeader>
-              <div className="flex flex-col gap-3">
-                <Input value={impUrl} onChange={e => setImpUrl(e.target.value)}
-                  placeholder="https://raw.githubusercontent.com/.../exam-questions.json"
-                  autoFocus />
-                <Button variant="outline" size="sm" onClick={fillSampleUrl} className="text-xs w-fit">
-                  填入示例 URL
-                </Button>
-                <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground">
-                  <p className="font-medium mb-1">JSON 格式要求：</p>
-                  <code className="text-[11px]">{'[{"question":"...","type":"mcq|fill_blank|problem","options":["A.xx","B.xx","C.xx","D.xx"],"answer":"...","explanation":"...","subject":"ai","topic":"ML","difficulty":"medium"}]'}</code>
-                </div>
-                {impLoading && <Progress value={60} className="h-1.5" />}
-                {impError && <p className="text-destructive text-xs flex items-center gap-1"><AlertCircle className="size-3"/>{impError}</p>}
-                {impResult && <p className="text-success text-xs flex items-center gap-1"><CheckCircle2 className="size-3"/>{impResult}</p>}
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setImpOpen(false)}>取消</Button>
-                <Button onClick={handleImport} disabled={impLoading || !impUrl.trim()}>
-                  {impLoading ? <><Loader2 className="size-4 animate-spin"/>导入中…</> : <><Download className="size-4"/>导入</>}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
 
           <Button size="sm" onClick={() => { resetForm(); setShowForm(true); }}><Plus className="size-4" />新建题目</Button>
         </div>
