@@ -8,6 +8,9 @@ import {
   toFlashcardRow,
   fromReflectionRow,
   toReflectionRow,
+  fromExamQuestionRow,
+  fromExamResultRow,
+
   fromQuizAttemptRow,
   toQuizAttemptRow,
   type TaskRow,
@@ -16,7 +19,10 @@ import {
   type ReflectionRow,
   type ProfileRow,
   type QuizAttemptRow,
+  type ExamQuestionRow,
+  type ExamResultRow,
 } from "@/lib/supabase/mappers";
+import type { ExamQuestion, ExamResult, ExamResultDetail } from "@/lib/types";
 import {
   seedTasks,
   seedNotes,
@@ -252,4 +258,63 @@ export async function seedNewUser(userId: string): Promise<void> {
   ]);
   const firstErr = results.find((r) => r.error)?.error;
   if (firstErr) throw firstErr;
+}
+
+// ---- Exam Questions (user bank) --------------------------------
+export async function fetchExamQuestions(): Promise<import("@/lib/types").ExamQuestion[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("exam_questions").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as ExamQuestionRow[]).map(fromExamQuestionRow);
+}
+export async function insertExamQuestion(
+  userId: string,
+  q: Omit<import("@/lib/types").ExamQuestion, "id" | "userId" | "createdAt" | "updatedAt">
+): Promise<import("@/lib/types").ExamQuestion> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("exam_questions")
+    .insert({ user_id: userId, subject: q.subject, topic: q.topic, type: q.type, question: q.question, options: q.options, answer: q.answer, explanation: q.explanation, difficulty: q.difficulty })
+    .select("*").single();
+  if (error) throw error;
+  return fromExamQuestionRow(data as ExamQuestionRow);
+}
+export async function updateExamQuestion(
+  id: string,
+  q: Partial<import("@/lib/types").ExamQuestion>
+): Promise<void> {
+  const supabase = createClient();
+  const row: Record<string, unknown> = {};
+  if (q.subject !== undefined) row.subject = q.subject;
+  if (q.topic !== undefined) row.topic = q.topic;
+  if (q.question !== undefined) row.question = q.question;
+  if (q.options !== undefined) row.options = q.options;
+  if (q.answer !== undefined) row.answer = q.answer;
+  if (q.explanation !== undefined) row.explanation = q.explanation;
+  if (q.difficulty !== undefined) row.difficulty = q.difficulty;
+  const { error } = await supabase.from("exam_questions").update(row).eq("id", id);
+  if (error) throw error;
+}
+export async function deleteExamQuestion(id: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from("exam_questions").delete().eq("id", id);
+  if (error) throw error;
+}
+
+// ---- Exam Results ----------------------------------------------
+export async function fetchExamResults(): Promise<import("@/lib/types").ExamResult[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("exam_results").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as import("@/lib/supabase/mappers").ExamResultRow[]).map(fromExamResultRow);
+}
+export async function insertExamResult(
+  userId: string,
+  r: Omit<import("@/lib/types").ExamResult, "id" | "userId" | "createdAt" | "percentage">
+): Promise<import("@/lib/types").ExamResult> {
+  const supabase = createClient();
+  const { data, error } = await supabase.from("exam_results")
+    .insert({ user_id: userId, subject: r.subject, topic: r.topic, score: r.score, total: r.total, details: r.details })
+    .select("*").single();
+  if (error) throw error;
+  return fromExamResultRow(data as import("@/lib/supabase/mappers").ExamResultRow);
 }

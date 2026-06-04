@@ -113,3 +113,45 @@ export interface Flashcard {
   repetitions: number; // consecutive successful reviews
   dueOn: string; // YYYY-MM-DD — review when dueOn <= today
 }
+
+// ─── Exam Mode — question bank + results ─────────────────────
+
+export type QuestionType = "mcq" | "fill_blank" | "problem";
+
+export interface ExamQuestion {
+  id: string;
+  userId?: string;
+  subject: string;
+  topic: string;
+  type: QuestionType;
+  question: string;           // stem / prompt
+  options: string[];           // for MCQ: 4 choices; fill_blank: accepted answers; problem: []
+  answer: string;              // correct answer (MCQ: option text; fill_blank: exact; problem: key points)
+  explanation: string;
+  difficulty: "easy" | "medium" | "hard";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExamResult {
+  id: string;
+  userId?: string;
+  subject: string;
+  topic: string;
+  score: number;               // points earned
+  total: number;               // max points
+  percentage: number;          // 0-100
+  details: ExamResultDetail[];
+  createdAt: string;
+}
+
+export interface ExamResultDetail {
+  questionId: string;
+  question: string;
+  userAnswer: string;
+  correctAnswer: string;
+  isCorrect: boolean;
+  feedback: string;
+  points: number;
+  maxPoints: number;
+}

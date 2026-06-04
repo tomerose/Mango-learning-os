@@ -217,3 +217,36 @@ export function toQuizAttemptRow(a: Partial<QuizAttempt>): Partial<QuizAttemptRo
   if (a.correct !== undefined) row.correct = a.correct;
   return row;
 }
+
+// ---- Exam Question --------------------------------------------
+export interface ExamQuestionRow {
+  id: string; user_id: string; subject: string; topic: string;
+  type: string; question: string; options: unknown; answer: string;
+  explanation: string; difficulty: string; created_at: string; updated_at: string;
+}
+export function fromExamQuestionRow(row: ExamQuestionRow) {
+  return {
+    id: row.id, userId: row.user_id, subject: row.subject, topic: row.topic,
+    type: (row.type ?? "mcq") as import("@/lib/types").QuestionType,
+    question: row.question,
+    options: Array.isArray(row.options) ? row.options as string[] : [],
+    answer: row.answer ?? "", explanation: row.explanation ?? "",
+    difficulty: (row.difficulty ?? "medium") as "easy"|"medium"|"hard",
+    createdAt: row.created_at ?? "", updatedAt: row.updated_at ?? "",
+  };
+}
+
+// ---- Exam Result ----------------------------------------------
+export interface ExamResultRow {
+  id: string; user_id: string; subject: string; topic: string;
+  score: number; total: number; details: unknown; created_at: string;
+}
+export function fromExamResultRow(row: ExamResultRow) {
+  return {
+    id: row.id, userId: row.user_id, subject: row.subject, topic: row.topic,
+    score: row.score ?? 0, total: row.total ?? 0,
+    percentage: row.total > 0 ? Math.round((row.score / row.total) * 100) : 0,
+    details: Array.isArray(row.details) ? row.details as import("@/lib/types").ExamResultDetail[] : [],
+    createdAt: row.created_at ?? "",
+  };
+}

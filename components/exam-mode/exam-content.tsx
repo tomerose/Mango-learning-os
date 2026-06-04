@@ -1,175 +1,240 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { GraduationCap, Target, AlertTriangle, FileQuestion, Clock, Sparkles } from "lucide-react";
+import { BookOpen, Play, BarChart3 } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { WeaknessAnalysis } from "@/components/exam-mode/weakness-analysis";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { QuestionBank } from "@/components/exam-mode/question-bank";
+import { ExercisePlayer } from "@/components/exam-mode/exercise-player";
+import { ResultsPanel } from "@/components/exam-mode/results-panel";
 import { useStore } from "@/lib/store";
-import { SUBJECT_META } from "@/lib/mock-data";
-import type { SubjectId } from "@/lib/types";
+import type { ExamQuestion, ExamResult, ExamResultDetail } from "@/lib/types";
 
-interface ExamEntry {
-  course: string;
-  subject: SubjectId;
-  daysLeft: number;
-  readiness: number;
+// Local-only exam support (guest mode / offline)
+const LOCAL_QUESTIONS_KEY = "mango-exam-questions-v1";
+const LOCAL_RESULTS_KEY = "mango-exam-results-v1";
+
+function loadLocal(key: string) {
+  try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveLocal(key: string, data: unknown) {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
 }
 
-// Fixed exam schedule — stable, no random, no Date() in render
-const EXAM_SCHEDULE: { subject: SubjectId; course: string; daysLeft: number }[] = [
-  { subject: "math",      course: "数学分析",     daysLeft: 14 },
-  { subject: "economics", course: "微观经济学",    daysLeft: 18 },
-  { subject: "ai",        course: "机器学习导论",  daysLeft: 21 },
-  { subject: "finance",   course: "金融学原理",    daysLeft: 25 },
-  { subject: "english",   course: "雅思强化",      daysLeft: 30 },
-];
-
 export function ExamModeContent() {
-  const { quizAttempts, tasks, weakAreas } = useStore();
+  const { mode } = useStore();
+  const guest = mode !== "cloud";
+  const [tab, setTab] = React.useState("bank");
 
-  // Derive readiness from real data
-  const upcomingExams: ExamEntry[] = EXAM_SCHEDULE.map((e) => {
-    const sq = quizAttempts.filter((q) => q.subject === e.subject);
-    const st = tasks.filter((t) => t.subject === e.subject);
-    const quizAcc = sq.length > 0
-      ? sq.reduce((a, q) => a + q.correct / q.total, 0) / sq.length : 0;
-    const taskRate = st.length > 0
-      ? st.filter((t) => t.done).length / st.length : 0;
-    const readiness = Math.min(100, Math.round((quizAcc * 0.6 + taskRate * 0.4) * 100) || 0);
-    return { ...e, readiness: Math.max(8, readiness) };
-  });
+  // ── Questions state ──────────────────────────────────────
+  const [questions, setQuestions] = React.useState<ExamQuestion[]>(() => loadLocal(LOCAL_QUESTIONS_KEY));
+  const [questionLoading, setQuestionLoading] = React.useState(true);
+  const [saving, setSaving] = React.useState(false);
 
-  // Weakest subject for deep-link
-  const weakest = weakAreas[0];
+  // ── Results state ────────────────────────────────────────
+  const [results, setResults] = React.useState<ExamResult[]>(() => loadLocal(LOCAL_RESULTS_KEY));
+  const [resultLoading, setResultLoading] = React.useState(true);
+
+  // ── Practice session state ───────────────────────────────
+  const [practiceQuestions, setPracticeQuestions] = React.useState<ExamQuestion[]>([]);
+  const [inPractice, setInPractice] = React.useState(false);
+
+  // Load from DB on mount
+  React.useEffect(() => {
+    async function load() {
+      try {
+        // Questions
+        const qRes = await fetch("/api/exam/questions");
+        if (qRes.ok) {
+          const qData = await qRes.json();
+          if (qData.questions?.length > 0) {
+            setQuestions(qData.questions);
+            saveLocal(LOCAL_QUESTIONS_KEY, qData.questions);
+          }
+        }
+      } catch {}
+      setQuestionLoading(false);
+
+      try {
+        // Results
+        const rRes = await fetch("/api/exam/results");
+        if (rRes.ok) {
+          const rData = await rRes.json();
+          if (rData.results?.length > 0) {
+            setResults(rData.results);
+            saveLocal(LOCAL_RESULTS_KEY, rData.results);
+          }
+        }
+      } catch {}
+      setResultLoading(false);
+    }
+    load();
+  }, []);
+
+  // ── CRUD handlers ────────────────────────────────────────
+  async function handleAddQuestion(q: Omit<ExamQuestion, "id" | "userId" | "createdAt" | "updatedAt">) {
+    setSaving(true);
+    const newQ: ExamQuestion = {
+      ...q,
+      id: `q-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Optimistic local
+    const next = [newQ, ...questions];
+    setQuestions(next);
+    saveLocal(LOCAL_QUESTIONS_KEY, next);
+
+    // Try server
+    try {
+      const res = await fetch("/api/exam/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(q),
+      });
+      if (res.ok) {
+        const d = await res.json();
+        if (d.question) {
+          const merged = [d.question, ...questions];
+          setQuestions(merged);
+          saveLocal(LOCAL_QUESTIONS_KEY, merged);
+        }
+      }
+    } catch {}
+    setSaving(false);
+  }
+
+  function handleUpdateQuestion(id: string, updates: Partial<ExamQuestion>) {
+    const next = questions.map(q => q.id === id ? { ...q, ...updates, updatedAt: new Date().toISOString() } : q);
+    setQuestions(next);
+    saveLocal(LOCAL_QUESTIONS_KEY, next);
+    if (!guest) {
+      fetch(`/api/exam/questions/${id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      }).catch(() => {});
+    }
+  }
+
+  function handleDeleteQuestion(id: string) {
+    const next = questions.filter(q => q.id !== id);
+    setQuestions(next);
+    saveLocal(LOCAL_QUESTIONS_KEY, next);
+    if (!guest) {
+      fetch(`/api/exam/questions/${id}`, { method: "DELETE" }).catch(() => {});
+    }
+  }
+
+  function handleStartPractice(ids: string[]) {
+    const qs = questions.filter(q => ids.includes(q.id));
+    if (qs.length === 0) return;
+    setPracticeQuestions(qs);
+    setInPractice(true);
+    setTab("practice");
+  }
+
+  async function handleSubmitAnswers(answers: { id: string; question: string; type: string; userAnswer: string; correctAnswer: string }[]) {
+    try {
+      const res = await fetch("/api/exam/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: practiceQuestions[0]?.subject ?? "",
+          topic: practiceQuestions[0]?.topic ?? "",
+          questions: answers.map(a => ({ ...a, maxPoints: 4 })),
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const newResult: ExamResult = {
+          id: data.saved?.id ?? `r-${Date.now()}`,
+          subject: practiceQuestions[0]?.subject ?? "",
+          topic: practiceQuestions[0]?.topic ?? "",
+          score: data.score,
+          total: data.total,
+          percentage: data.percentage,
+          details: data.details,
+          createdAt: new Date().toISOString(),
+        };
+        const next = [newResult, ...results];
+        setResults(next);
+        saveLocal(LOCAL_RESULTS_KEY, next);
+        return data;
+      }
+    } catch {}
+    return null;
+  }
+
+  function handleBackFromPractice() {
+    setInPractice(false);
+    setPracticeQuestions([]);
+    setTab("bank");
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold tracking-tight">考试模式</h1>
         <p className="text-muted-foreground text-sm">
-          课程复习、冲刺计划、模拟测试与弱点分析 —— 把焦虑变成准备
+          个性化题库、智能评分、错题分析 —— 把焦虑变成准备
         </p>
       </header>
 
-      {/* Upcoming exams */}
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium">备考概览</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {upcomingExams.map((e) => {
-            const meta = SUBJECT_META[e.subject];
-            return (
-              <Card key={e.subject}>
-                <CardContent className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-medium">
-                      <span className="size-2 rounded-full" style={{ backgroundColor: meta?.color }} />
-                      {e.course}
-                    </span>
-                    <Badge variant={e.daysLeft <= 14 ? "warning" : "secondary"}>
-                      <Clock className="size-3" />{e.daysLeft}天
-                    </Badge>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">备考完成度</span>
-                      <span className="tabular-nums">{e.readiness}%</span>
-                    </div>
-                    <Progress value={e.readiness} />
-                  </div>
-                  {/* 「进入冲刺」→ AI Tutor quiz tab, pre-filled with subject */}
-                  <Button size="sm" variant="outline" className="w-full" asChild>
-                    <Link href={`/ai-tutor?tab=quiz&subject=${e.subject}`}>
-                      进入冲刺
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
+      {inPractice ? (
+        <ExercisePlayer
+          questions={practiceQuestions}
+          onSubmit={handleSubmitAnswers}
+          onBack={handleBackFromPractice}
+        />
+      ) : (
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList>
+            <TabsTrigger value="bank"><BookOpen className="size-4" />题库</TabsTrigger>
+            <TabsTrigger value="practice"><Play className="size-4" />练习</TabsTrigger>
+            <TabsTrigger value="results"><BarChart3 className="size-4" />成绩</TabsTrigger>
+          </TabsList>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Quick action tools — all wired to real routes */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">备考工具</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3">
-            {[
-              {
-                icon: Target,
-                label: "AI 讲解",
-                desc: "概念讲解 + 举例",
-                href: "/ai-tutor?tab=chat",
-              },
-              {
-                icon: FileQuestion,
-                label: "模拟测试",
-                desc: "AI 生成选择题",
-                href: weakest
-                  ? `/ai-tutor?tab=quiz&subject=${weakest.subject}&topic=${encodeURIComponent(weakest.topic)}`
-                  : "/ai-tutor?tab=quiz",
-              },
-              {
-                icon: GraduationCap,
-                label: "学习计划",
-                desc: "查看冲刺路径",
-                href: "/study-planner",
-              },
-              {
-                icon: AlertTriangle,
-                label: "弱点练习",
-                desc: "针对薄弱点",
-                href: weakest
-                  ? `/ai-tutor?tab=quiz&subject=${weakest.subject}&topic=${encodeURIComponent(weakest.topic)}`
-                  : "/ai-tutor?tab=quiz",
-              },
-            ].map((t) => {
-              const Icon = t.icon;
-              return (
-                <Link
-                  key={t.label}
-                  href={t.href}
-                  className="hover:bg-accent flex flex-col items-start gap-1 rounded-lg border p-3 transition-colors"
-                >
-                  <Icon className="text-primary size-5" />
-                  <span className="text-sm font-medium">{t.label}</span>
-                  <span className="text-muted-foreground text-xs">{t.desc}</span>
-                </Link>
-              );
-            })}
-          </CardContent>
-        </Card>
+          <TabsContent value="bank" className="mt-4">
+            <QuestionBank
+              questions={questions}
+              onAdd={handleAddQuestion}
+              onUpdate={handleUpdateQuestion}
+              onDelete={handleDeleteQuestion}
+              onStartPractice={handleStartPractice}
+              saving={saving}
+              guest={guest}
+            />
+          </TabsContent>
 
-        {/* Weakness analysis — real quiz history */}
-        <WeaknessAnalysis />
-      </div>
+          <TabsContent value="practice" className="mt-4">
+            <Card>
+              <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
+                <BookOpen className="size-10 opacity-40" />
+                <div>
+                  <p className="font-medium">开始练习</p>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    在「题库」中选择题目，点击「练习选中」开始答题。
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-      {/* Quick start quiz CTA */}
-      <Card>
-        <CardContent className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:text-left">
-          <span className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-2xl">
-            <Sparkles className="text-primary size-6" />
-          </span>
-          <div className="flex-1">
-            <p className="font-medium">立即开始 AI 测验</p>
-            <p className="text-muted-foreground mt-0.5 text-sm">
-              选择学科和主题，AI 即时生成 5-10 题选择题 + 解析
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/ai-tutor?tab=quiz">
-              <Sparkles className="size-4" /> 开始测验
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+          <TabsContent value="results" className="mt-4">
+            <ResultsPanel
+              results={results}
+              loading={resultLoading}
+              guest={guest}
+              onRefresh={() => {
+                const local = loadLocal(LOCAL_RESULTS_KEY);
+                setResults(local);
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
