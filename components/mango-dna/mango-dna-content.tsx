@@ -56,10 +56,10 @@ const AGENTS = [
 
 function MobileDNA() {
   return (
-    <div className="-mx-4"> {/* kill parent px-4 for full-bleed */}
+    <div className="flex flex-col gap-6">
 
       {/* ── Hero Banner ─────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-background px-4 pt-10 pb-6 text-center">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-background rounded-2xl px-4 pt-10 pb-6 text-center">
         <div className="absolute inset-0 opacity-[0.03]"
           style={{ backgroundImage: "radial-gradient(circle at 50% 30%, var(--primary) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
         <span className="relative bg-primary/15 flex size-16 mx-auto items-center justify-center rounded-2xl mb-4">
