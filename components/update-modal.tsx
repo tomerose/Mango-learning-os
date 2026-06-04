@@ -5,7 +5,7 @@ import { X, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const VERSION = "v1.3.0";
-const STORAGE_KEY = "mango-update-seen";
+const STORAGE_KEY = "mango-update-seen-v2";
 
 const UPDATES = [
   { emoji: "🎨", title: "全新设计系统", desc: "Apple 级简洁，浮动毛玻璃，统一卡片阴影" },
