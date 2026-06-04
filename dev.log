@@ -1,0 +1,22 @@
+
+> ai-learning-os@0.1.0 dev
+> next dev -p 3001
+
+   ▲ Next.js 15.5.19
+   - Local:        http://localhost:3001
+   - Network:      http://100.64.164.2:3001
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 2.6s
+ ✓ Compiled /middleware in 217ms (188 modules)
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1075ms (1059 modules)
+ GET /dashboard 200 in 1520ms
+ ✓ Compiled in 83ms (434 modules)
+ ✓ Compiled /login in 163ms (1083 modules)
+ GET /login 200 in 333ms
+ GET /dashboard 200 in 156ms
+ GET /dashboard 200 in 169ms
