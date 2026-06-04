@@ -40,12 +40,12 @@ export function DashboardGreeting() {
     : "今天的任务已全部完成！继续保持这份节奏。";
 
   return (
-    <header className="flex flex-col gap-1" suppressHydrationWarning>
-      <p className="text-muted-foreground text-sm">{today}</p>
-      <h1 className="text-2xl font-semibold tracking-tight">
-        {greeting}，学习者 👋
+    <header className="flex flex-col gap-0.5 pt-1 pb-2" suppressHydrationWarning>
+      <p className="text-muted-foreground/70 text-xs font-medium uppercase tracking-wide">{today}</p>
+      <h1 className="text-[1.5rem] md:text-2xl font-bold tracking-tight leading-tight">
+        {greeting}，学习者<span className="ml-2">👋</span>
       </h1>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-muted-foreground/80 text-[13px] leading-relaxed mt-1 font-medium">
         {hydrated ? motd : "正在加载…"}
       </p>
     </header>

@@ -30,16 +30,16 @@ export default function DashboardLayout({
 
       {/* ── MOBILE: app shell with header + content + bottom tabs ─── */}
       <div className="bg-background flex md:hidden min-h-screen flex-col">
-        {/* Mobile top bar */}
-        <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between border-b bg-background/90 backdrop-blur px-4">
+        {/* Mobile top bar — frosted glass, Apple-style */}
+        <header className="glass sticky top-0 z-30 flex h-11 shrink-0 items-center justify-between px-4 border-b border-white/20 dark:border-white/5">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <img src="/apple-touch-icon.png" alt="" className="size-6 rounded-lg" />
+            <img src="/apple-touch-icon.png" alt="" className="size-6 rounded-xl shadow-sm" />
             <div className="flex flex-col leading-none">
-              <span className="font-semibold text-sm">第三自习室</span>
-              <span className="text-[10px] text-muted-foreground">把焦虑变成准备</span>
+              <span className="font-bold text-[13px] tracking-tight">第三自习室</span>
+              <span className="text-[10px] text-muted-foreground font-medium">把焦虑变成准备</span>
             </div>
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <ThemeToggle />
             <UserMenu />
           </div>

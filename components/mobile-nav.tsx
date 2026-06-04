@@ -27,7 +27,7 @@ export function MobileNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex border-t bg-background/95 backdrop-blur md:hidden"
+      className="glass fixed bottom-0 left-0 right-0 z-40 flex border-t border-white/20 dark:border-white/5 md:hidden"
       style={{ paddingBottom: "max(0px, env(safe-area-inset-bottom))" }}
     >
       {TABS.map((tab) => {
@@ -40,19 +40,20 @@ export function MobileNav() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors",
+              "flex flex-1 flex-col items-center justify-center gap-1 py-1.5 text-[10px] font-medium transition-all duration-300",
               active
-                ? "text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "text-primary scale-105"
+                : "text-muted-foreground/70 hover:text-muted-foreground"
             )}
           >
             <Icon
               className={cn(
-                "size-5 transition-colors",
-                active ? "text-primary" : ""
+                "size-[22px] transition-all duration-300",
+                active ? "text-primary" : "opacity-60"
               )}
+              strokeWidth={active ? 2.5 : 1.5}
             />
-            <span>{tab.label}</span>
+            <span className="tracking-tight">{tab.label}</span>
           </Link>
         );
       })}
