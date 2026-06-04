@@ -20,9 +20,7 @@ import {
   type ProfileRow,
   type QuizAttemptRow,
   type ExamQuestionRow,
-  type ExamResultRow,
 } from "@/lib/supabase/mappers";
-import type { ExamQuestion, ExamResult, ExamResultDetail } from "@/lib/types";
 import {
   seedTasks,
   seedNotes,
