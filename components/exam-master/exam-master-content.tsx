@@ -32,7 +32,7 @@ interface GeneratedPackage {
 }
 
 // ── Component ─────────────────────────────────────────────────
-export function ExamMasterContent() {
+export function ExamMasterContent({ embedded }: { embedded?: boolean }) {
   const { subjects } = useSubjects();
   const [tab, setTab] = React.useState("create");
   const [packages, setPackages] = React.useState<ExamPackage[]>([]);
@@ -110,12 +110,14 @@ export function ExamMasterContent() {
   // ── Render ──────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <BookMarked className="text-primary size-6" strokeWidth={2} /> Final Exam Master
-        </h1>
-        <p className="text-muted-foreground/60 text-sm">结构化期末复习 · AI 生成完整备考资料包</p>
-      </header>
+      {!embedded && (
+        <header className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <BookMarked className="text-primary size-6" strokeWidth={2} /> Final Exam Master
+          </h1>
+          <p className="text-muted-foreground/60 text-sm">结构化期末复习 · AI 生成完整备考资料包</p>
+        </header>
+      )}
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>

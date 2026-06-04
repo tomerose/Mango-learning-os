@@ -10,63 +10,45 @@
      · optimizePackageImports
 
  ✓ Starting...
- ✓ Ready in 2.3s
+ ✓ Ready in 2.5s
  ○ Compiling /middleware ...
- ✓ Compiled /middleware in 536ms (188 modules)
+ ✓ Compiled /middleware in 553ms (188 modules)
 [middleware] getUser error: Auth session missing!
  ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 8.5s (1119 modules)
- GET /dashboard 200 in 8948ms
+Request timed out after 3000ms
+
+Retrying 1/3...
+ ✓ Compiled /dashboard in 7.3s (1123 modules)
+ GET /dashboard 200 in 7736ms
 [middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 162ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled / in 370ms (1114 modules)
- GET / 307 in 527ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 215ms
- ⚠ Cross origin request detected from prince-solution-mount-oasis.trycloudflare.com to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
-Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
-[middleware] getUser error: Auth session missing!
-[middleware] getUser error: Auth session missing!
- ○ Compiling /ai-tutor ...
- ✓ Compiled /ai-tutor in 561ms (1156 modules)
- GET /ai-tutor 200 in 650ms
-[middleware] getUser error: Auth session missing!
- GET /ai-tutor 200 in 28ms
-[middleware] getUser error: Auth session missing!
- GET /ai-tutor 200 in 31ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /mango-dna in 369ms (1182 modules)
- GET /mango-dna 200 in 425ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 32ms
- ✓ Compiled in 227ms (508 modules)
- ✓ Compiled in 124ms (508 modules)
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 28ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 21ms
- ✓ Compiled in 593ms (1184 modules)
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 106ms
- ✓ Compiled in 448ms (1188 modules)
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 64ms
- ✓ Compiled in 157ms (510 modules)
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 22ms
- ✓ Compiled in 173ms (510 modules)
- ✓ Compiled in 165ms (510 modules)
- ✓ Compiled in 254ms (1362 modules)
- ✓ Compiled in 220ms (510 modules)
- ✓ Compiled in 149ms (510 modules)
- ✓ Compiled in 151ms (510 modules)
- ✓ Compiled in 130ms (510 modules)
- ✓ Compiled in 238ms (1362 modules)
- ✓ Compiled in 143ms (510 modules)
- ✓ Compiled in 119ms (510 modules)
- ✓ Compiled in 210ms (1362 modules)
- ✓ Compiled in 201ms (510 modules)
- ✓ Compiled in 135ms (510 modules)
- ✓ Compiled in 138ms (510 modules)
- ✓ Compiled in 356ms (1362 modules)
+ ✓ Compiled / in 342ms (804 modules)
+ GET / 307 in 518ms
+ ✓ Compiled in 206ms (473 modules)
+ ✓ Compiled in 182ms (473 modules)
+ ✓ Compiled in 146ms (473 modules)
+ ✓ Compiled in 123ms (647 modules)
+ ✓ Compiled in 162ms (473 modules)
+ ✓ Compiled in 131ms (473 modules)
+ ✓ Compiled in 155ms (473 modules)
+ ✓ Compiled in 138ms (473 modules)
+ ✓ Compiled in 319ms (473 modules)
+ ✓ Compiled in 382ms (473 modules)
+ ✓ Compiled in 121ms (473 modules)
+ ✓ Compiled in 133ms (473 modules)
+ ✓ Compiled in 126ms (473 modules)
+ ✓ Compiled in 135ms (473 modules)
+ ✓ Compiled in 147ms (473 modules)
+ ✓ Compiled in 140ms (473 modules)
+ ✓ Compiled in 121ms (473 modules)
+ ✓ Compiled in 111ms (473 modules)
+ ✓ Compiled in 140ms (473 modules)
+ ✓ Compiled in 125ms (473 modules)
+ ✓ Compiled in 136ms (473 modules)
+ ✓ Compiled in 128ms (473 modules)
+ ✓ Compiled in 102ms (473 modules)
+ ✓ Compiled in 141ms (473 modules)
+ ✓ Compiled in 111ms (473 modules)
+ ✓ Compiled in 146ms (473 modules)
+ ✓ Compiled in 356ms (471 modules)
+ ✓ Compiled in 142ms (471 modules)
+ ✓ Compiled in 138ms (471 modules)

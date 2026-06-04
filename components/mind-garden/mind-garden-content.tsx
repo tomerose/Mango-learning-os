@@ -5,7 +5,7 @@ import {
   Heart, Plus, Send, Loader2, Sparkles, Brain, TrendingUp,
   Calendar, Smile, Frown, Meh, Sun, Cloud, CloudRain, Zap,
   ArrowRight, Download, Upload, Trash2, ChevronDown, ChevronUp,
-  Activity, BookOpen, Target, Moon,
+  Activity, BookOpen, Target, Moon, Wind,
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TreeHoleChat } from "@/components/ai-tutor/treehole-chat";
 import { Progress } from "@/components/ui/progress";
 import { idb } from "@/lib/storage/idb";
 import { cn } from "@/lib/utils";
@@ -40,10 +41,10 @@ const MOOD_EMOJIS = [
 
 // ── Main Component ────────────────────────────────────────────
 
-export function MindGardenContent() {
+export function MindGardenContent({ embedded }: { embedded?: boolean }) {
   const [entries, setEntries] = React.useState<JournalEntry[]>([]);
   const [moods, setMoods] = React.useState<MoodRecord[]>([]);
-  const [tab, setTab] = React.useState("journal");
+  const [tab, setTab] = React.useState(embedded ? "treehole" : "journal");
   const [input, setInput] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
@@ -121,19 +122,24 @@ export function MindGardenContent() {
   // ── Render ──────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Heart className="text-primary size-6" strokeWidth={2} /> Mind Garden
-        </h1>
-        <p className="text-muted-foreground/60 text-sm">个人反思 · 情绪支持 · 认知成长</p>
-      </header>
+      {!embedded && (
+        <header className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <Heart className="text-primary size-6" strokeWidth={2} /> Mind Garden
+          </h1>
+          <p className="text-muted-foreground/60 text-sm">个人反思 · 情绪支持 · 认知成长</p>
+        </header>
+      )}
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          <TabsTrigger value="journal"><BookOpen className="size-4" /> 写日记</TabsTrigger>
-          <TabsTrigger value="history"><Calendar className="size-4" /> 历史</TabsTrigger>
-          <TabsTrigger value="insights"><Activity className="size-4" /> 洞察 ({moods.length})</TabsTrigger>
+          {embedded && <TabsTrigger value="treehole"><Wind className="size-4" />树洞</TabsTrigger>}
+          <TabsTrigger value="journal"><BookOpen className="size-4" />写日记</TabsTrigger>
+          <TabsTrigger value="history"><Calendar className="size-4" />历史</TabsTrigger>
+          <TabsTrigger value="insights"><Activity className="size-4" />洞察</TabsTrigger>
         </TabsList>
+
+        {embedded && <TabsContent value="treehole" className="mt-4"><TreeHoleChat /></TabsContent>}
 
         {/* ── Journal Tab ─────────────────────────────────── */}
         <TabsContent value="journal" className="mt-4">
