@@ -209,43 +209,65 @@ body {
    Mobile & Tablet Optimizations
    ───────────────────────────────────────────────────────────── */
 
-/* Remove iOS tap-highlight flash (we have our own hover/active styles) */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
+/* Remove iOS tap-highlight flash */
+* { -webkit-tap-highlight-color: transparent; }
 
-/* Bottom safe area for mobile nav — ensures content isn't hidden
-   behind the fixed bottom tab bar (3.25rem) + safe-area-inset */
 @media (max-width: 767px) {
+  /* ── Global mobile spacing ──────────────────────────── */
   main {
-    padding-bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 0.5rem 0.75rem calc(4rem + env(safe-area-inset-bottom, 0px)) 0.75rem !important;
   }
+
+  /* Tighter vertical rhythm — all flex-col gaps halved */
+  .flex-col.gap-8 { gap: 1.25rem; }
+  .flex-col.gap-6 { gap: 1rem; }
+  .flex-col.gap-4 { gap: 0.75rem; }
+  .flex-col.gap-3 { gap: 0.5rem; }
+
+  /* Section padding */
+  .py-12 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .py-8  { padding-top: 1rem; padding-bottom: 1rem; }
+  .py-6  { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  .pt-8  { padding-top: 1rem; }
+  .pb-8  { padding-bottom: 1rem; }
+
+  /* Smaller headings */
+  h1, .text-2xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+  h2, .text-xl  { font-size: 1.1rem !important; }
+
+  /* Grids: force single column below md breakpoint wherever possible */
+  .lg\:grid-cols-2, .lg\:grid-cols-3, .lg\:grid-cols-4, .lg\:grid-cols-5,
+  .md\:grid-cols-2, .md\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Cards full-width, less internal padding */
+  .bg-card.rounded-xl, .rounded-xl.border {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Card grids single col */
+  .grid.gap-4 { grid-template-columns: 1fr !important; }
+  .grid.gap-6 { grid-template-columns: 1fr !important; }
+
+  /* Smaller headers */
+  header h1 { font-size: 1.25rem !important; }
+  header p { font-size: 0.8rem !important; }
+
+  /* Stat cards grid — keep 2 columns for cards */
+  .grid.grid-cols-2 { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Touch */
+  .touch-target-44 { min-width: 44px; min-height: 44px; }
+  .touch-target-48 { min-width: 48px; min-height: 48px; }
 }
 
-/* Prevent iOS rubber-banding on fixed overlays */
-.fixed.inset-0 {
-  -webkit-overflow-scrolling: touch;
-}
+/* Prevent iOS rubber-banding */
+.fixed.inset-0 { -webkit-overflow-scrolling: touch; }
 
-/* Larger touch targets for mobile clicks (links, buttons inside cards) */
-@media (max-width: 767px) {
-  a, button, [role="button"] {
-    min-height: auto;
-  }
-  .touch-target-44 {
-    min-width: 44px;
-    min-height: 44px;
-  }
-  .touch-target-48 {
-    min-width: 48px;
-    min-height: 48px;
-  }
-}
-
-/* Smooth kinetic scrolling on iOS for scrollable cards */
-.overflow-y-auto {
-  -webkit-overflow-scrolling: touch;
-}
+/* Smooth kinetic scrolling on iOS */
+.overflow-y-auto { -webkit-overflow-scrolling: touch; }
 
 /* iOS safe-area insets (notch, home indicator, etc.). The `env()` vars
    are injected by the browser only when viewport-fit=cover is set. */
