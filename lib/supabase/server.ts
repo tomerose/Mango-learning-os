@@ -1,9 +1,17 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 // Server-side Supabase client (Server Components, Route Handlers, Server Actions).
 // In Next.js 15 cookies() is async, so this factory is async too.
+// Throws if Supabase is not configured — callers MUST guard with isSupabaseConfigured().
 export async function createClient() {
+  if (!isSupabaseConfigured()) {
+    throw new Error(
+      "Supabase is not configured. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY."
+    );
+  }
+
   const cookieStore = await cookies();
 
   return createServerClient(

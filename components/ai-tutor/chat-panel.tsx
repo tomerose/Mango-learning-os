@@ -85,7 +85,7 @@ export function ChatPanel() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-9rem)] flex-col gap-4 md:h-[calc(100vh-10rem)]">
+    <div className="flex h-[calc(100dvh-12rem)] flex-col gap-4 md:h-[calc(100dvh-10rem)]">
       {/* Subject selector */}
       <div className="flex flex-wrap gap-2">
         {SUBJECTS.map((s) => (

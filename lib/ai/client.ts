@@ -28,10 +28,21 @@ export function getAIConfig(): AIConfig {
   };
 }
 
+/** Normalize env values: strip whitespace and surrounding quotes.
+ *  Vercel CLI `env pull` writes empty values as `""` (literal double-quotes),
+ *  which would otherwise pass a naive truthiness check. */
+function cleanEnv(s: string | undefined): string {
+  if (!s) return "";
+  let v = s.trim();
+  if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1).trim();
+  return v;
+}
+
 export function isAIConfigured(): boolean {
-  const key = process.env.AI_API_KEY;
-  // Guard against empty strings that should be treated as unconfigured
-  return Boolean(key && key.trim() !== '');
+  const key = cleanEnv(process.env.AI_API_KEY);
+  // Must be a real-looking API key (starts with sk- or similar), not a
+  // Vercel-CLI placeholder like "".
+  return Boolean(key && key.length > 10);
 }
 
 const encoder = new TextEncoder();

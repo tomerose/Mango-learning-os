@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 
+import { DashboardGreeting } from "@/components/dashboard/greeting";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { TodayTasks } from "@/components/dashboard/today-tasks";
 import { WeeklyGoals } from "@/components/dashboard/weekly-goals";
 import { SubjectProgress } from "@/components/dashboard/subject-progress";
-import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { ActivityFeedLive } from "@/components/dashboard/activity-feed-live";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata = { title: "Dashboard · Mango Learning OS" };
@@ -21,23 +22,17 @@ function BlockSkeleton({ rows = 4 }: { rows?: number }) {
 }
 
 export default function DashboardPage() {
-  const today = new Date("2026-06-04").toLocaleDateString("zh-CN", {
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  });
-
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <p className="text-muted-foreground text-sm">{today}</p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          下午好，林深 👋
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          今天有 4 项任务待完成，先从最高优先级开始。专注，是最快的捷径。
-        </p>
-      </header>
+      <Suspense fallback={
+        <header className="flex flex-col gap-1">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-64" />
+        </header>
+      }>
+        <DashboardGreeting />
+      </Suspense>
 
       <Suspense
         fallback={
@@ -69,7 +64,7 @@ export default function DashboardPage() {
           <SubjectProgress />
         </Suspense>
         <Suspense fallback={<BlockSkeleton rows={5} />}>
-          <ActivityFeed />
+          <ActivityFeedLive />
         </Suspense>
       </div>
     </div>

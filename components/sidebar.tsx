@@ -49,13 +49,13 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile top bar */}
+      {/* Mobile top bar — sticky; body padding handles safe-area-inset-top */}
       <div className="bg-sidebar/80 sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 backdrop-blur md:hidden">
         <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
           <GraduationCap className="text-sidebar-primary size-5" />
           <span>Mango Learning OS</span>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <ThemeToggle />
           <UserMenu />
           <Button
@@ -64,21 +64,29 @@ export function Sidebar() {
             onClick={() => setMobileOpen((o) => !o)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
+            className="touch-target-44"
           >
             {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </Button>
         </div>
       </div>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer — full-height side panel below the top bar */}
       {mobileOpen && (
         <div className="fixed inset-0 z-20 md:hidden">
           <div
             className="bg-background/60 absolute inset-0 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
           />
-          <aside className="bg-sidebar absolute top-14 left-0 w-64 border-r py-4 shadow-lg">
-            {nav}
+          <aside
+            className="bg-sidebar absolute top-14 left-0 w-64 border-r shadow-xl overflow-y-auto"
+            style={{
+              height: "calc(100dvh - 3.5rem)",
+              paddingBottom: "env(safe-area-inset-bottom)",
+            }}
+          >
+            <div className="py-4">{nav}</div>
           </aside>
         </div>
       )}

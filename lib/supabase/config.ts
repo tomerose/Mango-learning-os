@@ -8,11 +8,27 @@
 //   • the app runs entirely on lib/store.tsx (localStorage)
 // Filling .env.local flips this to true with zero code changes.
 // ─────────────────────────────────────────────────────────────
+
+/** Normalize env values: strip whitespace and surrounding quotes.
+ *  Vercel CLI `env pull` writes empty values as `""` (literal double-quotes),
+ *  which would otherwise pass a naive truthiness check. */
+function cleanEnv(s: string | undefined): string {
+  if (!s) return "";
+  let v = s.trim();
+  if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1).trim();
+  return v;
+}
+
 export function isSupabaseConfigured(): boolean {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  // Guard against empty strings (Vercel CLI placeholders) that should be treated as unconfigured
-  return Boolean(url && url.trim() !== '' && key && key.trim() !== '');
+  const url = cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const key = cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  // Must be non-empty AND look like a real URL / JWT (not a placeholder).
+  return Boolean(
+    url &&
+    key &&
+    (url.startsWith("https://") || url.startsWith("http://")) &&
+    key.length > 20
+  );
 }
 
 // ─────────────────────────────────────────────────────────────
