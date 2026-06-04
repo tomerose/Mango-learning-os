@@ -6,6 +6,8 @@ import {
   GraduationCap,
   User,
   Dna,
+  Heart,
+  BookMarked,
   type LucideIcon,
 } from "lucide-react";
 
@@ -52,6 +54,18 @@ export const navItems: NavItem[] = [
     href: "/mango-dna",
     icon: Dna,
     description: "AI persona, thinking style & long-term memory",
+  },
+  {
+    title: "Mind Garden",
+    href: "/mind-garden",
+    icon: Heart,
+    description: "Personal reflection, emotional support & CBT journal",
+  },
+  {
+    title: "Exam Master",
+    href: "/exam-master",
+    icon: BookMarked,
+    description: "Structured final exam preparation & review packages",
   },
   {
     title: "Profile",

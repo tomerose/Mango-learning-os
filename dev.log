@@ -10,79 +10,63 @@
      · optimizePackageImports
 
  ✓ Starting...
- ✓ Ready in 2.9s
- ✓ Compiled /middleware in 484ms (188 modules)
+ ✓ Ready in 2.3s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 536ms (188 modules)
 [middleware] getUser error: Auth session missing!
  ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 5.4s (1118 modules)
- GET /dashboard 200 in 5814ms
+ ✓ Compiled /dashboard in 8.5s (1119 modules)
+ GET /dashboard 200 in 8948ms
 [middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 125ms
+ GET /dashboard 200 in 162ms
 [middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 149ms
+ ✓ Compiled / in 370ms (1114 modules)
+ GET / 307 in 527ms
 [middleware] getUser error: Auth session missing!
- ✓ Compiled / in 359ms (1113 modules)
- GET / 307 in 523ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 200ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 133ms
-[middleware] getUser error: Auth session missing!
- ○ Compiling /exam-mode ...
- ✓ Compiled /exam-mode in 509ms (1189 modules)
- GET /exam-mode 200 in 805ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /login in 312ms (1192 modules)
- GET /login 200 in 488ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled /mango-dna in 312ms (1214 modules)
- GET /mango-dna 200 in 692ms
-[middleware] getUser error: Auth session missing!
- GET / 307 in 66ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 166ms
-[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 215ms
  ⚠ Cross origin request detected from prince-solution-mount-oasis.trycloudflare.com to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
 Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
 [middleware] getUser error: Auth session missing!
+[middleware] getUser error: Auth session missing!
  ○ Compiling /ai-tutor ...
- ✓ Compiled /ai-tutor in 852ms (1194 modules)
- GET /ai-tutor?tab=chat 200 in 932ms
+ ✓ Compiled /ai-tutor in 561ms (1156 modules)
+ GET /ai-tutor 200 in 650ms
 [middleware] getUser error: Auth session missing!
- GET /ai-tutor?tab=chat 200 in 22ms
+ GET /ai-tutor 200 in 28ms
 [middleware] getUser error: Auth session missing!
- GET /ai-tutor?tab=chat 200 in 22ms
+ GET /ai-tutor 200 in 31ms
 [middleware] getUser error: Auth session missing!
- ✓ Compiled /exam-mode in 222ms (700 modules)
- GET /exam-mode 200 in 324ms
+ ✓ Compiled /mango-dna in 369ms (1182 modules)
+ GET /mango-dna 200 in 425ms
 [middleware] getUser error: Auth session missing!
- ○ Compiling /api/exam/questions ...
- ✓ Compiled /api/exam/questions in 779ms (1336 modules)
- GET /api/exam/questions 200 in 935ms
+ GET /dashboard 200 in 32ms
+ ✓ Compiled in 227ms (508 modules)
+ ✓ Compiled in 124ms (508 modules)
 [middleware] getUser error: Auth session missing!
- GET /api/exam/questions 200 in 1086ms
+ GET /dashboard 200 in 28ms
 [middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 21ms
+ ✓ Compiled in 593ms (1184 modules)
 [middleware] getUser error: Auth session missing!
- ✓ Compiled /api/exam/results in 294ms (1338 modules)
- GET /api/exam/questions 200 in 672ms
- GET /api/exam/results 200 in 353ms
+ GET /dashboard 200 in 106ms
+ ✓ Compiled in 448ms (1188 modules)
 [middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 64ms
+ ✓ Compiled in 157ms (510 modules)
 [middleware] getUser error: Auth session missing!
- GET /api/exam/results 200 in 26ms
- GET /api/exam/questions 200 in 757ms
-[middleware] getUser error: Auth session missing!
-[middleware] getUser error: Auth session missing!
- GET /api/exam/results 200 in 23ms
- GET /api/exam/questions 200 in 939ms
-[middleware] getUser error: Auth session missing!
- GET /api/exam/results 200 in 12ms
-[middleware] getUser error: Auth session missing!
- GET / 307 in 148ms
-[middleware] getUser error: Auth session missing!
- GET /dashboard 200 in 261ms
-[middleware] getUser error: Auth session missing!
- ✓ Compiled in 902ms (1196 modules)
- ✓ Compiled in 508ms (1195 modules)
- ✓ Compiled in 911ms (1195 modules)
- ✓ Compiled in 1033ms (1195 modules)
- ✓ Compiled in 491ms (1195 modules)
+ GET /dashboard 200 in 22ms
+ ✓ Compiled in 173ms (510 modules)
+ ✓ Compiled in 165ms (510 modules)
+ ✓ Compiled in 254ms (1362 modules)
+ ✓ Compiled in 220ms (510 modules)
+ ✓ Compiled in 149ms (510 modules)
+ ✓ Compiled in 151ms (510 modules)
+ ✓ Compiled in 130ms (510 modules)
+ ✓ Compiled in 238ms (1362 modules)
+ ✓ Compiled in 143ms (510 modules)
+ ✓ Compiled in 119ms (510 modules)
+ ✓ Compiled in 210ms (1362 modules)
+ ✓ Compiled in 201ms (510 modules)
+ ✓ Compiled in 135ms (510 modules)
+ ✓ Compiled in 138ms (510 modules)
+ ✓ Compiled in 356ms (1362 modules)
