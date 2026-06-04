@@ -1,15 +1,7 @@
 import { TutorTabs } from "@/components/ai-tutor/tutor-tabs";
-import type { SubjectId } from "@/lib/navigation";
+import type { SubjectId } from "@/lib/types";
 
 export const metadata = { title: "AI Tutor · Mango Learning OS" };
-
-const VALID_SUBJECTS: SubjectId[] = [
-  "ai",
-  "economics",
-  "finance",
-  "math",
-  "english",
-];
 
 export default async function AITutorPage({
   searchParams,
@@ -17,9 +9,7 @@ export default async function AITutorPage({
   searchParams: Promise<{ tab?: string; subject?: string; topic?: string }>;
 }) {
   const params = await searchParams;
-  const subject = VALID_SUBJECTS.includes(params.subject as SubjectId)
-    ? (params.subject as SubjectId)
-    : undefined;
+  const subject = params.subject as SubjectId | undefined;
 
   return (
     <div className="flex flex-col gap-4">

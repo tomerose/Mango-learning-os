@@ -3,7 +3,7 @@
 // Keep these as the single source of truth; the DB schema mirrors them.
 // ─────────────────────────────────────────────────────────────
 
-export type SubjectId = "ai" | "economics" | "finance" | "math" | "english";
+export type SubjectId = string;
 
 export type Priority = "low" | "medium" | "high";
 

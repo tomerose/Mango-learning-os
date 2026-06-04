@@ -7,14 +7,6 @@ import type { SubjectId } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-const VALID_SUBJECTS: SubjectId[] = [
-  "ai",
-  "economics",
-  "finance",
-  "math",
-  "english",
-];
-
 // Rate limit: 20 requests per IP per minute (prevents abuse)
 const limiter = createRateLimiter({ requests: 20, window: 60000 });
 
@@ -46,12 +38,8 @@ export async function POST(req: NextRequest) {
     return new Response("Invalid JSON body", { status: 400 });
   }
 
-  const subject = body.subject as SubjectId;
+  const subject = (body.subject ?? "general") as SubjectId;
   const messages = body.messages;
-
-  if (!VALID_SUBJECTS.includes(subject)) {
-    return new Response(`Unknown subject: ${subject}`, { status: 400 });
-  }
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response("messages must be a non-empty array", { status: 400 });
   }

@@ -6,23 +6,28 @@ import { Send, Sparkles, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { SUBJECTS, type SubjectId } from "@/lib/navigation";
+import { useSubjects } from "@/lib/subjects";
+import type { SubjectId } from "@/lib/types";
 
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
-const STARTERS: Record<SubjectId, string[]> = {
-  ai: ["解释 Transformer 的自注意力机制", "什么是梯度消失，如何缓解？"],
-  economics: ["消费者剩余和生产者剩余的区别", "解释价格弹性及其应用"],
-  finance: ["DCF 估值的核心逻辑是什么？", "解释 CAPM 模型"],
-  math: ["特征值和特征向量的几何意义", "解释中心极限定理"],
-  english: ["雅思写作 Task 2 高分结构", "如何拆解长难句？"],
-};
+function getStarters(subject: string): string[] {
+  const map: Record<string, string[]> = {
+    ai: ["解释 Transformer 的自注意力机制", "什么是梯度消失，如何缓解？"],
+    economics: ["消费者剩余和生产者剩余的区别", "解释价格弹性及其应用"],
+    finance: ["DCF 估值的核心逻辑是什么？", "解释 CAPM 模型"],
+    math: ["特征值和特征向量的几何意义", "解释中心极限定理"],
+    english: ["雅思写作 Task 2 高分结构", "如何拆解长难句？"],
+  };
+  return map[subject] ?? [`解释「${subject}」的核心概念`, `关于「${subject}」的入门学习路径`];
+}
 
 export function ChatPanel() {
-  const [subject, setSubject] = React.useState<SubjectId>("ai");
+  const { subjects } = useSubjects();
+  const [subject, setSubject] = React.useState<SubjectId>(subjects[0]?.id ?? "ai");
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [input, setInput] = React.useState("");
   const [streaming, setStreaming] = React.useState(false);
@@ -88,7 +93,7 @@ export function ChatPanel() {
     <div className="flex h-[calc(100dvh-12rem)] flex-col gap-4 md:h-[calc(100dvh-10rem)]">
       {/* Subject selector */}
       <div className="flex flex-wrap gap-2">
-        {SUBJECTS.map((s) => (
+        {subjects.map((s) => (
           <button
             key={s.id}
             onClick={() => setSubject(s.id)}
@@ -121,7 +126,7 @@ export function ChatPanel() {
               </p>
             </div>
             <div className="flex flex-col gap-2">
-              {STARTERS[subject].map((q) => (
+              {getStarters(subject).map((q) => (
                 <button
                   key={q}
                   onClick={() => send(q)}

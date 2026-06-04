@@ -4,6 +4,7 @@ import { MobileNav } from "@/components/mobile-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { StoreProvider } from "@/lib/store";
+import { SubjectProvider } from "@/lib/subjects";
 
 export default function DashboardLayout({
   children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
+    <SubjectProvider>
     <StoreProvider>
       {/* ── DESKTOP: sidebar + content ─────────────────────── */}
       <div className="bg-background hidden md:flex min-h-screen">
@@ -45,5 +47,6 @@ export default function DashboardLayout({
         <MobileNav />
       </div>
     </StoreProvider>
+    </SubjectProvider>
   );
 }

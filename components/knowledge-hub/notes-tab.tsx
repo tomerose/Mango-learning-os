@@ -20,12 +20,14 @@ import {
 } from "@/components/ui/dialog";
 import { SUBJECT_META } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
-import { SUBJECTS, type SubjectId } from "@/lib/navigation";
+import { useSubjects } from "@/lib/subjects";
+import type { SubjectId } from "@/lib/types";
 
 export function NotesTab() {
   const { notes, addNote, deleteNote, hydrated } = useStore();
+  const { subjects } = useSubjects();
   const [open, setOpen] = React.useState(false);
-  const [subject, setSubject] = React.useState<SubjectId>("ai");
+  const [subject, setSubject] = React.useState<SubjectId>(subjects[0]?.id ?? "ai");
   const [title, setTitle] = React.useState("");
   const [body, setBody] = React.useState("");
   const [tags, setTags] = React.useState("");
@@ -73,7 +75,7 @@ export function NotesTab() {
             </DialogHeader>
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
-                {SUBJECTS.map((s) => (
+                {subjects.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => setSubject(s.id)}

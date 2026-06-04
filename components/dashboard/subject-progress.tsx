@@ -2,32 +2,26 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStore } from "@/lib/store";
+import { useSubjects } from "@/lib/subjects";
 import { SUBJECT_META } from "@/lib/mock-data";
-import type { SubjectId } from "@/lib/types";
 
 // Derive subject mastery from real data: notes + flashcard reviews + quiz accuracy.
-// Formula: (notes×0.3 + flashcard_reviews×0.2 + quiz_accuracy×0.5) → 0-100%
 export function SubjectProgress() {
   const { notes, flashcards, quizAttempts, hydrated } = useStore();
+  const { subjects } = useSubjects();
 
   if (!hydrated) {
     return (
       <Card className="h-full">
-        <CardHeader>
-          <CardTitle>学科掌握度</CardTitle>
-        </CardHeader>
-        <CardContent className="text-muted-foreground text-sm">
-          加载中…
-        </CardContent>
+        <CardHeader><CardTitle>学科掌握度</CardTitle></CardHeader>
+        <CardContent className="text-muted-foreground text-sm">加载中…</CardContent>
       </Card>
     );
   }
-
-  const subjects: SubjectId[] = ["ai", "economics", "finance", "math", "english"];
-  const progress = subjects.map((subject) => {
-    const subjectNotes = notes.filter((n) => n.subject === subject);
-    const subjectCards = flashcards.filter((c) => c.subject === subject);
-    const subjectQuizzes = quizAttempts.filter((a) => a.subject === subject);
+  const progress = subjects.map((subj) => {
+    const subjectNotes = notes.filter((n) => n.subject === subj.id);
+    const subjectCards = flashcards.filter((c) => c.subject === subj.id);
+    const subjectQuizzes = quizAttempts.filter((a) => a.subject === subj.id);
 
     // Notes: count × 5, capped at 50
     const notesScore = Math.min(50, subjectNotes.length * 5);
@@ -50,7 +44,7 @@ export function SubjectProgress() {
     // Weekly minutes: rough estimate from task count × 25min
     const weeklyMinutes = subjectNotes.length * 25;
 
-    return { subject, masteryPct, weeklyMinutes };
+    return { subject: subj.id, masteryPct, weeklyMinutes };
   });
 
   return (

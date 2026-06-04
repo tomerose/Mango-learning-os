@@ -7,14 +7,6 @@ import type { QuizQuestion, SubjectId } from "@/lib/types";
 
 export const runtime = "nodejs";
 
-const VALID_SUBJECTS: SubjectId[] = [
-  "ai",
-  "economics",
-  "finance",
-  "math",
-  "english",
-];
-
 const VALID_DIFFICULTY = ["easy", "medium", "hard"] as const;
 
 // Rate limit: 10 quiz generations per IP per minute (more expensive than chat)
@@ -83,7 +75,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const subject = body.subject as SubjectId;
+  const subject = (body.subject ?? "general") as SubjectId;
   const topic = (body.topic ?? "").trim();
   const count = Math.min(Math.max(body.count ?? 5, 1), 10);
   const difficulty = (
@@ -91,13 +83,6 @@ export async function POST(req: NextRequest) {
       ? body.difficulty
       : "medium"
   ) as (typeof VALID_DIFFICULTY)[number];
-
-  if (!VALID_SUBJECTS.includes(subject)) {
-    return NextResponse.json(
-      { error: `Unknown subject: ${subject}` },
-      { status: 400 }
-    );
-  }
   if (!topic) {
     return NextResponse.json({ error: "topic is required" }, { status: 400 });
   }

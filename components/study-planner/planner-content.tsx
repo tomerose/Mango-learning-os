@@ -16,7 +16,8 @@ import {
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { SUBJECT_META } from "@/lib/mock-data";
-import { SUBJECTS, type SubjectId } from "@/lib/navigation";
+import { useSubjects } from "@/lib/subjects";
+import type { SubjectId } from "@/lib/types";
 import type { Priority, Task } from "@/lib/types";
 
 const WEEK_DAYS = ["周一","周二","周三","周四","周五","周六","周日"];
@@ -48,6 +49,7 @@ function PlanRow({ task, onToggle }: { task: Task; onToggle: () => void }) {
 
 export function StudyPlannerContent() {
   const { tasks, toggleTask, addTask } = useStore();
+  const { subjects } = useSubjects();
 
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [newSubject, setNewSubject] = React.useState<SubjectId>("ai");
@@ -71,9 +73,9 @@ export function StudyPlannerContent() {
     setDialogOpen(false);
   }
 
-  // Weekly load from live data
-  const subjectLoad: Record<SubjectId, number> = { ai:0,economics:0,finance:0,math:0,english:0 };
-  for (const t of pendingTasks) subjectLoad[t.subject] += t.estimatedMin;
+  // Weekly load from live data — derived from actual subjects
+  const subjectLoad: Record<string, number> = Object.fromEntries(subjects.map(s => [s.id, 0]));
+  for (const t of pendingTasks) { subjectLoad[t.subject] = (subjectLoad[t.subject] ?? 0) + t.estimatedMin; }
   const totalLoad = Object.values(subjectLoad).reduce((a,b)=>a+b,0);
 
   const weekPlan = WEEK_DAYS.map((day, i) => {
@@ -83,10 +85,10 @@ export function StudyPlannerContent() {
   });
 
   // Monthly summary — group completed tasks by subject
-  const doneBySubject = (["ai","economics","finance","math","english"] as SubjectId[]).map(s => {
-    const done = tasks.filter(t=>t.subject===s&&t.done).length;
-    const total = tasks.filter(t=>t.subject===s).length;
-    return { subject:s, done, total, pct: total>0?Math.round(done/total*100):0 };
+  const doneBySubject = subjects.map(s => {
+    const done = tasks.filter(t=>t.subject===s.id&&t.done).length;
+    const total = tasks.filter(t=>t.subject===s.id).length;
+    return { subject:s.id, done, total, pct: total>0?Math.round(done/total*100):0 };
   });
   const monthlyGoal = 30;
   const monthlyDone = tasks.filter(t=>t.done).length;
@@ -109,7 +111,7 @@ export function StudyPlannerContent() {
             </DialogHeader>
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
-                {SUBJECTS.map(s => (
+                {subjects.map(s => (
                   <button key={s.id} onClick={() => setNewSubject(s.id)}
                     className={cn("rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                       newSubject===s.id ? "border-transparent bg-primary text-primary-foreground" : "hover:bg-accent text-muted-foreground")}>{s.label}</button>

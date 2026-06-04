@@ -12,7 +12,8 @@ import {
   DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import { SUBJECT_META } from "@/lib/mock-data";
-import { SUBJECTS, type SubjectId } from "@/lib/navigation";
+import { useSubjects } from "@/lib/subjects";
+import type { SubjectId } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface Resource {
@@ -46,6 +47,7 @@ const SEED: Resource[] = [
 ];
 
 export function ResourcesTab() {
+  const { subjects } = useSubjects();
   const [items, setItems] = React.useState<Resource[]>(() => {
     const saved = loadResources();
     return saved.length > 0 ? saved : SEED;
@@ -54,7 +56,7 @@ export function ResourcesTab() {
   const [title, setTitle] = React.useState("");
   const [url, setUrl] = React.useState("");
   const [type, setType] = React.useState("文章");
-  const [subject, setSubject] = React.useState<SubjectId>("ai");
+  const [subject, setSubject] = React.useState<SubjectId>(subjects[0]?.id ?? "ai");
 
   React.useEffect(() => { saveResources(items); }, [items]);
 
@@ -91,7 +93,7 @@ export function ResourcesTab() {
             </DialogHeader>
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
-                {SUBJECTS.map(s => (
+                {subjects.map(s => (
                   <button key={s.id} onClick={() => setSubject(s.id)}
                     className={cn("rounded-full border px-3 py-1 text-xs font-medium transition-colors",
                       subject === s.id ? "border-transparent bg-primary text-primary-foreground" : "hover:bg-accent text-muted-foreground")}>{s.label}</button>

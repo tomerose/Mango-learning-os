@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useStore } from "@/lib/store";
-import { SUBJECTS, type SubjectId } from "@/lib/navigation";
+import { useSubjects } from "@/lib/subjects";
+import type { SubjectId } from "@/lib/types";
 import type { QuizQuestion } from "@/lib/types";
 
 type Difficulty = "easy" | "medium" | "hard";
@@ -34,8 +35,9 @@ interface QuizPanelProps {
 
 export function QuizPanel({ initialSubject, initialTopic }: QuizPanelProps = {}) {
   const { recordQuiz } = useStore();
+  const { subjects } = useSubjects();
   const [subject, setSubject] = React.useState<SubjectId>(
-    initialSubject ?? "ai"
+    initialSubject ?? subjects[0]?.id ?? "ai"
   );
   const [topic, setTopic] = React.useState(initialTopic ?? "");
   const [difficulty, setDifficulty] = React.useState<Difficulty>("medium");
@@ -94,7 +96,7 @@ export function QuizPanel({ initialSubject, initialTopic }: QuizPanelProps = {})
       {/* Controls */}
       <div className="bg-card flex flex-col gap-4 rounded-xl border p-4">
         <div className="flex flex-wrap gap-2">
-          {SUBJECTS.map((s) => (
+          {subjects.map((s) => (
             <button
               key={s.id}
               onClick={() => setSubject(s.id)}

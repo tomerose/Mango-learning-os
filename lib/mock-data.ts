@@ -19,16 +19,28 @@ import type {
 // client persistence store can hydrate localStorage on first run.
 // ─────────────────────────────────────────────────────────────
 
-export const SUBJECT_META: Record<
-  SubjectId,
-  { label: string; short: string; color: string }
-> = {
-  ai: { label: "Artificial Intelligence", short: "AI", color: "var(--chart-1)" },
-  economics: { label: "Economics", short: "Econ", color: "var(--chart-2)" },
-  finance: { label: "Finance", short: "Fin", color: "var(--chart-3)" },
-  math: { label: "Mathematics", short: "Math", color: "var(--chart-4)" },
-  english: { label: "English", short: "Eng", color: "var(--chart-5)" },
-};
+import { getStoredSubjects, type SubjectDef } from "@/lib/subjects";
+
+// Dynamic subject meta lookup. Falls back to seed defaults if subject not found.
+export function subjectMeta(id: string): SubjectDef {
+  const stored = getStoredSubjects();
+  const found = stored.find(s => s.id === id);
+  if (found) return found;
+  // Client-side fallback via localStorage
+  try {
+    const all = typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("mango-subjects-v1") ?? "[]")
+      : stored;
+    return all.find((s: SubjectDef) => s.id === id) ?? { id, label: id, short: id.slice(0,4), color: "var(--chart-1)" };
+  } catch { return { id, label: id, short: id.slice(0,4), color: "var(--chart-1)" }; }
+}
+
+// Legacy alias — components pass subjectMeta(id).color etc.
+export const SUBJECT_META = new Proxy({} as Record<string, SubjectDef>, {
+  get(_t, key: string) {
+    return subjectMeta(key);
+  },
+});
 
 export const seedTasks: Task[] = [
   { id: "t1", title: "复习 Transformer 注意力机制推导", subject: "ai", done: true, priority: "high", dueLabel: "Today 09:00", estimatedMin: 45 },
