@@ -14,6 +14,20 @@ import { useStore } from "@/lib/store";
 import { SUBJECT_META } from "@/lib/mock-data";
 import type { ActivityEvent, SubjectId } from "@/lib/types";
 
+/** Safely format an ISO date string for display, returning fallback on
+ *  any invalid input (empty string, null, garbage, etc.). */
+function safeDateLabel(iso: string | null | undefined, fallback = "最近"): string {
+  if (!iso) return fallback;
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return fallback;
+    return d.toLocaleDateString("zh-CN", { month: "short", day: "numeric" });
+  } catch {
+    return fallback;
+  }
+}
+
+
 const kindMeta: Record<
   ActivityEvent["kind"],
   { icon: LucideIcon; color: string }
@@ -51,7 +65,7 @@ export function ActivityFeedLive() {
       kind: "quiz",
       label: `完成「${q.subject}」测验，正确率 ${Math.round((q.correct / q.total) * 100)}%`,
       subject: q.subject,
-      timeLabel: q.createdAt ? new Date(q.createdAt).toLocaleDateString("zh-CN") : "最近",
+      timeLabel: safeDateLabel(q.createdAt),
     });
   }
 
