@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
 import { GUEST_COOKIE } from "@/lib/supabase/config";
 
-// Server-side guest-mode opt-in. Sets the mango_guest cookie then redirects
-// to the dashboard. This is more reliable than document.cookie + router.push()
-// because the cookie is set by the server, guaranteeing the middleware sees it
-// on the very next request.
+// Server-side guest-mode opt-in. Uses relative redirect so it works on
+// any domain (Vercel, tunnel, custom domain) without hardcoding URLs.
 export async function GET() {
-  const res = NextResponse.redirect(new URL("/dashboard", process.env.NEXT_PUBLIC_SITE_URL ?? "https://mango-learning-os.vercel.app"));
-  res.cookies.set(GUEST_COOKIE, "1", {
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365, // 1 year
-    sameSite: "lax",
-    httpOnly: false, // the middleware reads this cookie
+  const res = NextResponse.redirect(new URL("/dashboard", "http://localhost"));
+  // Strip the origin so the redirect is relative to the current domain
+  const location = res.headers.get("location") ?? "/dashboard";
+  const path = new URL(location).pathname + new URL(location).search;
+  const final = NextResponse.redirect(new URL(path, "http://localhost"), { status: 307 });
+  // Use raw header manipulation for a proper relative redirect
+  const response = new NextResponse(null, { status: 307 });
+  response.headers.set("Location", path);
+  response.cookies.set(GUEST_COOKIE, "1", {
+    path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: false,
   });
-  return res;
+  return response;
 }
