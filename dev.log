@@ -169,3 +169,46 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
 [middleware] getUser error: Auth session missing!
  GET /ai-tutor 200 in 139ms
 [middleware] getUser error: Auth session missing!
+[middleware] getUser error: Auth session missing!
+ ⨯ Error: Cannot find module './873.js'
+Require stack:
+- D:\Claudecoda学习\AI-Learning-OS\.next\server\webpack-runtime.js
+- D:\Claudecoda学习\AI-Learning-OS\.next\server\app\(dashboard)\ai-tutor\page.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\require.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\load-components.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\utils.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\swc\options.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\swc\index.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\config.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\next.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (D:\Claudecoda学习\AI-Learning-OS\.next\server\app\page.js:6:2049)
+    at Object.<anonymous> (D:\Claudecoda学习\AI-Learning-OS\.next\server\app\page.js:6:2099) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './611.js'
+Require stack:
+- D:\Claudecoda学习\AI-Learning-OS\.next\server\webpack-runtime.js
+- D:\Claudecoda学习\AI-Learning-OS\.next\server\app\(dashboard)\ai-tutor\page.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\require.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\load-components.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\utils.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\swc\options.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\swc\index.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\config.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\next.js
+- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (D:\Claudecoda学习\AI-Learning-OS\.next\server\pages\_document.js:1:325)
+    at Object.<anonymous> (D:\Claudecoda学习\AI-Learning-OS\.next\server\pages\_document.js:1:371) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET / 500 in 1632ms
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled in 767ms (1204 modules)
+ ✓ Compiled in 160ms (679 modules)
+ ✓ Compiled in 212ms (679 modules)
