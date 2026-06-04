@@ -4,7 +4,7 @@ import * as React from "react";
 import { useStore } from "@/lib/store";
 
 export function DashboardGreeting() {
-  const { stats, tasks, hydrated } = useStore();
+  const { tasks, hydrated } = useStore();
 
   const now = new Date();
   const hour = now.getHours();

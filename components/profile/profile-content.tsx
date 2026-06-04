@@ -19,16 +19,14 @@ const achievements = [
 ];
 
 export function ProfileContent() {
-  const { stats, quizAttempts, tasks, mode } = useStore();
-  const { totalXp, level, xpToNextLevel, xpForCurrentLevel, streakDays, minutesToday, tasksDoneToday, tasksTotalToday } = stats;
+  const { stats, tasks, mode } = useStore();
+  const { totalXp, level, xpToNextLevel, xpForCurrentLevel, streakDays, minutesToday } = stats;
 
   const levelSpan = xpToNextLevel - xpForCurrentLevel || 1;
   const levelProgress = Math.round(((totalXp - xpForCurrentLevel) / levelSpan) * 100);
 
   // Compute live stats from real data
-  const totalQuizzes = quizAttempts.length;
   const totalTasksDone = tasks.filter((t) => t.done).length;
-  const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
   return (
     <div className="flex flex-col gap-6">
