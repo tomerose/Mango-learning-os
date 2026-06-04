@@ -14,6 +14,7 @@ import {
   fetchQuizAttempts,
   fetchProfile,
   setTaskDone,
+  upsertTask,
   insertNote,
   deleteNote as deleteNoteCloud,
   insertReflection,
@@ -82,6 +83,7 @@ interface StoreValue extends StoreState {
   stats: DashboardStats;
   weakAreas: WeakArea[];
   toggleTask: (id: string) => void;
+  addTask: (task: Omit<Task, "id">) => void;
   addNote: (note: Omit<Note, "id" | "updatedLabel">) => void;
   deleteNote: (id: string) => void;
   addReflection: (r: Omit<Reflection, "id" | "dateLabel">) => void;
@@ -277,6 +279,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const addTask = React.useCallback(
+    (task: Omit<Task, "id">) => {
+      const prev = stateRef.current;
+      if (prev.mode === "cloud" && prev.userId) {
+        upsertTask(prev.userId, task).catch((e) =>
+          console.error("[store] upsertTask:", e)
+        );
+        // Refetch tasks to get the server-assigned (or client-generated) row.
+        fetchTasks()
+          .then((fresh) => setState((p) => ({ ...p, tasks: fresh })))
+          .catch((e) => console.error("[store] fetchTasks after add:", e));
+      } else {
+        const id = `t-${prev.tasks.length}-${Date.now()}`;
+        setState((p) => ({
+          ...p,
+          tasks: [...p.tasks, { ...task, id } as Task],
+        }));
+      }
+    },
+    []
+  );
+
   const addNote = React.useCallback(
     (note: Omit<Note, "id" | "updatedLabel">) => {
       const prev = stateRef.current;
@@ -402,6 +426,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       stats: deriveStats(state),
       weakAreas: aggregateWeakAreas(state.quizAttempts),
       toggleTask,
+      addTask,
       addNote,
       deleteNote,
       addReflection,
@@ -412,6 +437,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       state,
       hydrated,
       toggleTask,
+      addTask,
       addNote,
       deleteNote,
       addReflection,

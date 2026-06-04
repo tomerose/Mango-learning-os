@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { NotesTab } from "@/components/knowledge-hub/notes-tab";
 import { FlashcardsTab } from "@/components/knowledge-hub/flashcards-tab";
+import { GraphTab } from "@/components/knowledge-hub/graph-tab";
 import { SUBJECT_META } from "@/lib/mock-data";
 import type { SubjectId } from "@/lib/types";
 
@@ -93,12 +94,7 @@ export default function KnowledgeHubPage() {
         </TabsContent>
 
         <TabsContent value="graph" className="mt-4">
-          <Card>
-            <CardContent className="text-muted-foreground flex flex-col items-center gap-2 py-12 text-center">
-              <Network className="size-8 opacity-40" />
-              <p className="text-sm">知识图谱可视化即将上线 —— 将连接概念间的依赖关系</p>
-            </CardContent>
-          </Card>
+          <GraphTab />
         </TabsContent>
       </Tabs>
     </div>
