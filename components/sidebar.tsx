@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap, Menu, X, User } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { navItems } from "@/lib/navigation";
@@ -52,7 +52,7 @@ export function Sidebar() {
       {/* Mobile top bar — sits above the bottom tab bar */}
       <div className="bg-sidebar/80 sticky top-0 z-30 flex h-12 items-center justify-between border-b px-3 backdrop-blur md:hidden">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <GraduationCap className="text-sidebar-primary size-5" />
+          <img src="/apple-touch-icon.png" alt="" className="size-5 rounded-md" />
           <span className="text-sm font-semibold">Mango学</span>
         </Link>
         <div className="flex items-center gap-1">
@@ -107,7 +107,7 @@ export function Sidebar() {
           href="/dashboard"
           className="flex h-14 items-center gap-2 px-5 font-semibold"
         >
-          <GraduationCap className="text-sidebar-primary size-5" />
+          <img src="/apple-touch-icon.png" alt="" className="size-5 rounded-md" />
           <span className="text-base">Mango Learning OS</span>
         </Link>
         <div className="flex-1 overflow-y-auto py-2">{nav}</div>

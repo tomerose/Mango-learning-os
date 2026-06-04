@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { GraduationCap } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { MobileNav } from "@/components/mobile-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -32,7 +31,7 @@ export default function DashboardLayout({
         {/* Mobile top bar */}
         <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between border-b bg-background/90 backdrop-blur px-4">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold text-sm">
-            <GraduationCap className="text-primary size-5" />
+            <img src="/apple-touch-icon.png" alt="" className="size-5 rounded-md" />
             Mango学
           </Link>
           <div className="flex items-center gap-1">
