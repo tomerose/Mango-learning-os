@@ -29,7 +29,9 @@ export function getAIConfig(): AIConfig {
 }
 
 export function isAIConfigured(): boolean {
-  return Boolean(process.env.AI_API_KEY);
+  const key = process.env.AI_API_KEY;
+  // Guard against empty strings that should be treated as unconfigured
+  return Boolean(key && key.trim() !== '');
 }
 
 const encoder = new TextEncoder();

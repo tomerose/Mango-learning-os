@@ -9,10 +9,10 @@
 // Filling .env.local flips this to true with zero code changes.
 // ─────────────────────────────────────────────────────────────
 export function isSupabaseConfigured(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Guard against empty strings (Vercel CLI placeholders) that should be treated as unconfigured
+  return Boolean(url && url.trim() !== '' && key && key.trim() !== '');
 }
 
 // ─────────────────────────────────────────────────────────────
