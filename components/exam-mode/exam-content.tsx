@@ -6,6 +6,8 @@ import { BookOpen, Play, BarChart3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QuestionBank } from "@/components/exam-mode/question-bank";
+import { AIGenerateDialog } from "@/components/exam-mode/ai-generate-dialog";
+import { ImportDialog } from "@/components/exam-mode/import-dialog";
 import { ExercisePlayer } from "@/components/exam-mode/exercise-player";
 import { ResultsPanel } from "@/components/exam-mode/results-panel";
 import { useStore } from "@/lib/store";
@@ -106,6 +108,28 @@ export function ExamModeContent() {
     setSaving(false);
   }
 
+  function handleAddMany(addedQs: Omit<ExamQuestion, "id" | "userId" | "createdAt" | "updatedAt">[]) {
+    if (addedQs.length === 0) return;
+    const now = new Date().toISOString();
+    const newQs: ExamQuestion[] = addedQs.map(q => ({
+      ...q,
+      id: `q-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      createdAt: now,
+      updatedAt: now,
+    }));
+    const next = [...newQs, ...questions];
+    setQuestions(next);
+    saveLocal(LOCAL_QUESTIONS_KEY, next);
+    // Try to save to server in background (best-effort)
+    for (const q of addedQs) {
+      fetch("/api/exam/questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(q),
+      }).catch(() => {});
+    }
+  }
+
   function handleUpdateQuestion(id: string, updates: Partial<ExamQuestion>) {
     const next = questions.map(q => q.id === id ? { ...q, ...updates, updatedAt: new Date().toISOString() } : q);
     setQuestions(next);
@@ -197,6 +221,11 @@ export function ExamModeContent() {
           </TabsList>
 
           <TabsContent value="bank" className="mt-4">
+            {/* Quick toolbar for batch operations */}
+            <div className="flex gap-2 mb-3">
+              <AIGenerateDialog onAddMany={handleAddMany} disabled={saving} />
+              <ImportDialog onAddMany={handleAddMany} defaultSubject="ai" disabled={saving} />
+            </div>
             <QuestionBank
               questions={questions}
               onAdd={handleAddQuestion}
