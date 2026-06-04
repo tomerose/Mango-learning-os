@@ -50,20 +50,6 @@ const AGENTS = [
   { icon: LineChart,     name: "经济导师", desc: "用你的思维风格讲解经济概念",             status: "可用",    color: "var(--chart-4)" },
 ];
 
-// ── Hook ───────────────────────────────────────────────────────
-
-function useIsMobile() {
-  const [m, setM] = React.useState(true); // mobile-first default
-  React.useEffect(() => {
-    const q = window.matchMedia("(min-width: 768px)");
-    setM(!q.matches);
-    const h = (e: MediaQueryListEvent) => setM(!e.matches);
-    q.addEventListener("change", h);
-    return () => q.removeEventListener("change", h);
-  }, []);
-  return m;
-}
-
 // ═══════════════════════════════════════════════════════════════
 // MOBILE — Native App UI
 // ═══════════════════════════════════════════════════════════════
@@ -426,9 +412,10 @@ function DesktopDNA() {
 // ═══════════════════════════════════════════════════════════════
 
 export function MangoDNAContent() {
-  const isMobile = useIsMobile();
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => { setMounted(true); }, []);
-  if (!mounted) return <MobileDNA />;
-  return isMobile ? <MobileDNA /> : <DesktopDNA />;
+  return (
+    <>
+      <div className="md:hidden"><MobileDNA /></div>
+      <div className="hidden md:block"><DesktopDNA /></div>
+    </>
+  );
 }
