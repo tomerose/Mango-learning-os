@@ -8,41 +8,143 @@
      · optimizePackageImports
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 3.1s
+getaddrinfo ENOTFOUND fonts.googleapis.com
+
+Retrying 1/3...
+getaddrinfo ENOTFOUND fonts.googleapis.com
+
+Retrying 1/3...
+getaddrinfo ENOTFOUND fonts.gstatic.com
+
+Retrying 1/3...
+getaddrinfo ENOTFOUND fonts.gstatic.com
+
+Retrying 1/3...
+Client network socket disconnected before secure TLS connection was established
+
+Retrying 1/3...
+Client network socket disconnected before secure TLS connection was established
+
+Retrying 1/3...
+Client network socket disconnected before secure TLS connection was established
+
+Retrying 1/3...
+ ✓ Compiled successfully in 108s
    Linting and checking validity of types ...
+
+./app/api/guest/route.ts
+11:9  Warning: 'final' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/ai-tutor/treehole-chat.tsx
+4:25  Warning: 'Wind' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/ai-tutor/tutor-tabs.tsx
+8:10  Warning: 'TreeHoleChat' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/auth/auth-form.tsx
+98:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./components/exam-master/exam-master-content.tsx
+5:42  Warning: 'FileText' is defined but never used.  @typescript-eslint/no-unused-vars
+7:3  Warning: 'ListChecks' is defined but never used.  @typescript-eslint/no-unused-vars
+7:26  Warning: 'Trash2' is defined but never used.  @typescript-eslint/no-unused-vars
+7:39  Warning: 'Moon' is defined but never used.  @typescript-eslint/no-unused-vars
+7:45  Warning: 'Sun' is defined but never used.  @typescript-eslint/no-unused-vars
+19:10  Warning: 'cn' is defined but never used.  @typescript-eslint/no-unused-vars
+49:10  Warning: 'printMode' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+49:21  Warning: 'setPrintMode' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/exam-mode/ai-generate-dialog.tsx
+57:7  Warning: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+
+./components/exam-mode/exam-content.tsx
+14:41  Warning: 'ExamResultDetail' is defined but never used.  @typescript-eslint/no-unused-vars
+34:10  Warning: 'questionLoading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/exam-mode/exercise-player.tsx
+6:29  Warning: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+6:41  Warning: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/exam-mode/question-bank.tsx
+31:50  Warning: 'onUpdate' is defined but never used.  @typescript-eslint/no-unused-vars
+66:7  Warning: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+158:19  Warning: 'meta' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/exam-mode/results-panel.tsx
+19:57  Warning: 'onRefresh' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/knowledge-hub/resources-tab.tsx
+4:50  Warning: 'Upload' is defined but never used.  @typescript-eslint/no-unused-vars
+6:10  Warning: 'Card' is defined but never used.  @typescript-eslint/no-unused-vars
+6:16  Warning: 'CardContent' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/mind-garden/mind-garden-content.tsx
+5:10  Warning: 'Plus' is defined but never used.  @typescript-eslint/no-unused-vars
+5:16  Warning: 'Send' is defined but never used.  @typescript-eslint/no-unused-vars
+6:20  Warning: 'Frown' is defined but never used.  @typescript-eslint/no-unused-vars
+6:55  Warning: 'Zap' is defined but never used.  @typescript-eslint/no-unused-vars
+7:33  Warning: 'Trash2' is defined but never used.  @typescript-eslint/no-unused-vars
+8:31  Warning: 'Moon' is defined but never used.  @typescript-eslint/no-unused-vars
+14:10  Warning: 'Input' is defined but never used.  @typescript-eslint/no-unused-vars
+18:10  Warning: 'Progress' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/sidebar.tsx
+55:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+110:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./lib/mock-data.ts
+8:3  Warning: 'SubjectId' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/storage/idb.ts
+6:11  Warning: 'IDBSchema' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
    Collecting page data ...
-   Generating static pages (0/16) ...
-   Generating static pages (4/16) 
-   Generating static pages (8/16) 
-   Generating static pages (12/16) 
- ✓ Generating static pages (16/16)
+   Generating static pages (0/29) ...
+   Generating static pages (7/29) 
+   Generating static pages (14/29) 
+   Generating static pages (21/29) 
+ ✓ Generating static pages (29/29)
    Finalizing page optimization ...
    Collecting build traces ...
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                      137 B         103 kB
-├ ○ /_not-found                            993 B         103 kB
-├ ƒ /ai-tutor                            7.42 kB         169 kB
-├ ƒ /api/ai/chat                           137 B         103 kB
-├ ƒ /api/ai/quiz                           137 B         103 kB
-├ ƒ /auth/callback                         137 B         103 kB
-├ ƒ /auth/signout                          137 B         103 kB
-├ ○ /dashboard                           3.96 kB         161 kB
-├ ○ /exam-mode                           3.68 kB         164 kB
-├ ○ /knowledge-hub                       9.42 kB         179 kB
-├ ○ /login                               3.44 kB         157 kB
-├ ○ /profile                             8.74 kB         173 kB
-├ ○ /signup                              3.44 kB         157 kB
-└ ○ /study-planner                       2.53 kB         119 kB
+┌ ○ /                                      175 B         103 kB
+├ ○ /_not-found                            998 B         103 kB
+├ ƒ /ai-tutor                            7.61 kB         193 kB
+├ ƒ /api/ai/chat                           175 B         103 kB
+├ ƒ /api/ai/quiz                           175 B         103 kB
+├ ƒ /api/ai/treehole                       175 B         103 kB
+├ ƒ /api/exam-master                       175 B         103 kB
+├ ƒ /api/exam/file-import                  175 B         103 kB
+├ ƒ /api/exam/generate                     175 B         103 kB
+├ ƒ /api/exam/github-sync                  175 B         103 kB
+├ ƒ /api/exam/questions                    175 B         103 kB
+├ ƒ /api/exam/questions/[id]               175 B         103 kB
+├ ƒ /api/exam/results                      175 B         103 kB
+├ ƒ /api/exam/submit                       175 B         103 kB
+├ ƒ /api/guest                             175 B         103 kB
+├ ƒ /api/mind-garden                       175 B         103 kB
+├ ƒ /auth/callback                         175 B         103 kB
+├ ƒ /auth/signout                          175 B         103 kB
+├ ○ /dashboard                           7.66 kB         165 kB
+├ ○ /exam-master                         5.88 kB         128 kB
+├ ○ /exam-mode                           12.6 kB         187 kB
+├ ○ /knowledge-hub                       7.14 kB         181 kB
+├ ○ /login                                 133 B         158 kB
+├ ○ /mango-dna                            8.9 kB         121 kB
+├ ○ /mind-garden                         3.16 kB         127 kB
+├ ○ /profile                               11 kB         176 kB
+├ ○ /signup                                134 B         158 kB
+└ ○ /study-planner                       8.63 kB         179 kB
 + First Load JS shared by all             102 kB
-  ├ chunks/255-98a0bdaa30757bda.js       46.2 kB
-  ├ chunks/4bd1b696-c023c6e3521b1417.js  54.2 kB
-  └ other shared chunks (total)          2.02 kB
+  ├ chunks/1255-5c680abb9db89955.js      46.2 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)          2.03 kB
 
 
-ƒ Middleware                             66.2 kB
+ƒ Middleware                             66.3 kB
 
 ○  (Static)   prerendered as static content
 ƒ  (Dynamic)  server-rendered on demand
 
-EXIT=0

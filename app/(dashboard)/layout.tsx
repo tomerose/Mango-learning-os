@@ -4,11 +4,13 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { StoreProvider } from "@/lib/store";
 import { SubjectProvider } from "@/lib/subjects";
+import { UpdateModal } from "@/components/update-modal";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SubjectProvider>
     <StoreProvider>
+      <UpdateModal />
       {/* ── DESKTOP ──────────────────────────────────────── */}
       <div className="bg-background hidden md:flex min-h-screen">
         <Sidebar />

@@ -11,10 +11,28 @@
 
  ✓ Starting...
  ✓ Ready in 2.4s
- ✓ Compiled /middleware in 484ms (188 modules)
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 542ms (188 modules)
 [middleware] getUser error: Auth session missing!
  ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 3.8s (1119 modules)
- GET /dashboard 200 in 4234ms
- ✓ Compiled in 225ms (470 modules)
- ✓ Compiled in 173ms (470 modules)
+ ✓ Compiled /dashboard in 4.9s (1119 modules)
+ GET /dashboard 200 in 5390ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 129ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 156ms
+[middleware] getUser error: Auth session missing!
+ ○ Compiling /login ...
+ ✓ Compiled /login in 566ms (1127 modules)
+ GET /login 200 in 877ms
+ ✓ Compiled in 353ms (480 modules)
+[middleware] getUser error: Auth session missing!
+ ○ Compiling /ai-tutor ...
+ ✓ Compiled /ai-tutor in 684ms (1235 modules)
+ GET /ai-tutor 200 in 982ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 165ms
+[middleware] getUser error: Auth session missing!
+ GET /login 200 in 49ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 160ms
