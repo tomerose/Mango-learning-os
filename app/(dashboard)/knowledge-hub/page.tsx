@@ -12,10 +12,30 @@ import type { SubjectId } from "@/lib/types";
 export const metadata = { title: "Knowledge Hub · Mango Learning OS" };
 
 const resources = [
-  { title: "Attention Is All You Need", type: "论文", subject: "ai" as SubjectId },
-  { title: "3Blue1Brown 线性代数", type: "视频", subject: "math" as SubjectId },
-  { title: "经济学人 · 每周精读", type: "文章", subject: "english" as SubjectId },
-  { title: "Damodaran 估值课程", type: "课程", subject: "finance" as SubjectId },
+  {
+    title: "Attention Is All You Need",
+    type: "论文",
+    subject: "ai" as SubjectId,
+    url: "https://arxiv.org/abs/1706.03762"
+  },
+  {
+    title: "3Blue1Brown 线性代数",
+    type: "视频",
+    subject: "math" as SubjectId,
+    url: "https://www.3blue1brown.com/topics/linear-algebra"
+  },
+  {
+    title: "经济学人 · 每周精读",
+    type: "文章",
+    subject: "english" as SubjectId,
+    url: "https://www.economist.com"
+  },
+  {
+    title: "Damodaran 估值课程",
+    type: "课程",
+    subject: "finance" as SubjectId,
+    url: "https://pages.stern.nyu.edu/~adamodar/"
+  },
 ];
 
 export default function KnowledgeHubPage() {
@@ -55,11 +75,17 @@ export default function KnowledgeHubPage() {
               {resources.map((r, i) => {
                 const meta = SUBJECT_META[r.subject];
                 return (
-                  <div key={i} className="hover:bg-accent/50 flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors">
-                    <BookMarked className="size-4 shrink-0" style={{ color: meta.color }} />
-                    <span className="flex-1 text-sm font-medium">{r.title}</span>
+                  <a
+                    key={i}
+                    href={r.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:bg-accent/50 flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors cursor-pointer group"
+                  >
+                    <BookMarked className="size-4 shrink-0 group-hover:scale-110 transition-transform" style={{ color: meta.color }} />
+                    <span className="flex-1 text-sm font-medium group-hover:text-primary transition-colors">{r.title}</span>
                     <Badge variant="outline">{r.type}</Badge>
-                  </div>
+                  </a>
                 );
               })}
             </CardContent>
