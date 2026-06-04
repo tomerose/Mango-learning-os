@@ -23,7 +23,6 @@ export default function DashboardLayout({
             <div className="mx-auto w-full max-w-6xl">{children}</div>
           </main>
         </div>
-        {/* Mobile bottom tab bar — app-style navigation */}
         <MobileNav />
       </div>
     </StoreProvider>

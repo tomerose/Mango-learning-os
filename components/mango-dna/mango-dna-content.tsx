@@ -2,9 +2,9 @@
 
 import * as React from "react";
 import {
-  Dna, Upload, Brain, Sparkles, MemoryStick, ArrowRight, Star,
-  Rocket, Play, User, Bot, GraduationCap, LineChart, Zap,
-  CheckCircle2, Clock, Shield, ChevronRight,
+  Dna, Upload, Brain, Sparkles, MemoryStick,
+  Rocket, Play, Bot, GraduationCap, LineChart, Zap,
+  CheckCircle2, Clock, Star, Shield, User,
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,13 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
-// ── Mock data (shared) ────────────────────────────────────────
+// ── Mock data ──────────────────────────────────────────────────
 
 const FEATURES = [
-  { icon: Upload,      title: "文档上传",   desc: "上传笔记、论文、聊天记录——支持 PDF / Markdown / 纯文本", color: "var(--chart-1)" },
-  { icon: Brain,       title: "思维提取",   desc: "AI 分析写作风格、思维偏好与认知倾向，生成思维画像",       color: "var(--chart-2)" },
-  { icon: Sparkles,    title: "AI 人格",     desc: "创建专属 AI 代理——像你一样思考、学习和决策",              color: "var(--chart-4)" },
-  { icon: MemoryStick, title: "长期记忆",   desc: "持久化保存知识、偏好与互动历史，每次对话都更懂你",         color: "var(--chart-3)" },
+  { icon: Upload,      title: "文档上传", desc: "上传笔记、论文、聊天记录——支持 PDF / Markdown / 纯文本", color: "var(--chart-1)" },
+  { icon: Brain,       title: "思维提取", desc: "AI 分析写作风格、思维偏好与认知倾向，生成思维画像",       color: "var(--chart-2)" },
+  { icon: Sparkles,    title: "AI 人格",   desc: "创建专属 AI 代理——像你一样思考、学习和决策",              color: "var(--chart-4)" },
+  { icon: MemoryStick, title: "长期记忆", desc: "持久化保存知识、偏好与互动历史，每次对话都更懂你",         color: "var(--chart-3)" },
 ];
 
 const STEPS = [
@@ -32,12 +32,9 @@ const PERSONA = {
   name: "林深 #1",
   tagline: "理性而好奇的金融 AI 学习者",
   traits: [
-    { label: "系统性思维", pct: 88 },
-    { label: "数学直觉",   pct: 76 },
-    { label: "跨学科连接", pct: 82 },
-    { label: "批判性阅读", pct: 71 },
-    { label: "英语表达",   pct: 65 },
-    { label: "创造力",     pct: 73 },
+    { label: "系统性思维", pct: 88 }, { label: "数学直觉", pct: 76 },
+    { label: "跨学科连接", pct: 82 }, { label: "批判性阅读", pct: 71 },
+    { label: "英语表达", pct: 65 }, { label: "创造力", pct: 73 },
   ],
   knowledge: ["深度学习","NLP","DCF估值","微观经济","线性代数","学术写作"],
   thinkingStyle: "先把握整体框架再深入细节。偏好用数学和直觉双通道理解概念，善于跨学科建立类比。",
@@ -53,68 +50,63 @@ const AGENTS = [
   { icon: LineChart,     name: "经济导师", desc: "用你的思维风格讲解经济概念",             status: "可用",    color: "var(--chart-4)" },
 ];
 
-// ── useMediaQuery hook ────────────────────────────────────────
+// ── Hook ───────────────────────────────────────────────────────
 
 function useIsMobile() {
-  const [m, setM] = React.useState(false);
+  const [m, setM] = React.useState(true); // mobile-first default
   React.useEffect(() => {
-    const q = window.matchMedia("(max-width: 767px)");
-    setM(q.matches);
-    const h = (e: MediaQueryListEvent) => setM(e.matches);
+    const q = window.matchMedia("(min-width: 768px)");
+    setM(!q.matches);
+    const h = (e: MediaQueryListEvent) => setM(!e.matches);
     q.addEventListener("change", h);
     return () => q.removeEventListener("change", h);
   }, []);
   return m;
 }
 
-// ── Shared sub-components ─────────────────────────────────────
-
-function SectionTitle({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
-  return (
-    <div className="flex items-center gap-2 mb-3">
-      <Icon className="text-primary size-4" />
-      <span className="text-sm font-semibold">{text}</span>
-    </div>
-  );
-}
-
-// ── Mobile layout ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// MOBILE — Native App UI
+// ═══════════════════════════════════════════════════════════════
 
 function MobileDNA() {
   return (
-    <div className="flex flex-col gap-6 px-1">
-      {/* Hero */}
-      <section className="flex flex-col items-center gap-3 pt-4 text-center">
-        <span className="bg-primary/10 flex size-16 items-center justify-center rounded-2xl">
+    <div className="-mx-4"> {/* kill parent px-4 for full-bleed */}
+
+      {/* ── Hero Banner ─────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-background px-4 pt-10 pb-6 text-center">
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{ backgroundImage: "radial-gradient(circle at 50% 30%, var(--primary) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+        <span className="relative bg-primary/15 flex size-16 mx-auto items-center justify-center rounded-2xl mb-4">
           <Dna className="text-primary size-8" />
         </span>
-        <div>
-          <div className="flex items-center justify-center gap-2">
-            <h1 className="text-xl font-bold">Mango DNA</h1>
-            <Badge variant="info" className="text-[10px]">Preview</Badge>
-          </div>
-          <p className="text-muted-foreground text-[13px] leading-relaxed mt-1 px-2">
-            构建你的专属 AI 人格代理——像你一样思考的第二大脑
-          </p>
-        </div>
-        <Button size="lg" className="w-full max-w-sm rounded-xl">
+        <h1 className="relative text-2xl font-extrabold tracking-tight">
+          Mango <span className="text-primary">DNA</span>
+        </h1>
+        <p className="relative text-muted-foreground text-[13px] leading-relaxed mt-2 max-w-xs mx-auto">
+          构建专属 AI 人格——像你一样思考的第二大脑
+        </p>
+        <Button size="lg" className="relative mt-5 w-full rounded-xl font-semibold shadow-lg shadow-primary/20">
           <Rocket className="size-4" /> 创建我的 DNA
         </Button>
       </section>
 
-      {/* Feature cards — 2×2 grid */}
-      <section>
-        <SectionTitle icon={Sparkles} text="核心能力" />
+      {/* ── Core Features — 2×2 Icon Grid ────────────────── */}
+      <section className="px-4 pt-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="text-primary size-4" />
+          <span className="text-sm font-bold">核心能力</span>
+        </div>
         <div className="grid grid-cols-2 gap-2.5">
           {FEATURES.map((f) => {
             const Icon = f.icon;
             return (
-              <div key={f.title} className="bg-card flex flex-col gap-2 rounded-xl border p-4">
-                <span className="flex size-9 items-center justify-center rounded-lg"
-                  style={{ backgroundColor: `color-mix(in oklch, ${f.color} 15%, transparent)` }}>
+              <div key={f.title}
+                className="flex flex-col gap-2 rounded-2xl border bg-card p-4 active:scale-[0.98] transition-transform">
+                <span className="flex size-9 items-center justify-center rounded-xl"
+                  style={{ background: `linear-gradient(135deg, color-mix(in oklch, ${f.color} 20%, transparent), color-mix(in oklch, ${f.color} 8%, transparent))` }}>
                   <Icon className="size-4" style={{ color: f.color }} />
                 </span>
-                <p className="text-[13px] font-semibold">{f.title}</p>
+                <p className="text-[13px] font-semibold leading-tight">{f.title}</p>
                 <p className="text-muted-foreground text-[11px] leading-snug">{f.desc}</p>
               </div>
             );
@@ -122,88 +114,120 @@ function MobileDNA() {
         </div>
       </section>
 
-      {/* Creation flow — vertical steps */}
-      <section>
-        <SectionTitle icon={Zap} text="创建流程" />
-        <Card className="rounded-xl">
-          <CardContent className="py-4">
-            {STEPS.map((s, i) => (
+      {/* ── Flow Steps — Timeline ────────────────────────── */}
+      <section className="px-4 pt-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Zap className="text-primary size-4" />
+          <span className="text-sm font-bold">创建流程</span>
+        </div>
+        <div className="rounded-2xl border bg-card px-4 py-3">
+          {STEPS.map((s, i) => {
+            const active = s.num <= 2;
+            return (
               <div key={s.num} className="flex gap-3">
-                <div className="flex flex-col items-center shrink-0">
+                <div className="flex flex-col items-center shrink-0 pt-0.5">
                   <span className={`flex size-7 items-center justify-center rounded-full text-xs font-bold ${
-                    s.num <= 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    active ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-muted-foreground"
                   }`}>{s.num}</span>
-                  {i < STEPS.length - 1 && <div className="w-px flex-1 bg-border mt-1" />}
+                  {i < STEPS.length - 1 && <div className="w-px flex-1 bg-border my-1" />}
                 </div>
-                <div className={`pb-5 ${s.num > 2 ? "opacity-50" : ""}`}>
-                  <p className="text-[13px] font-medium">{s.title}</p>
-                  <p className="text-muted-foreground text-[12px] leading-snug">{s.desc}</p>
+                <div className={`pb-4 ${!active ? "opacity-45" : ""}`}>
+                  <p className="text-[13px] font-semibold">{s.title}</p>
+                  <p className="text-muted-foreground text-[12px] leading-snug mt-0.5">{s.desc}</p>
                 </div>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+            );
+          })}
+        </div>
       </section>
 
-      {/* Persona Card */}
-      <section>
-        <SectionTitle icon={Bot} text="你的人格画像" />
-        <Card className="rounded-xl overflow-hidden border-primary/20">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 px-5 py-4 border-b">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="bg-primary/10 flex size-9 items-center justify-center rounded-full">
-                  <Bot className="text-primary size-4" />
-                </span>
-                <div>
-                  <p className="text-sm font-semibold">{PERSONA.name}</p>
-                  <p className="text-muted-foreground text-[11px]">{PERSONA.tagline}</p>
-                </div>
+      {/* ── Persona Card ─────────────────────────────────── */}
+      <section className="px-4 pt-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Bot className="text-primary size-4" />
+          <span className="text-sm font-bold">你的人格画像</span>
+        </div>
+
+        <div className="rounded-2xl border-2 border-primary/15 bg-card overflow-hidden">
+          {/* Header bar */}
+          <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 px-4 py-3.5 flex items-center justify-between border-b border-primary/10">
+            <div className="flex items-center gap-2.5">
+              <span className="bg-primary/15 flex size-9 items-center justify-center rounded-full">
+                <Bot className="text-primary size-4" />
+              </span>
+              <div>
+                <p className="text-sm font-bold">{PERSONA.name}</p>
+                <p className="text-muted-foreground text-[11px]">{PERSONA.tagline}</p>
               </div>
-              <Badge variant="success" className="text-[10px] gap-1">
-                <CheckCircle2 className="size-3" />Active
-              </Badge>
             </div>
+            <Badge variant="success" className="text-[10px] gap-1 px-2"><CheckCircle2 className="size-3" />Active</Badge>
           </div>
-          <CardContent className="flex flex-col gap-4 pt-4">
-            <p className="text-[13px] leading-relaxed">{PERSONA.thinkingStyle}</p>
-            <div className="grid gap-2">
+
+          {/* Body */}
+          <div className="px-4 py-4 flex flex-col gap-4">
+            {/* Quote */}
+            <div className="bg-muted/50 rounded-xl px-3 py-2.5 border-l-2 border-primary/30">
+              <p className="text-[13px] leading-relaxed italic text-muted-foreground">「{PERSONA.thinkingStyle}」</p>
+            </div>
+
+            {/* Trait bars */}
+            <div className="grid gap-2.5">
               {PERSONA.traits.map(t => (
-                <div key={t.label} className="flex items-center gap-2">
-                  <span className="text-[12px] w-20 shrink-0">{t.label}</span>
-                  <Progress value={t.pct} className="flex-1 h-1.5" />
-                  <span className="text-muted-foreground text-[11px] w-8 text-right tabular-nums">{t.pct}%</span>
+                <div key={t.label} className="flex items-center gap-2.5">
+                  <span className="text-[12px] w-[72px] shrink-0 font-medium">{t.label}</span>
+                  <Progress value={t.pct} className="flex-1 h-2 rounded-full" />
+                  <span className="text-[11px] text-muted-foreground w-8 text-right tabular-nums font-mono">{t.pct}</span>
                 </div>
               ))}
             </div>
+
+            {/* Tags */}
             <div className="flex flex-wrap gap-1.5">
-              {PERSONA.knowledge.map(k => <Badge key={k} variant="secondary" className="text-[11px]">{k}</Badge>)}
+              {PERSONA.knowledge.map(k => (
+                <Badge key={k} variant="secondary" className="text-[11px] px-2.5 py-0.5 rounded-full">{k}</Badge>
+              ))}
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Meta strip */}
+            <div className="grid grid-cols-2 gap-3 text-[11px]">
+              <div className="bg-muted/40 rounded-lg px-3 py-2">
+                <p className="text-muted-foreground">模型</p>
+                <p className="font-semibold mt-0.5">{PERSONA.model}</p>
+              </div>
+              <div className="bg-muted/40 rounded-lg px-3 py-2">
+                <p className="text-muted-foreground">更新</p>
+                <p className="font-semibold mt-0.5">{PERSONA.updated}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* Agent Gallery — 2 cols */}
-      <section>
-        <SectionTitle icon={Rocket} text="Agent 画廊" />
+      {/* ── Agent Gallery ────────────────────────────────── */}
+      <section className="px-4 pt-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Rocket className="text-primary size-4" />
+          <span className="text-sm font-bold">Agent 画廊</span>
+        </div>
         <div className="grid grid-cols-2 gap-2.5">
           {AGENTS.map(a => {
             const Icon = a.icon;
             const avail = a.status === "可用";
             return (
-              <div key={a.name} className={`bg-card flex flex-col gap-2 rounded-xl border p-4 ${!avail ? "opacity-60" : ""}`}>
+              <div key={a.name}
+                className={`rounded-2xl border bg-card p-4 flex flex-col gap-2.5 active:scale-[0.98] transition-transform ${!avail ? "opacity-55" : ""}`}>
                 <div className="flex items-center justify-between">
                   <span className="flex size-8 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: `color-mix(in oklch, ${a.color} 15%, transparent)` }}>
+                    style={{ background: `linear-gradient(135deg, color-mix(in oklch, ${a.color} 20%, transparent), color-mix(in oklch, ${a.color} 8%, transparent))` }}>
                     <Icon className="size-3.5" style={{ color: a.color }} />
                   </span>
-                  <Badge variant={avail ? "success" : "secondary"} className="text-[10px]">{a.status}</Badge>
+                  <Badge variant={avail ? "success" : "secondary"} className="text-[10px] px-1.5">{a.status}</Badge>
                 </div>
-                <p className="text-[13px] font-semibold">{a.name}</p>
+                <p className="text-[13px] font-semibold leading-tight">{a.name}</p>
                 <p className="text-muted-foreground text-[11px] leading-snug">{a.desc}</p>
-                <Button size="sm" variant={avail ? "default" : "outline"} className="mt-auto w-full rounded-lg text-xs" disabled={!avail}>
-                  {avail ? <><Play className="size-3" />启动</> : <><Clock className="size-3" />敬请期待</>}
+                <Button size="sm" variant={avail ? "default" : "outline"}
+                  className="mt-auto w-full rounded-xl text-xs h-8" disabled={!avail}>
+                  {avail ? "启动" : "敬请期待"}
                 </Button>
               </div>
             );
@@ -211,20 +235,28 @@ function MobileDNA() {
         </div>
       </section>
 
-      {/* CTA */}
-      <Card className="rounded-xl bg-primary/5 border-primary/20">
-        <CardContent className="flex flex-col items-center gap-3 py-6 text-center">
-          <Dna className="text-primary size-8" />
-          <p className="text-sm font-semibold">Mango DNA v2.0 即将上线</p>
-          <p className="text-muted-foreground text-[12px]">当前为 UI 预览。加入等待列表第一时间体验。</p>
-          <Button size="lg" className="w-full rounded-xl"><Star className="size-4" />加入等待列表</Button>
-        </CardContent>
-      </Card>
+      {/* ── Bottom CTA ───────────────────────────────────── */}
+      <section className="px-4 pt-6 pb-4">
+        <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/15 px-5 py-6 text-center flex flex-col items-center gap-3">
+          <Dna className="text-primary size-9" />
+          <p className="text-sm font-bold">Mango DNA v2.0 即将上线</p>
+          <p className="text-muted-foreground text-[12px] leading-relaxed">当前为 UI 预览。加入等待列表第一时间体验正式版。</p>
+          <Button size="lg" className="w-full rounded-xl font-semibold shadow-md">
+            <Star className="size-4" /> 加入等待列表
+          </Button>
+          <span className="text-muted-foreground text-[10px] flex items-center gap-1">
+            <Shield className="size-3" /> 隐私优先 · 数据完全由你控制
+          </span>
+        </div>
+      </section>
+
     </div>
   );
 }
 
-// ── Desktop layout ────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// DESKTOP — Wide two-column
+// ═══════════════════════════════════════════════════════════════
 
 function DesktopDNA() {
   return (
@@ -250,14 +282,17 @@ function DesktopDNA() {
         </div>
       </section>
 
-      {/* Feature cards */}
+      {/* Features 4-col */}
       <section>
-        <SectionTitle icon={Sparkles} text="核心能力" />
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="text-primary size-4" />
+          <span className="text-sm font-semibold">核心能力</span>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map(f => {
             const Icon = f.icon;
             return (
-              <div key={f.title} className="bg-card group flex flex-col gap-3 rounded-xl border p-5 transition-shadow hover:shadow-md">
+              <div key={f.title} className="bg-card flex flex-col gap-3 rounded-xl border p-5 transition-shadow hover:shadow-md">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-xl"
                   style={{ backgroundColor: `color-mix(in oklch, ${f.color} 15%, transparent)` }}>
                   <Icon className="size-5" style={{ color: f.color }} />
@@ -270,9 +305,12 @@ function DesktopDNA() {
         </div>
       </section>
 
-      {/* Creation flow */}
+      {/* Steps */}
       <section>
-        <SectionTitle icon={Zap} text="创建流程" />
+        <div className="flex items-center gap-2 mb-3">
+          <Zap className="text-primary size-4" />
+          <span className="text-sm font-semibold">创建流程</span>
+        </div>
         <Card>
           <CardContent className="py-4">
             {STEPS.map((s, i) => {
@@ -280,9 +318,7 @@ function DesktopDNA() {
               return (
                 <div key={s.num} className="flex gap-3">
                   <div className="flex flex-col items-center shrink-0">
-                    <span className={`flex size-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${
-                      active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                    }`}>{s.num}</span>
+                    <span className={`flex size-8 items-center justify-center rounded-full text-xs font-bold ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{s.num}</span>
                     {i < STEPS.length - 1 && <div className={`w-px flex-1 mt-1 ${active ? "bg-primary/30" : "bg-border"}`} />}
                   </div>
                   <div className={`pb-6 ${!active ? "opacity-50" : ""}`}>
@@ -303,14 +339,9 @@ function DesktopDNA() {
             <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 px-6 py-5 border-b">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="bg-primary/10 flex size-10 items-center justify-center rounded-full">
-                    <Bot className="text-primary size-5" />
-                  </span>
+                  <span className="bg-primary/10 flex size-10 items-center justify-center rounded-full"><Bot className="text-primary size-5" /></span>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{PERSONA.name}</h3>
-                      <Badge variant="info">v1.0</Badge>
-                    </div>
+                    <div className="flex items-center gap-2"><h3 className="font-semibold">{PERSONA.name}</h3><Badge variant="info">v1.0</Badge></div>
                     <p className="text-muted-foreground text-xs">{PERSONA.tagline}</p>
                   </div>
                 </div>
@@ -346,10 +377,7 @@ function DesktopDNA() {
           </Card>
         </div>
         <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Agent 画廊</h2>
-            <Button variant="ghost" size="sm" className="text-xs">全部 <ChevronRight className="size-3.5" /></Button>
-          </div>
+          <h2 className="text-sm font-semibold">Agent 画廊</h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
             {AGENTS.map(a => {
               const Icon = a.icon;
@@ -378,9 +406,7 @@ function DesktopDNA() {
       {/* CTA */}
       <Card className="bg-primary/5 border-primary/20">
         <CardContent className="flex flex-col items-center gap-4 py-8 text-center sm:flex-row sm:text-left">
-          <span className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-2xl">
-            <Dna className="text-primary size-6" />
-          </span>
+          <span className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-2xl"><Dna className="text-primary size-6" /></span>
           <div className="flex-1">
             <p className="font-semibold">Mango DNA 将在 v2.0 正式上线</p>
             <p className="text-muted-foreground mt-0.5 text-sm">当前为 UI 预览。正式版支持真实文档上传、AI 人格生成与长期记忆持久化。</p>
@@ -395,15 +421,14 @@ function DesktopDNA() {
   );
 }
 
-// ── Entry — renders Mobile or Desktop based on viewport ────────
+// ═══════════════════════════════════════════════════════════════
+// Entry
+// ═══════════════════════════════════════════════════════════════
 
 export function MangoDNAContent() {
   const isMobile = useIsMobile();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => { setMounted(true); }, []);
-
-  // SSR: render mobile layout (simpler DOM, matches mobile-first approach)
   if (!mounted) return <MobileDNA />;
-
   return isMobile ? <MobileDNA /> : <DesktopDNA />;
 }
