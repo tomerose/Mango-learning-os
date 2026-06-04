@@ -1,8 +1,57 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSubjectProgress, SUBJECT_META } from "@/lib/mock-data";
+"use client";
 
-export async function SubjectProgress() {
-  const progress = await getSubjectProgress();
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useStore } from "@/lib/store";
+import { SUBJECT_META } from "@/lib/mock-data";
+import type { SubjectId } from "@/lib/types";
+
+// Derive subject mastery from real data: notes + flashcard reviews + quiz accuracy.
+// Formula: (notes×0.3 + flashcard_reviews×0.2 + quiz_accuracy×0.5) → 0-100%
+export function SubjectProgress() {
+  const { notes, flashcards, quizAttempts, hydrated } = useStore();
+
+  if (!hydrated) {
+    return (
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>学科掌握度</CardTitle>
+        </CardHeader>
+        <CardContent className="text-muted-foreground text-sm">
+          加载中…
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const subjects: SubjectId[] = ["ai", "economics", "finance", "math", "english"];
+  const progress = subjects.map((subject) => {
+    const subjectNotes = notes.filter((n) => n.subject === subject);
+    const subjectCards = flashcards.filter((c) => c.subject === subject);
+    const subjectQuizzes = quizAttempts.filter((a) => a.subject === subject);
+
+    // Notes: count × 5, capped at 50
+    const notesScore = Math.min(50, subjectNotes.length * 5);
+
+    // Flashcards: reviews (repetitions sum) × 2, capped at 30
+    const reviewsCount = subjectCards.reduce((sum, c) => sum + c.repetitions, 0);
+    const cardsScore = Math.min(30, reviewsCount * 2);
+
+    // Quizzes: average accuracy, weighted ×0.2 (max 20)
+    let quizScore = 0;
+    if (subjectQuizzes.length > 0) {
+      const totalCorrect = subjectQuizzes.reduce((s, a) => s + a.correct, 0);
+      const totalQuestions = subjectQuizzes.reduce((s, a) => s + a.total, 0);
+      const avgAccuracy = totalQuestions > 0 ? totalCorrect / totalQuestions : 0;
+      quizScore = Math.round(avgAccuracy * 20); // 0-20
+    }
+
+    const masteryPct = Math.min(100, notesScore + cardsScore + quizScore);
+
+    // Weekly minutes: rough estimate from task count × 25min
+    const weeklyMinutes = subjectNotes.length * 25;
+
+    return { subject, masteryPct, weeklyMinutes };
+  });
 
   return (
     <Card className="h-full">
@@ -22,7 +71,7 @@ export async function SubjectProgress() {
                     cy="18"
                     r="15.5"
                     fill="none"
-                    stroke="var(--muted)"
+                    className="stroke-muted"
                     strokeWidth="3"
                   />
                   <circle
