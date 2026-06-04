@@ -8,6 +8,7 @@ import {
   GraduationCap,
   BookOpen,
   CalendarCheck,
+  Dna,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -18,6 +19,7 @@ const TABS = [
   { href: "/exam-mode", icon: GraduationCap, label: "考试" },
   { href: "/knowledge-hub", icon: BookOpen, label: "知识库" },
   { href: "/study-planner", icon: CalendarCheck, label: "计划" },
+  { href: "/mango-dna", icon: Dna, label: "DNA" },
 ];
 
 export function MobileNav() {

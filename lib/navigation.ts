@@ -5,6 +5,7 @@ import {
   Library,
   GraduationCap,
   User,
+  Dna,
   type LucideIcon,
 } from "lucide-react";
 
@@ -45,6 +46,12 @@ export const navItems: NavItem[] = [
     href: "/exam-mode",
     icon: GraduationCap,
     description: "Course review, mock tests & weakness analysis",
+  },
+  {
+    title: "Mango DNA",
+    href: "/mango-dna",
+    icon: Dna,
+    description: "AI persona, thinking style & long-term memory",
   },
   {
     title: "Profile",
