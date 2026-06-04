@@ -1,101 +1,83 @@
 
 > ai-learning-os@0.1.0 dev
-> next dev -p 3001
+> next dev -p 3030
 
    ▲ Next.js 15.5.19
-   - Local:        http://localhost:3001
-   - Network:      http://100.64.164.2:3001
+   - Local:        http://localhost:3030
+   - Network:      http://100.64.164.2:3030
    - Environments: .env.local
    - Experiments (use with caution):
      · optimizePackageImports
 
  ✓ Starting...
- ✓ Ready in 2.6s
- ✓ Compiled /middleware in 217ms (188 modules)
+ ✓ Ready in 2.9s
+ ✓ Compiled /middleware in 484ms (188 modules)
+[middleware] getUser error: Auth session missing!
  ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 1075ms (1059 modules)
- GET /dashboard 200 in 1520ms
- ✓ Compiled in 83ms (434 modules)
- ✓ Compiled /login in 163ms (1083 modules)
- GET /login 200 in 333ms
- GET /dashboard 200 in 156ms
- GET /dashboard 200 in 169ms
- ✓ Compiled in 549ms (457 modules)
- GET /dashboard 200 in 43ms
- GET /login?redirectedFrom=%2Fmanifest.webmanifest 200 in 46ms
- ✓ Compiled in 187ms (457 modules)
- GET /dashboard 200 in 47ms
- GET /login?redirectedFrom=%2Fmanifest.webmanifest 200 in 46ms
- GET /dashboard 200 in 427ms
- ○ Compiling /study-planner ...
- ✓ Compiled /study-planner in 1317ms (1102 modules)
- GET /study-planner 200 in 1826ms
- GET /study-planner 200 in 118ms
- GET /study-planner 200 in 203ms
- ✓ Compiled /login in 333ms (657 modules)
- GET /login?redirectedFrom=%2Fmanifest.webmanifest 200 in 831ms
- ○ Compiling /knowledge-hub ...
- ✓ Compiled /knowledge-hub in 1014ms (1144 modules)
- GET /knowledge-hub 200 in 1345ms
- GET /login?redirectedFrom=%2Fmanifest.webmanifest 200 in 379ms
+ ✓ Compiled /dashboard in 5.4s (1118 modules)
+ GET /dashboard 200 in 5814ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 125ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 149ms
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled / in 359ms (1113 modules)
+ GET / 307 in 523ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 200ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 133ms
+[middleware] getUser error: Auth session missing!
  ○ Compiling /exam-mode ...
- ✓ Compiled /exam-mode in 974ms (1175 modules)
- GET /exam-mode 200 in 1199ms
- GET /exam-mode 200 in 108ms
- GET /login?redirectedFrom=%2Fmanifest.webmanifest 200 in 555ms
- GET /exam-mode 200 in 289ms
- GET /login?redirectedFrom=%2Fmanifest.webmanifest 200 in 122ms
+ ✓ Compiled /exam-mode in 509ms (1189 modules)
+ GET /exam-mode 200 in 805ms
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled /login in 312ms (1192 modules)
+ GET /login 200 in 488ms
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled /mango-dna in 312ms (1214 modules)
+ GET /mango-dna 200 in 692ms
+[middleware] getUser error: Auth session missing!
+ GET / 307 in 66ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 166ms
+[middleware] getUser error: Auth session missing!
+ ⚠ Cross origin request detected from prince-solution-mount-oasis.trycloudflare.com to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[middleware] getUser error: Auth session missing!
  ○ Compiling /ai-tutor ...
- ✓ Compiled /ai-tutor in 1248ms (1187 modules)
- GET /ai-tutor?tab=quiz&subject=math&topic=%E5%A4%9A%E5%85%83%E5%87%BD%E6%95%B0%E6%9E%81%E5%80%BC 200 in 1500ms
- GET /login?redirectedFrom=%2Fmanifest.webmanifest 200 in 373ms
- ✓ Compiled in 169ms (490 modules)
- GET /ai-tutor?tab=quiz&subject=math&topic=%E5%A4%9A%E5%85%83%E5%87%BD%E6%95%B0%E6%9E%81%E5%80%BC 200 in 22ms
- GET /login?redirectedFrom=%2Fmanifest.webmanifest 200 in 39ms
- ✓ Compiled in 1302ms (1191 modules)
- ✓ Compiled in 740ms (1193 modules)
- GET /ai-tutor?tab=quiz&subject=math&topic=%E5%A4%9A%E5%85%83%E5%87%BD%E6%95%B0%E6%9E%81%E5%80%BC 200 in 209ms
- ✓ Compiled /profile in 318ms (713 modules)
- ✓ Compiled in 649ms (496 modules)
- ⨯ Error: Cannot find module './873.js'
-Require stack:
-- D:\Claudecoda学习\AI-Learning-OS\.next\server\webpack-runtime.js
-- D:\Claudecoda学习\AI-Learning-OS\.next\server\app\(dashboard)\study-planner\page.js
-- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\require.js
-- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\load-components.js
-- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\utils.js
-- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\swc\options.js
-- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\swc\index.js
-- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\build\next-config-ts\transpile-config.js
-- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\config.js
-- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\next.js
-- D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\server\lib\start-server.js
-    at <unknown> (D:\Claudecoda学习\AI-Learning-OS\.next\server\app\(auth)\login\page.js:2:8648)
-    at Object.<anonymous> (D:\Claudecoda学习\AI-Learning-OS\.next\server\app\(auth)\login\page.js:2:8706) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array],
-  page: '/login'
-}
- GET /study-planner 200 in 1445ms
- GET /knowledge-hub 200 in 1445ms
- GET /exam-mode 200 in 1446ms
- GET /profile 200 in 1446ms
- GET /dashboard 200 in 1448ms
- ○ Compiling /_error ...
- ✓ Compiled /_error in 813ms (1556 modules)
- GET /login?redirectedFrom=%2Fmanifest.webmanifest 500 in 2879ms
- GET /dashboard 200 in 438ms
- GET /dashboard 200 in 202ms
- GET /dashboard 200 in 214ms
- ✓ Compiled in 211ms (648 modules)
- ✓ Compiled in 118ms (648 modules)
- ✓ Compiled in 132ms (648 modules)
- ✓ Compiled in 120ms (648 modules)
- ✓ Compiled in 132ms (648 modules)
- ✓ Compiled in 136ms (648 modules)
- ✓ Compiled in 172ms (648 modules)
- ✓ Compiled in 119ms (648 modules)
- ✓ Compiled in 171ms (648 modules)
- ✓ Compiled in 141ms (648 modules)
- ✓ Compiled in 112ms (648 modules)
- ✓ Compiled in 107ms (648 modules)
+ ✓ Compiled /ai-tutor in 852ms (1194 modules)
+ GET /ai-tutor?tab=chat 200 in 932ms
+[middleware] getUser error: Auth session missing!
+ GET /ai-tutor?tab=chat 200 in 22ms
+[middleware] getUser error: Auth session missing!
+ GET /ai-tutor?tab=chat 200 in 22ms
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled /exam-mode in 222ms (700 modules)
+ GET /exam-mode 200 in 324ms
+[middleware] getUser error: Auth session missing!
+ ○ Compiling /api/exam/questions ...
+ ✓ Compiled /api/exam/questions in 779ms (1336 modules)
+ GET /api/exam/questions 200 in 935ms
+[middleware] getUser error: Auth session missing!
+ GET /api/exam/questions 200 in 1086ms
+[middleware] getUser error: Auth session missing!
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled /api/exam/results in 294ms (1338 modules)
+ GET /api/exam/questions 200 in 672ms
+ GET /api/exam/results 200 in 353ms
+[middleware] getUser error: Auth session missing!
+[middleware] getUser error: Auth session missing!
+ GET /api/exam/results 200 in 26ms
+ GET /api/exam/questions 200 in 757ms
+[middleware] getUser error: Auth session missing!
+[middleware] getUser error: Auth session missing!
+ GET /api/exam/results 200 in 23ms
+ GET /api/exam/questions 200 in 939ms
+[middleware] getUser error: Auth session missing!
+ GET /api/exam/results 200 in 12ms
+[middleware] getUser error: Auth session missing!
+ GET / 307 in 148ms
+[middleware] getUser error: Auth session missing!
+ GET /dashboard 200 in 261ms
+[middleware] getUser error: Auth session missing!

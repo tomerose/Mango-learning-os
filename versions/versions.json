@@ -1,0 +1,62 @@
+{
+  "app": "Mango Learning OS",
+  "schema_version": 1,
+  "current": "1.2.0",
+  "history": [
+    {
+      "version": "1.2.0",
+      "semver": { "major": 1, "minor": 2, "patch": 0 },
+      "date": "2026-06-05",
+      "commit": "b01f5bf",
+      "codename": "Apple Glass",
+      "snapshot_dir": "versions/v1.2.0",
+      "type": "minor",
+      "added": [
+        "Exam Mode v2 — question bank CRUD (create/edit/delete), exercise player (MCQ/fill-blank/problem), auto-scoring with per-question feedback, results history with stats",
+        "AI-powered question generation — 3 data source modes (keyword-only / web URL fetch / file upload + paste text)",
+        "One-click import — JSON URL, JSON/CSV file upload, PDF/Word→AI extract questions",
+        "GitHub sync API — export/import exam questions via GitHub raw URLs",
+        "Mango DNA preview page — hero, 4 feature cards, creation flow timeline, persona card, agent gallery",
+        "Dynamic custom subjects — add/delete subjects via SubjectManager, SubjectId→string, localStorage persistence",
+        "PWA support — manifest.json, service worker, installable on iOS/Android",
+        "Mobile bottom tab bar — 6-tab app-style navigation",
+        "Custom app icon — all sizes (favicon, apple-touch-icon, PWA icons)",
+        "Invite code gate (tokentome222) for login/registration",
+        "Knowledge Hub resource upload — add/delete resources with localStorage persistence",
+        "Study Planner task creation dialog — add tasks with subject/priority/duration",
+        "Cloudflare Tunnel for China access",
+        "Apple-style mobile design system — frosted glass header/nav, borderless shadow cards, SF Pro font stack, bold titles"
+      ],
+      "fixed": [
+        "500 MIDDLEWARE_INVOCATION_FAILED — env vars parsed as literal quotes, now sanitized",
+        "Guest mode entry — document.cookie→server-side /api/guest cookie setter",
+        "Client-side hydration crash — Date()/Math.random() moved to useEffect",
+        "Duplicate AI gen/import buttons — unified to single toolbar in exam-content",
+        "Local dev cache corruption (tailwind-merge.js missing) — documented recovery"
+      ],
+      "improved": [
+        "Mobile UI — desktop/mobile separate shells with independent layouts",
+        "Global CSS — removed aggressive grid overrides, replaced with shadow-based cards",
+        "Bottom nav — frosted glass, active-state scale animation, strokeWidth switching",
+        "Dashboard greeting — bold Apple-style typography with uppercase date",
+        "Brand card — gradient background with tag pills visible only on mobile",
+        "Sidebar — simplified mobile top bar, profile entry in drawer",
+        "All pages connected to live useStore() data — no more hardcoded mock arrays"
+      ],
+      "files_changed": 124,
+      "rollback": {
+        "git_tag": "v1.2.0",
+        "commit": "b01f5bf",
+        "db_migrations": ["docs/architecture/exam-mode-schema.sql"],
+        "env_vars_required": [
+          "NEXT_PUBLIC_SUPABASE_URL",
+          "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+          "SUPABASE_SERVICE_ROLE_KEY",
+          "AI_API_KEY",
+          "AI_BASE_URL",
+          "AI_MODEL"
+        ]
+      }
+    }
+  ]
+}
