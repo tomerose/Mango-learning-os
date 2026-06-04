@@ -55,13 +55,14 @@ export async function updateSession(request: NextRequest) {
     const path = request.nextUrl.pathname;
     const isAuthPage = path.startsWith("/login") || path.startsWith("/signup");
     const isAuthApi = path.startsWith("/auth");
+    const isGuestApi = path === "/api/guest"; // server-side guest cookie setter — must bypass auth gate
 
     // A visitor who explicitly chose "继续以游客身份" carries this cookie —
     // wave them through so the guest button isn't a redirect loop. They run
     // on localStorage; signing up later switches them to cloud + RLS.
     const isGuest = request.cookies.get(GUEST_COOKIE)?.value === "1";
 
-    if (!user && !isGuest && !isAuthPage && !isAuthApi) {
+    if (!user && !isGuest && !isAuthPage && !isAuthApi && !isGuestApi) {
       const url = request.nextUrl.clone();
       url.pathname = "/login";
       url.searchParams.set("redirectedFrom", path);
