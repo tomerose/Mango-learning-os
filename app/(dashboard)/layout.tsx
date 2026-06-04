@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* ── MOBILE: Premium floating glass shell ─────────── */}
       <div className="bg-background flex md:hidden min-h-screen flex-col">
         {/* Floating glass header */}
-        <header className="glass sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between px-4">
+        <header className="surface-glass sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between px-4 mx-3 mt-3 rounded-full">
           <div className="flex items-center gap-2.5">
             <div className="size-7 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-sm">
               <GraduationCapSVG />

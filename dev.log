@@ -144,3 +144,28 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
  ✓ Compiled in 1287ms (882 modules)
  ✓ Compiled in 368ms (679 modules)
  ✓ Compiled in 404ms (679 modules)
+ ✓ Compiled in 811ms (679 modules)
+ ✓ Compiled in 417ms (679 modules)
+ ✓ Compiled in 415ms (679 modules)
+ ✓ Compiled in 827ms (679 modules)
+ ✓ Compiled in 408ms (679 modules)
+ ✓ Compiled in 378ms (679 modules)
+ ✓ Compiled in 155ms (679 modules)
+ ✓ Compiled in 136ms (679 modules)
+ ✓ Compiled in 129ms (679 modules)
+ ✓ Compiled in 138ms (679 modules)
+ ✓ Compiled in 162ms (679 modules)
+ ✓ Compiled in 127ms (679 modules)
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled / in 202ms (525 modules)
+ GET / 307 in 428ms
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled /dashboard in 317ms (837 modules)
+ GET /dashboard 200 in 741ms
+[middleware] getUser error: Auth session missing!
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled /ai-tutor in 241ms (896 modules)
+ GET /ai-tutor 200 in 576ms
+[middleware] getUser error: Auth session missing!
+ GET /ai-tutor 200 in 139ms
+[middleware] getUser error: Auth session missing!

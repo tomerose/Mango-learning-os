@@ -3,7 +3,7 @@ import { Sparkles } from "lucide-react";
 export function BrandCard() {
   return (
     <div className="md:hidden mt-4 mb-2">
-      <div className="glass-card rounded-2xl px-5 py-4">
+      <div className="surface-card px-5 py-4">
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-2xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 flex items-center justify-center shadow-md">
             <Sparkles className="size-5 text-white" strokeWidth={1.5} />

@@ -20,7 +20,7 @@ export function MobileNav() {
   return (
     <div className="fixed bottom-3 left-3 right-3 z-40 md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-      <nav className="glass-card rounded-2xl px-1.5 py-1.5 flex shadow-lg">
+      <nav className="surface-glass px-1.5 py-1.5 flex">
         {TABS.map((tab) => {
           const active =
             pathname === tab.href ||

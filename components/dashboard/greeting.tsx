@@ -28,12 +28,12 @@ export function DashboardGreeting() {
 
   return (
     <header className="flex flex-col gap-1.5 pt-2 pb-4" suppressHydrationWarning>
-      <p className="text-muted-foreground/50 text-[11px] font-semibold uppercase tracking-[0.15em]">{today}</p>
-      <h1 className="text-[1.625rem] font-bold tracking-tight leading-tight">
+      <p className="caption">{today}</p>
+      <h1 className="heading-xl">
         {greeting}<span className="text-muted-foreground/20 mx-1.5">·</span>学习者
       </h1>
       {hydrated && (
-        <p className="text-muted-foreground/60 text-[13px] leading-relaxed font-medium">
+        <p className="body-text text-muted-foreground/60 font-medium">
           {pending > 0
             ? `今天还有 ${pending} 项任务。专注，是最快的捷径。`
             : "今天的任务已全部完成。保持节奏。"}

@@ -102,7 +102,7 @@ export function Sidebar() {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="bg-sidebar hidden w-64 shrink-0 flex-col border-r md:flex">
+      <aside className="bg-sidebar hidden w-64 shrink-0 flex-col border-r border-sidebar-border/50 md:flex">
         <Link
           href="/dashboard"
           className="flex h-14 items-center gap-2 px-5 font-semibold"
