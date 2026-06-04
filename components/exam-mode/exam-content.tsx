@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { GraduationCap, Target, AlertTriangle, FileQuestion, Clock } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,48 +12,70 @@ import { useStore } from "@/lib/store";
 import { SUBJECT_META } from "@/lib/mock-data";
 import type { SubjectId } from "@/lib/types";
 
-// Derive exam readiness from the user's actual quiz history and tasks.
-function deriveExamReadiness(
-  subject: SubjectId,
-  quizAttempts: { subject: SubjectId; correct: number; total: number }[],
-  tasks: { subject: SubjectId; done: boolean }[]
-): { course: string; subject: SubjectId; date: string; daysLeft: number; readiness: number } {
-  const subjectQuizzes = quizAttempts.filter((q) => q.subject === subject);
-  const subjectTasks = tasks.filter((t) => t.subject === subject);
-  const doneTasks = subjectTasks.filter((t) => t.done).length;
+interface ExamEntry {
+  course: string;
+  subject: SubjectId;
+  date: string;
+  daysLeft: number;
+  readiness: number;
+}
 
-  // Quiz accuracy
-  const quizAcc = subjectQuizzes.length > 0
-    ? subjectQuizzes.reduce((s, q) => s + q.correct / q.total, 0) / subjectQuizzes.length
-    : 0;
-
-  // Task completion
-  const taskRate = subjectTasks.length > 0 ? doneTasks / subjectTasks.length : 0;
-
-  // Readiness: weighted blend of quiz accuracy (60%) and task completion (40%)
-  const readiness = Math.round((quizAcc * 0.6 + taskRate * 0.4) * 100) || 0;
-
-  const meta = SUBJECT_META[subject];
-  const today = new Date();
-  const futureDate = new Date(today);
-  futureDate.setDate(today.getDate() + 7 + Math.floor(Math.random() * 21));
-
-  return {
-    course: meta?.label ?? subject,
-    subject,
-    date: futureDate.toLocaleDateString("zh-CN", { month: "long", day: "numeric" }),
-    daysLeft: Math.ceil((futureDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)),
-    readiness: Math.max(10, readiness || Math.floor(Math.random() * 30 + 40)),
+// Seeded pseudo-random — deterministic, avoids hydration mismatch.
+function seededRand(seed: number): () => number {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    return (s >>> 0) / 0xffffffff;
   };
 }
 
-export function ExamModeContent() {
-  const { quizAttempts, tasks } = useStore();
+const FIXED_TODAY = "2026-06-04"; // stable reference; no Math.random, no new Date()
 
-  const examSubjects: SubjectId[] = ["math", "economics", "ai", "finance", "english"];
-  const upcomingExams = examSubjects.map((s) =>
-    deriveExamReadiness(s, quizAttempts, tasks)
-  );
+export function ExamModeContent() {
+  const { quizAttempts, tasks, hydrated } = useStore();
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => { setMounted(true); }, []);
+
+  const upcomingExams = React.useMemo<ExamEntry[]>(() => {
+    if (!mounted) {
+      // Return placeholders matching the card shape so SSR shell is stable.
+      return (["math","economics","ai","finance","english"] as SubjectId[]).map((s) => ({
+        course: SUBJECT_META[s]?.label ?? s,
+        subject: s,
+        date: "—",
+        daysLeft: 0,
+        readiness: 0,
+      }));
+    }
+
+    const today = new Date(FIXED_TODAY);
+    const examSubjects: SubjectId[] = ["math", "economics", "ai", "finance", "english"];
+
+    return examSubjects.map((s, idx) => {
+      const subjectQuizzes = quizAttempts.filter((q) => q.subject === s);
+      const subjectTasks = tasks.filter((t) => t.subject === s);
+      const doneTasks = subjectTasks.filter((t) => t.done).length;
+
+      const quizAcc = subjectQuizzes.length > 0
+        ? subjectQuizzes.reduce((a, q) => a + q.correct / q.total, 0) / subjectQuizzes.length
+        : 0;
+      const taskRate = subjectTasks.length > 0 ? doneTasks / subjectTasks.length : 0;
+      const readiness = Math.round((quizAcc * 0.6 + taskRate * 0.4) * 100) || 0;
+
+      const rand = seededRand(idx * 31 + readiness * 7);
+      const futureDate = new Date(today);
+      futureDate.setDate(today.getDate() + 7 + Math.floor(rand() * 21));
+      const daysLeft = Math.max(1, Math.ceil((futureDate.getTime() - today.getTime()) / 86400000));
+
+      return {
+        course: SUBJECT_META[s]?.label ?? s,
+        subject: s,
+        date: futureDate.toLocaleDateString("zh-CN", { month: "long", day: "numeric" }),
+        daysLeft,
+        readiness: Math.max(10, readiness || Math.floor(rand() * 30 + 40)),
+      };
+    });
+  }, [mounted, quizAttempts, tasks]);
 
   return (
     <div className="flex flex-col gap-6">
