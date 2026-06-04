@@ -52,3 +52,95 @@ Retrying 1/3...
  ✓ Compiled in 356ms (471 modules)
  ✓ Compiled in 142ms (471 modules)
  ✓ Compiled in 138ms (471 modules)
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled / in 142ms (331 modules)
+ GET / 307 in 297ms
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled /dashboard in 174ms (643 modules)
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3726983716'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3872109098'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3199190784'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3199190784'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3199190784'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3199190784'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3199190784'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3726983716'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3199190784'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '3199190784'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3726983716'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3726983716'
+}
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')] {
+  digest: '2289950601'
+}
+ ⨯ Error: Could not find the module "D:\Claudecoda学习\AI-Learning-OS\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '3726983716'
+}
+[TypeError: Cannot read properties of undefined (reading 'call')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')]
+ ⨯ [TypeError: Cannot read properties of undefined (reading 'call')] {
+  page: '/dashboard'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1146ms (1461 modules)
+ GET /dashboard 500 in 4001ms
+ ⚠ Cross origin request detected from prince-solution-mount-oasis.trycloudflare.com to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[middleware] getUser error: Auth session missing!
+[middleware] getUser error: Auth session missing!
+[middleware] getUser error: Auth session missing!
+ ○ Compiling /ai-tutor ...
+ ✓ Compiled /ai-tutor in 1024ms (1540 modules)
+ GET /ai-tutor 200 in 1439ms
+ ✓ Compiled in 527ms (680 modules)
+[middleware] getUser error: Auth session missing!
+ ✓ Compiled /dashboard in 110ms (885 modules)
+ GET /dashboard 200 in 422ms
+ ✓ Compiled in 1287ms (882 modules)
+ ✓ Compiled in 368ms (679 modules)
+ ✓ Compiled in 404ms (679 modules)

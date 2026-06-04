@@ -5,7 +5,7 @@ import {
   Heart, Plus, Send, Loader2, Sparkles, Brain, TrendingUp,
   Calendar, Smile, Frown, Meh, Sun, Cloud, CloudRain, Zap,
   ArrowRight, Download, Upload, Trash2, ChevronDown, ChevronUp,
-  Activity, BookOpen, Target, Moon, Wind,
+  Activity, BookOpen, Target, Moon,
 } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -133,7 +133,7 @@ export function MindGardenContent({ embedded }: { embedded?: boolean }) {
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
-          {embedded && <TabsTrigger value="treehole"><Wind className="size-4" />树洞</TabsTrigger>}
+          {embedded && <TabsTrigger value="treehole"><Heart className="size-4 text-emerald-500" />树洞</TabsTrigger>}
           <TabsTrigger value="journal"><BookOpen className="size-4" />写日记</TabsTrigger>
           <TabsTrigger value="history"><Calendar className="size-4" />历史</TabsTrigger>
           <TabsTrigger value="insights"><Activity className="size-4" />洞察</TabsTrigger>
