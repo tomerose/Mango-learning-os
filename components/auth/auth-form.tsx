@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, Loader2, AlertCircle } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
-import { isSupabaseConfigured, GUEST_COOKIE } from "@/lib/supabase/config";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,13 +29,12 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   const isLogin = mode === "login";
 
-  // Opt into guest mode: drop the cookie middleware checks, then enter the
-  // app. Without this the guest button would loop back to /login once
-  // Supabase is configured (middleware gates every app route on a session).
+  // Opt into guest mode via a server-side API route that sets the cookie
+  // and redirects to /dashboard.  Using a full-page navigation (not
+  // router.push) guarantees the browser sends the cookie on the redirected
+  // request, so the middleware can wave the visitor through.
   function continueAsGuest() {
-    document.cookie = `${GUEST_COOKIE}=1; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
-    router.push("/dashboard");
-    router.refresh();
+    window.location.href = "/api/guest";
   }
 
   async function onSubmit(e: React.FormEvent) {
