@@ -1,6 +1,6 @@
 # MangoLearningOS — Session Handoff
 
-> **Last session:** 2026-06-06 (V6 Voice OS + Mangobo complete) | **Next session starts here**
+> **Last session:** 2026-06-06 (Final V6 — Voice OS + Mangobo + New Onboarding) | **Next session starts here**
 
 ## Quick Start
 ```bash
@@ -40,6 +40,14 @@ npm run dev -- -p 3030
 - Palette: oklch(0.978 0.005 60) bg | oklch(0.58 0.16 75) primary | oklch(0.85 0.04 140) accent
 - Typography: Cormorant Garamond (serif display) + Inter (geometric sans)
 - 6-level surface, 44px mobile touch targets, 3D CSS utilities
+
+## Latest Updates (2026-06-06 final)
+- Onboarding v3: Mangobo video intro + 6 feature cards + ambient blobs
+- Hub features refreshed: Voice/Knowledge Forest/SRS/AI Companion
+- Mangobo mobile: 56px size, bottom sheet panel, poster fallback
+- Voice OS: text input always available (all platforms)
+- Voice API: platform-agnostic /api/voice/chat with search enrichment
+- Search Enrichment: GitHub/Zhihu/Google/Arxiv context injection
 
 ## ESLint Fix
 - `next.config.ts`: `eslint: { ignoreDuringBuilds: true }` — unblocks Vercel deploy
