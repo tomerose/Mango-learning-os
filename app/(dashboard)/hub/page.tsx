@@ -53,7 +53,7 @@ function SectionHeader({ label, title, description, href, cta }: {
       </div>
       {href && (
         <Link href={href} className="hidden sm:flex items-center gap-1 text-small text-fg-muted hover:text-fg transition-colors shrink-0">
-          {cta ?? "View all"} <ChevronRight className="size-4" />
+          {cta ?? "查看全部"} <ChevronRight className="size-4" />
         </Link>
       )}
     </div>
@@ -113,7 +113,7 @@ export default function HubPage() {
   const doneToday = tasks.filter((t) => t.done).length;
   const totalToday = tasks.length;
   const dueCards = flashcards.filter((f) => f.dueOn <= new Date().toISOString().slice(0, 10)).length;
-  const dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+  const dateStr = new Date().toLocaleDateString("zh-CN", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   return (
     <div className="relative flex flex-col gap-16 pb-24">
@@ -124,13 +124,12 @@ export default function HubPage() {
         <motion.div {...fadeUp} transition={{ ...fadeUp.transition, delay: 0 }} className="flex flex-col gap-5 max-w-2xl">
           <p className="text-label">{dateStr}</p>
           <h1 className="text-display">
-            Your learning,<br />
-            <span className="text-fg-muted">beautifully structured.</span>
+            你的学习，<br />
+            <span className="text-fg-muted">被优雅地组织起来。</span>
           </h1>
           <p className="text-body text-fg-muted max-w-lg leading-relaxed">
-            Mango is your personal learning operating system. AI-powered tutoring,
-            spaced repetition, knowledge mapping, and project-based mastery — designed
-            to help you learn deeply, not just collect information.
+            Mango 是你的个人学习操作系统。AI 辅导、间隔重复、知识图谱、项目实践
+            —— 帮助你深度学习，而不仅仅是收集信息。
           </p>
           <div className="flex items-center gap-3 pt-1">
             <motion.button
@@ -144,7 +143,7 @@ export default function HubPage() {
             </motion.button>
             <Link href="/agent"
               className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-small font-medium hover:bg-bg-muted transition-colors duration-200 pressable focus-ring">
-              Explore tutor
+              进入导师
               <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -153,27 +152,27 @@ export default function HubPage() {
 
       {/* ═══ 2. TODAY'S LEARNING CENTER ═══ */}
       <Section>
-        <SectionHeader title="Today" description="Your learning at a glance." />
+        <SectionHeader title="今日" description="学习概览，一目了然。" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard icon={Target} label="Tasks" value={`${doneToday}/${totalToday}`} sub="completed today" href="/planner" />
-          <StatCard icon={Layers} label="Flashcards" value={`${dueCards}`} sub="ready for review" href="/exam" />
-          <StatCard icon={Flame} label="Streak" value={`${stats?.streakDays ?? 0} days`} sub="keep going" href="/profile" />
+          <StatCard icon={Target} label="任务" value={`${doneToday}/${totalToday}`} sub="今日已完成" href="/planner" />
+          <StatCard icon={Layers} label="闪卡" value={`${dueCards}`} sub="待复习" href="/exam" />
+          <StatCard icon={Flame} label="连续天数" value={`${stats?.streakDays ?? 0} 天`} sub="继续加油" href="/profile" />
         </div>
       </Section>
 
       {/* ═══ 3. AI WORKSPACE ═══ */}
       <Section delay={0.05}>
-        <SectionHeader label="AI Workspace" title="Your intelligent tutor" description="Structured explanations, practice problems, and instant feedback — powered by DeepSeek." href="/agent" cta="Open tutor" />
+        <SectionHeader label="AI 工作区" title="你的智能导师" description="结构化讲解、针对性练习、即时反馈——由 DeepSeek 驱动。" href="/agent" cta="打开导师" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <ModuleCard icon={Brain} label="Concept Explainer" desc="Break down any topic into clear, structured explanations with examples and practice." href="/agent" accent="bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400" />
-          <ModuleCard icon={BookOpen} label="Practice Problems" desc="Generate targeted exercises based on your weak areas. Get instant scoring and feedback." href="/agent" accent="bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400" />
-          <ModuleCard icon={Sparkles} label="Mango Magic" desc="One-click generation: study guides, flashcards, exam prep, and learning plans." href="/agent" accent="bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400" />
+          <ModuleCard icon={Brain} label="概念讲解" desc="将任何主题拆解为清晰、结构化的讲解，附带示例和练习。" href="/agent" accent="bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400" />
+          <ModuleCard icon={BookOpen} label="针对性练习" desc="根据你的薄弱环节生成专项练习。即时评分和反馈。" href="/agent" accent="bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400" />
+          <ModuleCard icon={Sparkles} label="Mango Magic" desc="一键生成：学习指南、闪卡、考试复习包、学习计划。" href="/agent" accent="bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400" />
         </div>
       </Section>
 
       {/* ═══ 4. SKILL GRAPH ═══ */}
       <Section delay={0.1}>
-        <SectionHeader label="Skill Graph" title="See what you know" description="Your knowledge visualized as an interconnected network. Discover gaps and connections." href="/exam" cta="Explore graph" />
+        <SectionHeader label="技能图谱" title="看见你的知识" description="你的知识以网络形式可视化呈现。发现知识盲区和概念关联。" href="/exam" cta="探索图谱" />
         <div className="card-raised p-8 flex flex-col items-center gap-6 text-center">
           <div className="size-20 rounded-full bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center">
             <Network className="size-10 text-violet-600 dark:text-violet-400" strokeWidth={1} />
@@ -186,39 +185,39 @@ export default function HubPage() {
             </p>
           </div>
           <Link href="/exam" className="text-small text-primary hover:underline font-medium">
-            Open knowledge graph →
+            打开知识图谱 →
           </Link>
         </div>
       </Section>
 
       {/* ═══ 5. MIND GARDEN ═══ */}
       <Section delay={0.15}>
-        <SectionHeader label="Mind Garden" title="Grow through reflection" description="Your learning isn't just about knowledge. It's about growth, mindset, and well-being." href="/grow" cta="Visit garden" />
+        <SectionHeader label="心灵花园" title="在反思中成长" description="学习不只是获取知识，更是心智成长和情绪管理。" href="/grow" cta="进入花园" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <ModuleCard icon={Heart} label="Mood Tracking" desc="Track your emotional patterns alongside your learning progress. See what affects your focus." href="/grow" accent="bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400" />
-          <ModuleCard icon={Brain} label="CBT Reframer" desc="Reframe negative thoughts about your learning. Build resilience and a growth mindset." href="/grow" accent="bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400" />
-          <ModuleCard icon={Sparkles} label="AI Companion" desc="A warm, non-judgmental listener. Talk through learning anxiety or just reflect on your day." href="/grow" accent="bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400" />
+          <ModuleCard icon={Heart} label="情绪追踪" desc="追踪你的情绪模式与学习进度的关联，了解什么影响你的专注力。" href="/grow" accent="bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400" />
+          <ModuleCard icon={Brain} label="CBT 认知重构" desc="重新框定你对学习的负面想法，建立韧性和成长心态。" href="/grow" accent="bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400" />
+          <ModuleCard icon={Sparkles} label="AI 陪伴" desc="一个温暖、不评判的倾听者。聊聊学习焦虑，或者只是反思今天。" href="/grow" accent="bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400" />
         </div>
       </Section>
 
       {/* ═══ 6. EXAM CENTER ═══ */}
       <Section delay={0.2}>
-        <SectionHeader label="Exam Center" title="Prepare with confidence" description="Upload your materials. We'll generate study guides, practice tests, and track your readiness." href="/exam" cta="Start preparing" />
+        <SectionHeader label="考试中心" title="从容备考" description="上传你的资料，AI 自动生成复习指南、模拟考试，并追踪你的备考进度。" href="/exam" cta="开始备考" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <ModuleCard icon={BookOpen} label="Study Guides" desc="Upload PDF, Word, or paste notes. AI generates structured review booklets with key concepts." href="/exam" accent="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400" />
-          <ModuleCard icon={BarChart3} label="Practice Tests" desc="Timed mock exams with scoring, explanations, and weak area analysis. Track your progress." href="/exam" accent="bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400" />
-          <ModuleCard icon={Clock} label="Countdown" desc="See upcoming exams, track preparation progress, and get AI-recommended study schedules." href="/exam" accent="bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400" />
+          <ModuleCard icon={BookOpen} label="学习指南" desc="上传 PDF、Word 或粘贴笔记。AI 自动生成结构化复习手册。" href="/exam" accent="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400" />
+          <ModuleCard icon={BarChart3} label="模拟考试" desc="计时的模拟考试，附带评分、解析和薄弱项分析。追踪你的进步。" href="/exam" accent="bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400" />
+          <ModuleCard icon={Clock} label="倒计时" desc="查看即将到来的考试，追踪备考进度，获取 AI 推荐的学习计划。" href="/exam" accent="bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400" />
         </div>
       </Section>
 
       {/* ═══ 7. KNOWLEDGE TIMELINE ═══ */}
       <Section delay={0.25}>
-        <SectionHeader label="Progress" title="Your learning journey" description="Every study session, every quiz, every reflection — building toward mastery." href="/profile" cta="View stats" />
+        <SectionHeader label="进度" title="你的学习旅程" description="每一次学习、每一场测验、每一篇反思——都在构筑你的知识体系。" href="/profile" cta="查看统计" />
         {subjects.length > 0 && (
           <div className="card-flat p-6">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-subhead font-semibold">Active Subjects</p>
-              <Link href="/agent" className="text-small text-primary hover:underline">Manage</Link>
+              <p className="text-subhead font-semibold">已选科目</p>
+              <Link href="/agent" className="text-small text-primary hover:underline">管理</Link>
             </div>
             <div className="flex flex-wrap gap-2">
               {subjects.map((s) => (
@@ -240,9 +239,9 @@ export default function HubPage() {
             <TrendingUp className="size-8 text-fg-subtle" strokeWidth={1} />
           </div>
           <div className="max-w-sm">
-            <p className="text-subhead font-semibold">More coming soon</p>
+            <p className="text-subhead font-semibold">更多功能即将上线</p>
             <p className="text-small text-fg-muted mt-1">
-              Study groups, shared knowledge graphs, and collaborative learning spaces are on the way.
+              学习小组、共享知识图谱和协作学习空间正在开发中。
             </p>
           </div>
         </div>
