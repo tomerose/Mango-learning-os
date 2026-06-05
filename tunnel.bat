@@ -1,7 +1,7 @@
 @echo off
 echo ============================================
 echo   Mango Learning OS - Cloudflare Tunnel
-echo   https://judges-alexandria-journey-ram.trycloudflare.com
+echo   https://devoted-turning-citizen-specialist.trycloudflare.com
 echo ============================================
 echo.
 echo Starting dev server on port 3030...

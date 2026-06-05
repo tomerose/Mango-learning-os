@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Trash2, FileText } from "lucide-react";
+import { Plus, Trash2, FileText, Download, FileUp, Link, Copy } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,15 +18,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SUBJECT_META } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
 import { useSubjects } from "@/lib/subjects";
+import { ImportNoteDialog } from "@/components/knowledge-hub/import-note-dialog";
 import type { SubjectId } from "@/lib/types";
 
 export function NotesTab() {
   const { notes, addNote, deleteNote, hydrated } = useStore();
   const { subjects } = useSubjects();
   const [open, setOpen] = React.useState(false);
+  const [importOpen, setImportOpen] = React.useState(false);
+  const [importSource, setImportSource] = React.useState<"file" | "url" | "notion" | "evernote">("file");
   const [subject, setSubject] = React.useState<SubjectId>(subjects[0]?.id ?? "ai");
   const [title, setTitle] = React.useState("");
   const [body, setBody] = React.useState("");
@@ -60,7 +70,47 @@ export function NotesTab() {
         <p className="text-muted-foreground text-sm">
           {hydrated ? `${notes.length} 篇笔记` : "加载中…"}
         </p>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <div className="flex items-center gap-2">
+          <ImportNoteDialog
+            open={importOpen}
+            onOpenChange={setImportOpen}
+            defaultSource={importSource}
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-1">
+                <Download className="size-4" /> 导入
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => { setImportSource("file"); setImportOpen(true); }}
+              >
+                <FileUp className="size-4" /> 从文件导入
+                <span className="text-muted-foreground text-[11px] ml-auto">Word/PDF/MD</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => { setImportSource("url"); setImportOpen(true); }}
+              >
+                <Link className="size-4" /> 从链接导入
+                <span className="text-muted-foreground text-[11px] ml-auto">网页抓取</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => { setImportSource("notion"); setImportOpen(true); }}
+              >
+                <FileText className="size-4" /> Notion 导出
+                <span className="text-muted-foreground text-[11px] ml-auto">MD/CSV</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => { setImportSource("evernote"); setImportOpen(true); }}
+              >
+                <Copy className="size-4" /> Evernote 导出
+                <span className="text-muted-foreground text-[11px] ml-auto">.enex</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
               <Plus className="size-4" /> 新建笔记
@@ -118,6 +168,7 @@ export function NotesTab() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {notes.length === 0 ? (
