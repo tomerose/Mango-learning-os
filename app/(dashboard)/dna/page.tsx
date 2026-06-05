@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Dna, Heart, Sparkles, Sprout } from "lucide-react";
+import { Dna, Heart, Sparkles, Sprout, Brain, Target, Layers, FileText } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MangoDNAContent } from "@/components/mango-dna/mango-dna-content";
@@ -11,6 +11,7 @@ import { MoodTracker } from "@/components/mind/mood-tracker";
 import { AiCompanionChat } from "@/components/mind/ai-companion-chat";
 import { SkillTree } from "@/components/ui/skill-tree";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const DEMO_SKILLS = [
   { label: "深度学习", pct: 72, color: "var(--color-primary)", children: [
@@ -26,6 +27,7 @@ const DEMO_SKILLS = [
 
 export default function DnaPage() {
   const [tab, setTab] = React.useState("dna");
+  const [selectedSkill, setSelectedSkill] = React.useState<{label:string; pct:number} | null>(null);
   const router = useRouter();
 
   return (
@@ -41,7 +43,28 @@ export default function DnaPage() {
         <TabsContent value="skills" className="mt-4">
           <div className="card-card p-5">
             <p className="text-small font-medium mb-4">技能树 · 点击跳转学习</p>
-            <SkillTree skills={DEMO_SKILLS} onSelect={(skill) => router.push(`/agent?subject=${skill.label === "深度学习" ? "ai" : skill.label === "经济学" ? "economics" : "math"}`)} />
+            <SkillTree skills={DEMO_SKILLS} onSelect={setSelectedSkill} />
+            {selectedSkill && (
+              <div className="mt-4 card-card p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-small font-medium">{selectedSkill.label} · 掌握度 {selectedSkill.pct}%</span>
+                  <button onClick={() => setSelectedSkill(null)} className="text-caption hover:underline">关闭</button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "去学习", icon: Brain, href: `/agent?subject=ai&q=${encodeURIComponent("请讲解：" + selectedSkill.label)}` },
+                    { label: "去练习", icon: Target, href: `/agent` },
+                    { label: "去复习", icon: Layers, href: `/planner` },
+                    { label: "查看笔记", icon: FileText, href: `/exam` },
+                  ].map(a => (
+                    <Link key={a.label} href={a.href}
+                      className="flex items-center gap-2 rounded-xl border border-border p-3 text-xs hover:bg-bg-muted transition-colors">
+                      <a.icon className="size-4 text-primary" /> {a.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </TabsContent>
         <TabsContent value="garden" className="mt-4 flex flex-col gap-6">
