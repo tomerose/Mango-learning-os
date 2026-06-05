@@ -211,8 +211,8 @@ export function KnowledgeNetwork() {
 
               {/* Learning path */}
               {selectedNote && (
-                <Link href={`/agent?subject=${selectedSubject}`} className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
-                  <ArrowRight className="size-3" /> 向导师学习这个概念
+                <Link href={`/agent?subject=${selectedSubject}&q=${encodeURIComponent("请讲解：" + conceptLabel)}`} className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
+                  <ArrowRight className="size-3" /> 向导师学习：{conceptLabel}
                 </Link>
               )}
             </div>

@@ -36,6 +36,17 @@ function AgentPageInner() {
   const store = useStore();
   const [activeTab, setActiveTab] = React.useState<AgentTab>("chat");
   const subjectFromParams = searchParams.get("subject");
+  const autoQuestion = searchParams.get("q");
+
+  // Auto-submit question when navigated with ?q= param
+  React.useEffect(() => {
+    if (autoQuestion) {
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("agent:suggestion", { detail: { prompt: autoQuestion } }));
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [autoQuestion]);
   const [subject, setSubject] = React.useState<SubjectId>(
     () => (subjects.find((s) => s.id === subjectFromParams)?.id as SubjectId | undefined) ?? subjects[0]?.id ?? "ai",
   );

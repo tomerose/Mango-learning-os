@@ -313,7 +313,7 @@ export function KnowledgeForest() {
               <p className="text-caption">暂无笔记关联此概念。创建带标签的笔记后自动关联。</p>
             )}
 
-            <Link href={`/agent?subject=${selectedNode.subject}`}
+            <Link href={`/agent?subject=${selectedNode.subject}&q=${encodeURIComponent("请讲解：" + selectedNode.label)}`}
               className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline">
               <Sparkles className="size-3" /> 向导师学习 {selectedNode.label}
               <ArrowRight className="size-3" />
