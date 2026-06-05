@@ -10,6 +10,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SimpleCaptcha } from "@/components/auth/captcha";
 
 const LOGIN_CODE = "tokentome222";   // 登录/注册邀请码
 const GUEST_CODE = "tokentome111";  // 游客入口邀请码
@@ -32,6 +33,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
+  const [captchaOk, setCaptchaOk] = React.useState(false);
 
   const isLogin = mode === "login";
 
@@ -229,6 +231,10 @@ export function AuthForm({ mode }: AuthFormProps) {
               />
             </div>
 
+            {!isLogin && (
+              <SimpleCaptcha onVerify={setCaptchaOk} />
+            )}
+
             {error && (
               <div className="text-destructive flex items-center gap-2 text-sm">
                 <AlertCircle className="size-4" />
@@ -242,7 +248,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               </div>
             )}
 
-            <Button type="submit" disabled={!configured || loading} className="w-full">
+            <Button type="submit" disabled={!configured || loading || (!isLogin && !captchaOk)} className="w-full">
               {loading ? <Loader2 className="size-4 animate-spin" /> : isLogin ? "登录" : "注册"}
             </Button>
           </form>
