@@ -3,17 +3,28 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Mic, MicOff, User, ChevronLeft, Brain, Sparkles, ArrowRight } from "lucide-react";
+import { Mic, MicOff, ChevronLeft, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageTransition } from "@/components/layout/page-transition";
-import { BUILTIN_PERSONAS, DEFAULT_IDENTITIES, type VoicePersona, type LearningIdentity } from "@/lib/ai/identity-engine";
+import { BUILTIN_PERSONAS, DEFAULT_IDENTITIES, type VoicePersona } from "@/lib/ai/identity-engine";
 
 /* ═══════════════════════════════════════════════════════════════
-   Mango Voice — Standalone Voice OS Window
-   Identity selection → real-time voice conversation
+   Mango Voice v2 — Full Conversation Loop
+   STT → AI (with persona prompt) → TTS → repeat
    ═══════════════════════════════════════════════════════════════ */
 
 const WAVE_BARS = 24;
+
+// Persona voice configs
+const VOICE_CONFIGS: Record<string, { pitch: number; rate: number; lang: string }> = {
+  "ielts-examiner": { pitch: 1.0, rate: 0.95, lang: "en-GB" },
+  "korean-teacher": { pitch: 1.15, rate: 0.85, lang: "ko-KR" },
+  "ai-mentor": { pitch: 1.0, rate: 0.95, lang: "zh-CN" },
+  "startup-advisor": { pitch: 1.05, rate: 1.0, lang: "zh-CN" },
+  "research-supervisor": { pitch: 0.95, rate: 0.9, lang: "zh-CN" },
+};
+
+interface Turn { role: "user" | "assistant"; text: string; }
 
 function VoicePageInner() {
   const searchParams = useSearchParams();
@@ -22,12 +33,19 @@ function VoicePageInner() {
   const [activePersona, setActivePersona] = React.useState<VoicePersona>(BUILTIN_PERSONAS[0]);
   const [isListening, setIsListening] = React.useState(false);
   const [isSpeaking, setIsSpeaking] = React.useState(false);
+  const [isThinking, setIsThinking] = React.useState(false);
   const [transcript, setTranscript] = React.useState("");
+  const [conversation, setConversation] = React.useState<Turn[]>([]);
   const [waveHeights, setWaveHeights] = React.useState<number[]>(Array.from({ length: WAVE_BARS }, () => 8));
   const [greeted, setGreeted] = React.useState(false);
+  const [status, setStatus] = React.useState("");
 
   const synthRef = React.useRef<SpeechSynthesis | null>(null);
   const recogRef = React.useRef<any>(null);
+  const convRef = React.useRef<Turn[]>([]);
+
+  // Keep ref in sync for async callbacks
+  React.useEffect(() => { convRef.current = conversation; }, [conversation]);
 
   // Init speech APIs
   React.useEffect(() => {
@@ -36,14 +54,25 @@ function VoicePageInner() {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SR) {
       const r = new SR();
-      r.continuous = true; r.interimResults = true; r.lang = "zh-CN";
-      r.onresult = (e: any) => { let t = ""; for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript; setTranscript(t); };
-      r.onerror = () => setIsListening(false);
+      r.continuous = false; // Stop after each utterance for turn-based
+      r.interimResults = true;
+      r.lang = "zh-CN";
+      r.onresult = (e: any) => {
+        let t = "";
+        for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+        setTranscript(t);
+        // If final result, process
+        if (e.results[0]?.isFinal) {
+          handleUserSpeech(t);
+        }
+      };
+      r.onerror = () => { setIsListening(false); setStatus("语音识别出错，请重试"); };
+      r.onend = () => { setIsListening(false); };
       recogRef.current = r;
     }
   }, []);
 
-  // Auto-select identity from URL param
+  // Auto-select identity
   React.useEffect(() => {
     if (identityParam) {
       const identity = DEFAULT_IDENTITIES.find(i => i.id === identityParam);
@@ -51,41 +80,109 @@ function VoicePageInner() {
     }
   }, [identityParam]);
 
-  // Auto-greet on mount
+  // Auto-greet
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      if (synthRef.current && !greeted) {
-        synthRef.current.cancel();
-        const u = new SpeechSynthesisUtterance("Hello，我是芒宝，有什么我可以帮到你的吗？");
-        u.lang = "zh-CN"; u.rate = 0.95; u.pitch = 1.1;
-        u.onstart = () => setIsSpeaking(true);
-        u.onend = () => setIsSpeaking(false);
-        synthRef.current.speak(u);
-        setGreeted(true);
-      }
+      if (!greeted) greetUser();
     }, 800);
     return () => clearTimeout(timer);
-  }, [greeted]);
+  }, [greeted, activePersona.id]);
+
+  function greetUser() {
+    const greeting = "Hello，我是芒宝，有什么我可以帮到你的吗？";
+    setConversation([{ role: "assistant", text: greeting }]);
+    speak(greeting);
+    setGreeted(true);
+  }
+
+  function speak(text: string) {
+    if (!synthRef.current) return;
+    synthRef.current.cancel();
+    const cfg = VOICE_CONFIGS[activePersona.id] ?? { pitch: 1.0, rate: 0.95, lang: "zh-CN" };
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = cfg.lang;
+    utter.rate = cfg.rate;
+    utter.pitch = cfg.pitch;
+    utter.onstart = () => setIsSpeaking(true);
+    utter.onend = () => setIsSpeaking(false);
+    synthRef.current.speak(utter);
+  }
+
+  async function handleUserSpeech(userText: string) {
+    if (!userText.trim() || isThinking) return;
+    setIsListening(false);
+    setIsThinking(true);
+    setStatus("芒宝正在思考...");
+
+    // Add user turn
+    const newConv: Turn[] = [...convRef.current, { role: "user", text: userText }];
+    setConversation(newConv);
+
+    try {
+      // Call AI with persona prompt
+      const messages = [
+        { role: "system", content: activePersona.prompt },
+        ...newConv.map(t => ({ role: t.role as "user" | "assistant", content: t.text })),
+      ];
+
+      const res = await fetch("/api/ai/agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: "general", messages }),
+      });
+
+      if (!res.ok || !res.body) throw new Error("AI unavailable");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let responseText = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        responseText += decoder.decode(value, { stream: true });
+        setStatus("芒宝正在回答...");
+      }
+
+      // Add AI response
+      const aiText = responseText.trim() || "抱歉，我没有理解你的意思，可以再说一遍吗？";
+      const finalConv: Turn[] = [...newConv, { role: "assistant", text: aiText }];
+      setConversation(finalConv);
+      setStatus("");
+
+      // Speak the response
+      speak(aiText);
+    } catch {
+      setStatus("网络出错了，请重试");
+    } finally {
+      setIsThinking(false);
+      setTranscript("");
+    }
+  }
 
   function toggleListening() {
     if (isListening) {
-      setIsListening(false); synthRef.current?.cancel(); recogRef.current?.stop();
+      setIsListening(false);
+      recogRef.current?.stop();
     } else {
-      setIsListening(true); setTranscript(""); recogRef.current?.start();
-      if (synthRef.current && activePersona) {
-        synthRef.current.cancel();
-        const u = new SpeechSynthesisUtterance("Hello，我是芒宝，有什么我可以帮到你的吗？");
-        u.lang = "zh-CN"; u.rate = 0.95;
-        u.onstart = () => setIsSpeaking(true);
-        u.onend = () => setIsSpeaking(false);
-        synthRef.current.speak(u);
+      if (!recogRef.current) {
+        setStatus("你的浏览器不支持语音识别，请使用 Chrome 或 Edge");
+        return;
       }
+      synthRef.current?.cancel();
+      setIsListening(true);
+      setTranscript("");
+      setStatus("正在聆听...");
+      recogRef.current.start();
     }
   }
 
   // Wave animation
   React.useEffect(() => {
-    if (!isListening && !isSpeaking) { setWaveHeights(Array.from({ length: WAVE_BARS }, () => 8)); return; }
+    if (!isListening && !isSpeaking && !isThinking) {
+      setWaveHeights(Array.from({ length: WAVE_BARS }, () => 8));
+      return;
+    }
     const id = setInterval(() => {
       setWaveHeights(Array.from({ length: WAVE_BARS }, () => {
         const base = 8 + Math.random() * 32;
@@ -94,7 +191,7 @@ function VoicePageInner() {
       }));
     }, 120);
     return () => clearInterval(id);
-  }, [isListening, isSpeaking]);
+  }, [isListening, isSpeaking, isThinking]);
 
   return (
     <PageTransition>
@@ -115,11 +212,10 @@ function VoicePageInner() {
           <div className="size-10" />
         </div>
 
-        {/* Identity selector chips */}
+        {/* Persona chips */}
         <div className="absolute top-20 left-0 right-0 flex justify-center gap-2 px-6 overflow-x-auto scrollbar-none z-10">
           {DEFAULT_IDENTITIES.map(id => (
-            <button key={id.id}
-              onClick={() => setActivePersona(id.persona)}
+            <button key={id.id} onClick={() => { setActivePersona(id.persona); setConversation([]); setGreeted(false); }}
               className={cn("shrink-0 flex items-center gap-2 rounded-full px-4 py-2 text-xs transition-colors",
                 activePersona.id === id.persona.id ? "bg-white/15 text-white border border-white/20" : "bg-white/5 text-white/50 border border-white/5")}>
               <span className="size-2.5 rounded-full" style={{ backgroundColor: id.id === "ielts-candidate" ? "#C58B74" : id.id === "ai-engineer" ? "#7B8FCA" : "#8A9E8B" }} />
@@ -128,8 +224,27 @@ function VoicePageInner() {
           ))}
         </div>
 
+        {/* Conversation history */}
+        <div className="absolute top-32 bottom-52 left-0 right-0 overflow-y-auto px-6 flex flex-col gap-3">
+          {conversation.map((turn, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              className={cn("max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
+                turn.role === "user"
+                  ? "self-end bg-white/10 text-white/90"
+                  : "self-start bg-white/5 text-white/80 border border-white/10")}>
+              {turn.text}
+            </motion.div>
+          ))}
+          {isThinking && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="self-start bg-white/5 rounded-2xl px-4 py-3 text-sm text-white/50 border border-white/10 flex items-center gap-2">
+              <Loader2 className="size-3 animate-spin" /> {status || "芒宝正在思考..."}
+            </motion.div>
+          )}
+        </div>
+
         {/* Center Orb */}
-        <div className="relative flex flex-col items-center gap-8">
+        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 flex flex-col items-center gap-6">
           <motion.div className="size-48 rounded-full border border-white/10"
             animate={{ scale: isListening ? [1, 1.15, 1] : 1, opacity: isListening ? [0.3, 0.8, 0.3] : 0.3 }}
             transition={{ duration: 2, repeat: Infinity }} />
@@ -137,43 +252,38 @@ function VoicePageInner() {
             animate={{ scale: isListening ? [1, 1.08, 1] : 1, opacity: isListening ? [0.5, 1, 0.5] : 0.5 }}
             transition={{ duration: 1.8, repeat: Infinity, delay: 0.3 }} />
 
-          <motion.button onClick={toggleListening}
-            className="absolute size-24 rounded-full flex items-center justify-center"
-            style={{ background: "radial-gradient(circle at 40% 35%, rgba(197,139,116,0.8) 0%, rgba(180,120,100,0.6) 50%, rgba(160,100,80,0.4) 100%)" }}
+          <motion.button onClick={toggleListening} disabled={isThinking}
+            className="absolute size-24 rounded-full flex items-center justify-center disabled:opacity-50"
+            style={{ background: isListening ? "radial-gradient(circle at 40% 35%, rgba(220,80,60,0.8) 0%, rgba(200,60,40,0.6) 50%, rgba(180,40,30,0.4) 100%)" : "radial-gradient(circle at 40% 35%, rgba(197,139,116,0.8) 0%, rgba(180,120,100,0.6) 50%, rgba(160,100,80,0.4) 100%)" }}
             whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-            animate={{ boxShadow: isListening ? "0 0 40px rgba(197,139,116,0.5)" : "0 0 20px rgba(197,139,116,0.2)" }}>
+            animate={{ boxShadow: isListening ? "0 0 40px rgba(220,80,60,0.5)" : "0 0 20px rgba(197,139,116,0.2)" }}>
             {isListening ? <MicOff className="size-10 text-white" /> : <Mic className="size-10 text-white" />}
           </motion.button>
 
           {/* Waveform */}
-          <div className="flex items-end gap-[2px] h-20">
+          <div className="flex items-end gap-[2px] h-16">
             {waveHeights.map((h, i) => (
               <motion.div key={i} className="w-1 rounded-full" style={{ backgroundColor: "rgba(197,139,116,0.7)" }}
                 animate={{ height: h }} transition={{ duration: 0.12 }} />
             ))}
           </div>
 
-          <div className="text-center max-w-xs">
-            <p className="text-lg font-medium text-white/90">{isListening ? "正在聆听..." : "点击开始对话"}</p>
+          <div className="text-center">
+            <p className="text-base font-medium text-white/90">
+              {isListening ? "正在聆听..." : isThinking ? "芒宝思考中..." : isSpeaking ? "芒宝正在回答..." : "点击开始对话"}
+            </p>
             <p className="text-sm text-white/40 mt-1">{activePersona.name} · {activePersona.role}</p>
-            {transcript && (
+            {transcript && !isThinking && (
               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="text-sm text-white/60 mt-3 bg-white/5 rounded-xl p-3 leading-relaxed">{transcript}</motion.p>
+                className="text-sm text-white/70 mt-2 bg-white/5 rounded-xl px-3 py-2">{transcript}</motion.p>
             )}
           </div>
         </div>
 
-        {/* Teaching style */}
-        <div className="absolute bottom-20 text-center px-8">
-          <p className="text-xs text-white/30">{activePersona.teachingStyle}</p>
+        <div className="absolute bottom-16 text-center px-8">
+          <p className="text-xs text-white/25">{activePersona.teachingStyle}</p>
+          {status && !isListening && <p className="text-xs text-white/40 mt-1">{status}</p>}
         </div>
-
-        {isListening && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            className="absolute bottom-8 flex items-center gap-2 text-xs text-rose-400/70">
-            <span className="size-2 rounded-full bg-rose-400 animate-pulse" /> Recording
-          </motion.div>
-        )}
       </motion.div>
     </PageTransition>
   );
