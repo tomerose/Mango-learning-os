@@ -21,7 +21,7 @@ export function SidebarV2() {
       {/* Brand */}
       <div className={cn("flex h-14 items-center border-b border-border/40 px-3", collapsed ? "justify-center" : "justify-between")}>
         <Link href="/hub" className="flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-on text-sm font-bold">M</span>
+          <img src="/favicon-32.png" alt="Mango" className="size-8 rounded-lg" />
           {!collapsed && <span className="text-sm font-semibold tracking-tight">Mango</span>}
         </Link>
         {!collapsed && (
