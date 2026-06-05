@@ -6,6 +6,7 @@ import { StoreProvider } from "@/lib/store";
 import { SubjectProvider } from "@/lib/subjects";
 import { UpdateModal } from "@/components/update-modal";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { MangoboCompanion } from "@/components/mangobo/mangobo-companion";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -37,6 +38,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <main className="flex-1 overflow-y-auto px-4 pt-4 pb-4">{children}</main>
         <MobileNavV2 />
       </div>
+
+      {/* Mangobo — Global AI Companion */}
+      <MangoboCompanion />
 
       </TooltipProvider>
     </StoreProvider>
