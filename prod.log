@@ -4,8 +4,8 @@
 
    ▲ Next.js 15.5.19
    - Local:        http://localhost:3030
-   - Network:      http://100.64.164.2:3030
+   - Network:      http://100.71.40.65:3030
 
  ✓ Starting...
- ✓ Ready in 469ms
+ ✓ Ready in 455ms
 [middleware] getUser error: Auth session missing!
