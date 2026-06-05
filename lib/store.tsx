@@ -211,7 +211,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Cloud path — fetch user data from Supabase.
-      const [tasks, notes, flashcards, reflections, quizAttempts] =
+      const [cloudTasks, cloudNotes, cloudFlashcards, cloudReflections, cloudQuizAttempts] =
         await Promise.all([
           fetchTasks(),
           fetchNotes(),
@@ -221,15 +221,33 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ]);
       const profile = await fetchProfile(user.id);
 
-      // Login with clean slate — guest data stays in localStorage
-      // but is not loaded in cloud mode. User starts fresh.
+      // First login — if cloud data is empty, auto-seed demo data
+      // so users see value immediately instead of empty states
+      const isEmpty = cloudTasks.length === 0 && cloudNotes.length === 0;
+      const demoData = isEmpty ? {
+        tasks: seedTasks,
+        notes: seedNotes,
+        reflections: seedReflections,
+        flashcards: seedFlashcards,
+        quizAttempts: seedQuizAttempts,
+      } : null;
+
+      if (isEmpty && demoData) {
+        // Fire-and-forget: migrate demo data to Supabase
+        import("@/lib/supabase/queries").then(({ migrateGuestToCloud }) => {
+          migrateGuestToCloud(user.id, demoData).catch((e) =>
+            console.error("[store] auto-seed failed:", e),
+          );
+        });
+      }
+
       if (cancelled) return;
       setState({
-        tasks,
-        notes,
-        reflections,
-        flashcards,
-        quizAttempts,
+        tasks: isEmpty ? demoData!.tasks : cloudTasks,
+        notes: isEmpty ? demoData!.notes : cloudNotes,
+        reflections: isEmpty ? demoData!.reflections : cloudReflections,
+        flashcards: isEmpty ? demoData!.flashcards : cloudFlashcards,
+        quizAttempts: isEmpty ? demoData!.quizAttempts : cloudQuizAttempts,
         mode: "cloud",
         userId: user.id,
         xp: profile?.total_xp ?? 0,
@@ -255,7 +273,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   });
 
   // ── Guest 2-use total limit (persisted in localStorage, ref for instant reads) ──
-  const GUEST_LIMIT = 2;
+  const GUEST_LIMIT = 50; // Full demo experience; limit only cloud writes
   const GUEST_COUNT_KEY = "mango-guest-action-count";
   const [guestActionCount, setGuestActionCount] = React.useState(() => {
     try { return parseInt(localStorage.getItem(GUEST_COUNT_KEY) ?? "0", 10); }
