@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="hidden md:flex min-h-screen bg-bg">
         <SidebarV2 />
         <div className="flex min-w-0 flex-1 flex-col ml-[68px] lg:ml-[240px] transition-all duration-300 ease-out">
-          <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-2 border-b border-border/40 bg-bg/80 backdrop-blur-xl px-6">
+          <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-2 border-b border-border/30 bg-bg/70 backdrop-blur-xl px-6">
             <div className="flex-1" />
             <div className="flex items-center gap-1">
               <ThemeToggle />
@@ -26,15 +26,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </header>
           <main className="flex-1 px-6 py-6">
-            <div className="mx-auto w-full max-w-6xl">{children}</div>
+            <div className="mx-auto w-full max-w-5xl">{children}</div>
           </main>
         </div>
       </div>
 
       {/* ── MOBILE ── */}
       <div className="flex md:hidden min-h-screen flex-col bg-bg">
-        <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between px-4 mx-3 mt-3 rounded-full border border-border/30 bg-bg/75 backdrop-blur-xl">
-          <span className="text-sm font-semibold tracking-tight">Mango</span>
+        <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between px-4 mx-3 mt-3 rounded-full border border-border/30 bg-bg/70 backdrop-blur-xl">
+          <span className="text-small font-medium text-fg-muted tracking-tight">Mango</span>
           <div className="flex items-center gap-0">
             <ThemeToggle />
             <UserMenu />
