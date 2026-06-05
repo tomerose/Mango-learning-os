@@ -213,22 +213,19 @@ export default function HubPage() {
             { icon: CalendarCheck, label: "学习计划", desc: "分析目标，自动生成每日学习计划", href: "/planner" },
             { icon: Heart, label: "心灵花园", desc: "情绪追踪、CBT 重构、暖心陪伴", href: "/grow" },
             { icon: TrendingUp, label: "技能图谱", desc: "知识网络可视化，发现概念关联", href: "/exam" },
-            { icon: Sparkles, label: "Mango Magic", desc: "一键生成：学习指南、闪卡、考试复习包", href: "#", onClick: () => setMagicOpen(true) },
-          ].map((m) => {
-            const content = (
-              <div className="card-card hover-lift p-4 sm:p-5 group flex flex-col gap-3 cursor-pointer">
-                <div className="size-10 rounded-xl bg-primary-subtle flex items-center justify-center">
-                  <m.icon className="size-5 text-primary" strokeWidth={1.5} />
-                </div>
-                <div>
-                  <p className="text-small font-medium group-hover:text-primary transition-colors">{m.label}</p>
-                  <p className="text-caption mt-0.5 leading-relaxed">{m.desc}</p>
-                </div>
+            { icon: Sparkles, label: "Mango Voice", desc: "语音学习助手 · 5个人格 · 实时对话", href: "/voice" },
+          ].map((m) => (
+            <Link key={m.label} href={m.href}
+              className="card-card hover-lift p-4 sm:p-5 group flex flex-col gap-3 cursor-pointer">
+              <div className="size-10 rounded-xl bg-primary-subtle flex items-center justify-center">
+                <m.icon className="size-5 text-primary" strokeWidth={1.5} />
               </div>
-            );
-            if (m.onClick) return <div key={m.label} onClick={m.onClick}>{content}</div>;
-            return <Link key={m.label} href={m.href!}>{content}</Link>;
-          })}
+              <div>
+                <p className="text-small font-medium group-hover:text-primary transition-colors">{m.label}</p>
+                <p className="text-caption mt-0.5 leading-relaxed">{m.desc}</p>
+              </div>
+            </Link>
+          ))}
         </div>
       </Section>
 

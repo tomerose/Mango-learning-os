@@ -16,13 +16,14 @@ import { ExerciseGenerator } from "@/components/agent/exercise-generator";
 import { MistakeAnalyzer } from "@/components/agent/mistake-analyzer";
 import { DocumentImporter } from "@/components/knowledge-tree/document-importer";
 import { SubjectManager } from "@/components/subject-manager";
-import { VoiceOS } from "@/components/agent/voice-os";
 import { SkillTree } from "@/components/ui/skill-tree";
+import { MangoDNAContent } from "@/components/mango-dna/mango-dna-content";
+import { VoiceSoulContent } from "@/components/mango-dna/voice-soul/VoiceSoulContent";
 import { DEFAULT_IDENTITIES, BUILTIN_PERSONAS, type LearningIdentity } from "@/lib/ai/identity-engine";
 import type { SubjectId } from "@/lib/types";
 import Link from "next/link";
 
-type MainTab = "chat" | "identity" | "voice";
+type MainTab = "chat" | "identity" | "dna";
 
 function AgentPageInner() {
   const router = useRouter();
@@ -31,7 +32,6 @@ function AgentPageInner() {
   const store = useStore();
   const [mainTab, setMainTab] = React.useState<MainTab>("chat");
   const [chatTab, setChatTab] = React.useState("chat");
-  const [voiceOpen, setVoiceOpen] = React.useState(false);
   const [selectedIdentity, setSelectedIdentity] = React.useState<LearningIdentity | null>(null);
 
   // Read tab from URL
@@ -126,7 +126,7 @@ function AgentPageInner() {
           <TabsList className="w-full max-w-md">
             <TabsTrigger value="chat"><MessageSquare className="size-3.5 mr-1" />对话</TabsTrigger>
             <TabsTrigger value="identity"><User className="size-3.5 mr-1" />学习身份</TabsTrigger>
-            <TabsTrigger value="voice"><Mic className="size-3.5 mr-1" />语音</TabsTrigger>
+            <TabsTrigger value="dna"><Brain className="size-3.5 mr-1" />DNA</TabsTrigger>
           </TabsList>
 
           {/* ═══ CHAT TAB ═══ */}
@@ -207,19 +207,18 @@ function AgentPageInner() {
           {/* ═══ IDENTITY TAB ═══ */}
           <TabsContent value="identity" className="mt-4">
             <div className="flex flex-col gap-6">
-              {/* Voice OS trigger */}
-              <div className="card-card p-5 flex items-center gap-4 cursor-pointer hover:border-primary/30 transition-colors"
-                onClick={() => { setVoiceOpen(true); setMainTab("voice"); }}>
+              {/* Mango Voice trigger */}
+              <Link href="/voice" className="card-card p-5 flex items-center gap-4 cursor-pointer hover:border-primary/30 transition-colors">
                 <div className="size-14 rounded-2xl flex items-center justify-center"
                   style={{ background: "radial-gradient(circle, rgba(197,139,116,0.3) 0%, rgba(197,139,116,0.1) 100%)" }}>
                   <Mic className="size-7 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-small font-medium">Voice OS</p>
-                  <p className="text-caption mt-0.5">全屏沉浸式语音学习体验</p>
+                  <p className="text-small font-medium">Mango Voice</p>
+                  <p className="text-caption mt-0.5">独立语音学习窗口 · 5个人格 · 实时对话</p>
                 </div>
-                <span className="text-caption">5 个内置人格</span>
-              </div>
+                <span className="text-caption">打开 →</span>
+              </Link>
 
               {/* Learning Identities */}
               <div>
@@ -276,23 +275,10 @@ function AgentPageInner() {
             </div>
           </TabsContent>
 
-          {/* ═══ VOICE TAB ═══ */}
-          <TabsContent value="voice" className="mt-4">
-            {voiceOpen ? (
-              <VoiceOS onClose={() => setVoiceOpen(false)} subject={subject} />
-            ) : (
-              <div className="card-card p-8 flex flex-col items-center gap-4 text-center cursor-pointer"
-                onClick={() => setVoiceOpen(true)}>
-                <div className="size-20 rounded-full flex items-center justify-center"
-                  style={{ background: "radial-gradient(circle, rgba(197,139,116,0.3) 0%, rgba(197,139,116,0.05) 100%)" }}>
-                  <Mic className="size-10 text-primary" />
-                </div>
-                <div>
-                  <p className="text-small font-medium">点击进入 Voice OS</p>
-                  <p className="text-caption mt-1">全屏沉浸式语音对话 · 5个内置人格</p>
-                </div>
-              </div>
-            )}
+          {/* ═══ DNA TAB ═══ */}
+          <TabsContent value="dna" className="mt-4">
+            <MangoDNAContent />
+            <div className="mt-6"><VoiceSoulContent /></div>
           </TabsContent>
         </Tabs>
       </div>

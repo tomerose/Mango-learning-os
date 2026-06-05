@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 import {
   Sparkles, Bot, GraduationCap, Heart,
-  CalendarCheck, Dna, User,
+  CalendarCheck, Mic, User,
   type LucideIcon,
 } from "lucide-react";
 
@@ -59,12 +59,12 @@ export const navItemsV2: NavItem[] = [
     description: "智能生成计划 · 任务管理 · 日/周/月/学期",
   },
   {
-    id: "dna",
-    label: "Mango DNA",
-    shortLabel: "DNA",
-    href: "/dna",
-    icon: Dna,
-    description: "AI 人格档案 · Agent 画廊 · 数字蒸馏",
+    id: "voice",
+    label: "Mango Voice",
+    shortLabel: "Voice",
+    href: "/voice",
+    icon: Mic,
+    description: "Voice OS · 学习身份 · 实时语音对话",
   },
   {
     id: "profile",
