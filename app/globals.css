@@ -261,3 +261,11 @@ body {
 .animate-float { animation: float 5s ease-in-out infinite; }
 .animate-breathe { animation: breathe 4s ease-in-out infinite; }
 .animate-fade-up { animation: fade-up 0.6s var(--ease-out) forwards; }
+
+/* ═══ GSAP ScrollTrigger Fallback ═══ */
+.scroll-reveal-up { opacity: 0; transform: translateY(40px); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out); }
+.scroll-reveal-down { opacity: 0; transform: translateY(-40px); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out); }
+.scroll-reveal-left { opacity: 0; transform: translateX(40px); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out); }
+.scroll-reveal-right { opacity: 0; transform: translateX(-40px); transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out); }
+.scroll-reveal-up.is-visible, .scroll-reveal-down.is-visible,
+.scroll-reveal-left.is-visible, .scroll-reveal-right.is-visible { opacity: 1; transform: translate(0,0); }

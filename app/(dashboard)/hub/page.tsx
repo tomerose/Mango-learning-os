@@ -13,8 +13,9 @@ import { useSubjects } from "@/lib/subjects";
 import { MagicCard } from "@/components/hub/magic-card";
 import { MangoOnboarding, shouldShowOnboarding } from "@/components/onboarding/MangoOnboarding";
 import { cn } from "@/lib/utils";
-import { AmbientOrbs } from "@/components/ui/ambient-orbs";
+import { AmbientOrbs, FloatingParticles } from "@/components/ui/ambient-orbs";
 import { PageTransition } from "@/components/layout/page-transition";
+import { StaggerReveal, FadeIn, ScaleIn } from "@/components/ui/motion-system";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub v7 — Warm Paper · Editorial Wellness · Mobile-First
@@ -94,8 +95,9 @@ export default function HubPage() {
         >
           {/* Hero Card */}
           <div className="relative overflow-hidden card-hero p-6 sm:p-8 md:p-10">
-            {/* Premium SVG gradient orbs */}
+            {/* Premium SVG gradient orbs + floating particles */}
             <AmbientOrbs className="opacity-80" />
+            <FloatingParticles count={15} className="opacity-50" />
 
             <div className="relative z-10 flex flex-col gap-5">
               {/* Date & Greeting */}
@@ -151,10 +153,10 @@ export default function HubPage() {
         </motion.div>
       </section>
 
-      {/* ═══ 2. TODAY — Learning focus cards ═══ */}
+      {/* ═══ 2. TODAY ═══ */}
       <Section delay={0.05}>
         <SectionHeader title="今日学习" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <StaggerReveal className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { icon: Target, label: "待办任务", value: `${doneToday}/${totalToday}`, sub: "已完成", href: "/planner" },
             { icon: Layers, label: "闪卡复习", value: `${dueCards} 张`, sub: dueCards > 0 ? "待复习" : "全部完成", href: "/exam" },
@@ -171,7 +173,7 @@ export default function HubPage() {
               </div>
             </Link>
           ))}
-        </div>
+        </StaggerReveal>
       </Section>
 
       {/* ═══ 3. CORE CAPABILITIES ═══ */}
