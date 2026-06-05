@@ -70,6 +70,26 @@ function AgentPageInner() {
 
   const [extractedText, setExtractedText] = React.useState("");
   const [extractedName, setExtractedName] = React.useState("");
+  const [captureData, setCaptureData] = React.useState<{question:string; answer:string; subject:string} | null>(null);
+  const [captured, setCaptured] = React.useState(false);
+
+  // Listen for knowledge capture events from agent chat
+  React.useEffect(() => {
+    const handler = (e: CustomEvent) => { setCaptureData(e.detail); setCaptured(false); };
+    window.addEventListener("agent:knowledge-capture", handler as EventListener);
+    return () => window.removeEventListener("agent:knowledge-capture", handler as EventListener);
+  }, []);
+
+  function handleCapture() {
+    if (!captureData) return;
+    store.addNote({
+      subject: captureData.subject,
+      title: captureData.question.slice(0, 60),
+      body: `Q: ${captureData.question}\n\nA: ${captureData.answer}`,
+      tags: ["对话捕获", captureData.subject],
+    });
+    setCaptured(true);
+  }
 
   // Demo skills for identity skill tree
   const demoSkills = selectedIdentity
@@ -120,6 +140,19 @@ function AgentPageInner() {
                   <AgentChat subject={subject} className="h-full" />
                 </div>
                 <AgentSuggestions subject={subject} onSelect={handleSuggestion} />
+                {/* Knowledge Capture */}
+                {captureData && (
+                  <div className="mt-2 flex items-center gap-2">
+                    {captured ? (
+                      <span className="text-xs text-emerald-500">已保存到知识库 ✓</span>
+                    ) : (
+                      <button onClick={handleCapture}
+                        className="inline-flex items-center gap-1.5 text-xs rounded-full border border-border px-3 py-1.5 hover:bg-primary-subtle hover:border-primary/30 transition-colors">
+                        <Brain className="size-3" /> 保存到知识库
+                      </button>
+                    )}
+                  </div>
+                )}
                 <div className="mt-3"><MistakeAnalyzer subject={subject} /></div>
               </TabsContent>
               <TabsContent value="explain" className="mt-3"><ConceptExplainer subject={subject} /></TabsContent>

@@ -125,6 +125,7 @@ export function AgentChat({ subject, onConversationUpdate, className }: AgentCha
     // Add empty assistant bubble for streaming
     setMessages((m) => [...m, { role: "assistant", content: "" }]);
 
+    let acc = "";
     try {
       const context = buildContextPayload(subject, store.weakAreas, recentTopics, goals);
 
@@ -146,7 +147,6 @@ export function AgentChat({ subject, onConversationUpdate, className }: AgentCha
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let acc = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -165,6 +165,14 @@ export function AgentChat({ subject, onConversationUpdate, className }: AgentCha
       setMessages((m) => m.slice(0, -1));
     } finally {
       setStreaming(false);
+    }
+
+    // Auto-capture: offer to save conversation as knowledge note
+    const lastUser = messages.filter(m => m.role === "user").pop();
+    if (lastUser && acc.length > 50) {
+      window.dispatchEvent(new CustomEvent("agent:knowledge-capture", {
+        detail: { question: lastUser.content, answer: acc, subject },
+      }));
     }
   }
 

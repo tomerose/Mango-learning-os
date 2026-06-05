@@ -20,6 +20,9 @@ const WAVE_BARS = 24;
 
 export function VoiceOS({ onClose, subject }: VoiceOSProps) {
   const [isListening, setIsListening] = React.useState(false);
+  const [isSpeaking, setIsSpeaking] = React.useState(false);
+  const synthRef = React.useRef<SpeechSynthesis | null>(null);
+  React.useEffect(() => { if(typeof window!=="undefined") synthRef.current = window.speechSynthesis; }, []);
   const [activePersona, setActivePersona] = React.useState<VoicePersona>(BUILTIN_PERSONAS[2]);
   const [showPersonas, setShowPersonas] = React.useState(false);
   const [waveHeights, setWaveHeights] = React.useState<number[]>(
@@ -28,7 +31,7 @@ export function VoiceOS({ onClose, subject }: VoiceOSProps) {
 
   // Animate wave bars when listening
   React.useEffect(() => {
-    if (!isListening) {
+    if (!isListening && !isSpeaking) {
       setWaveHeights(Array.from({ length: WAVE_BARS }, () => 8 + Math.random() * 4));
       return;
     }
@@ -41,7 +44,7 @@ export function VoiceOS({ onClose, subject }: VoiceOSProps) {
       }));
     }, 120);
     return () => clearInterval(id);
-  }, [isListening]);
+  }, [isListening, isSpeaking]);
 
   return (
     <motion.div
@@ -107,7 +110,7 @@ export function VoiceOS({ onClose, subject }: VoiceOSProps) {
 
         {/* Core orb */}
         <motion.button
-          onClick={() => setIsListening(!isListening)}
+          onClick={() => { if(isListening){setIsListening(false);synthRef.current?.cancel();}else{setIsListening(true);if(synthRef.current){synthRef.current.cancel();const u=new SpeechSynthesisUtterance("你好，我是"+activePersona.name+"。"+activePersona.teachingStyle);u.lang="zh-CN";u.rate=0.9;u.onstart=()=>setIsSpeaking(true);u.onend=()=>setIsSpeaking(false);synthRef.current.speak(u);}} }}
           className="absolute size-24 rounded-full flex items-center justify-center"
           style={{ background: "radial-gradient(circle at 40% 35%, rgba(197,139,116,0.8) 0%, rgba(180,120,100,0.6) 50%, rgba(160,100,80,0.4) 100%)" }}
           whileHover={{ scale: 1.05 }}
