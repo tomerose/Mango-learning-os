@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   Sparkles, Brain, BookOpen, CalendarCheck, Heart,
   Layers, Zap, Target, ArrowRight, Flame, Network,
-  Clock, TrendingUp,
+  Clock, TrendingUp, Mic,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useSubjects } from "@/lib/subjects";
@@ -181,17 +181,17 @@ export default function HubPage() {
         <SectionHeader title="核心能力" />
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           {[
-            { icon: Layers, label: "间隔重复", sub: dueCards > 0 ? `${dueCards} 张待复习` : "SM-2 科学记忆", href: "/exam", accent: "bg-amber-50 dark:bg-amber-950/20" },
-            { icon: Network, label: "知识图谱", sub: "概念关联可视化", href: "/exam", accent: "bg-sage-50 dark:bg-sage-950/20" },
-            { icon: Heart, label: "心灵花园", sub: "情绪管理 · 认知重构", href: "/grow", accent: "bg-rose-50 dark:bg-rose-950/20" },
-            { icon: Brain, label: "学习记忆", sub: "个性化引擎", href: "/agent", accent: "bg-primary-subtle" },
+            { icon: Mic, label: "Mango Voice", sub: "5 个人格 · 实时语音对话", href: "/voice" },
+            { icon: Network, label: "知识森林", sub: "3D 网络 · 一键生成", href: "/exam" },
+            { icon: Layers, label: "间隔重复", sub: dueCards > 0 ? `${dueCards} 张待复习` : "SM-2 科学闪卡", href: "/planner" },
+            { icon: Brain, label: "AI 学习伴侣", sub: "智能导师 + 身份系统", href: "/agent" },
           ].map((f) => (
             <Link key={f.label} href={f.href}
               className="card-card hover-lift p-4 flex flex-col gap-2.5 group relative overflow-hidden">
               {f.label === "间隔重复" && dueCards > 0 && (
                 <span className="absolute top-3 right-3 size-2 rounded-full bg-primary animate-pulse" />
               )}
-              <span className={`size-9 rounded-xl flex items-center justify-center ${f.accent}`}>
+              <span className="size-9 rounded-xl flex items-center justify-center bg-primary-subtle">
                 <f.icon className="size-4 text-primary" strokeWidth={1.5} />
               </span>
               <div>
@@ -208,12 +208,12 @@ export default function HubPage() {
         <SectionHeader title="学习空间" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {[
-            { icon: Brain, label: "智能导师", desc: "结构化讲解、针对性练习、即时反馈", href: "/agent" },
-            { icon: BookOpen, label: "考试备战", desc: "上传资料，自动生成复习手册和模拟题", href: "/exam" },
-            { icon: CalendarCheck, label: "学习计划", desc: "分析目标，自动生成每日学习计划", href: "/planner" },
-            { icon: Heart, label: "心灵花园", desc: "情绪追踪、CBT 重构、暖心陪伴", href: "/grow" },
-            { icon: TrendingUp, label: "技能图谱", desc: "知识网络可视化，发现概念关联", href: "/exam" },
-            { icon: Sparkles, label: "Mango Voice", desc: "语音学习助手 · 5个人格 · 实时对话", href: "/voice" },
+            { icon: Brain, label: "智能导师", desc: "结构化讲解 + 针对性练习", href: "/agent" },
+            { icon: Mic, label: "Mango Voice", desc: "5 个人格 · 实时语音对话", href: "/voice" },
+            { icon: BookOpen, label: "考试备战", desc: "上传资料 → 自动生成复习包", href: "/planner" },
+            { icon: Network, label: "知识森林", desc: "3D 球面知识网络 · AI 自动生成", href: "/exam" },
+            { icon: Layers, label: "间隔重复", desc: "SM-2 科学记忆 · 3D 翻转闪卡", href: "/planner" },
+            { icon: Heart, label: "心灵花园", desc: "情绪追踪 · CBT 重构 · AI 陪伴", href: "/grow" },
           ].map((m) => (
             <Link key={m.label} href={m.href}
               className="card-card hover-lift p-4 sm:p-5 group flex flex-col gap-3 cursor-pointer">
