@@ -160,7 +160,34 @@ export default function HubPage() {
         </div>
       </Section>
 
-      {/* ═══ 3. AI WORKSPACE ═══ */}
+      {/* ═══ 3. 核心能力 ═══ */}
+      <Section delay={0.03}>
+        <SectionHeader title="核心能力" description="Mango 的独特价值——帮你学得更深、记得更牢。" />
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          {[
+            { icon: Layers, label: "间隔重复", sub: dueCards > 0 ? `${dueCards} 张待复习` : "SM-2 算法驱动", href: "/exam" },
+            { icon: Network, label: "知识图谱", sub: "概念关联可视化", href: "/exam" },
+            { icon: Heart, label: "CBT 认知重构", sub: "心理工具 · 成长心态", href: "/grow" },
+            { icon: Brain, label: "Agent 记忆", sub: "个性化学习引擎", href: "/agent" },
+          ].map((f) => (
+            <Link key={f.label} href={f.href}
+              className="card-raised hover-lift p-4 flex flex-col gap-2 group relative overflow-hidden">
+              {f.label === "间隔重复" && dueCards > 0 && (
+                <span className="absolute top-2 right-2 size-2 rounded-full bg-orange-400 animate-pulse" />
+              )}
+              <span className="size-9 rounded-lg bg-bg-muted flex items-center justify-center">
+                <f.icon className="size-4 text-primary" strokeWidth={1.5} />
+              </span>
+              <div>
+                <p className="text-small font-semibold group-hover:text-primary transition-colors">{f.label}</p>
+                <p className="text-caption">{f.sub}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </Section>
+
+      {/* ═══ 4. 学习工作区 ═══ */}
       <Section delay={0.05}>
         <SectionHeader label="学习工作区" title="你的智能导师" description="结构化讲解、针对性练习、即时反馈。" href="/agent" cta="打开导师" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -113,20 +113,29 @@ export function MagicCard({
     setStep("loading");
     setError("");
     try {
-      const res = await fetch("/api/ai/magic", {
+      const res = await fetch("/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mode, input: input.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "生成失败");
-      setResult(data.result);
+      // Handle new unified engine response format
+      const generated = data.content;
+      if (typeof generated === "string") {
+        try { setResult(JSON.parse(generated)); } catch { setResult({ lecture: generated }); }
+      } else {
+        setResult(generated);
+      }
       setStep("result");
-      if (mode === "notes" && typeof data.result?.notes === "string") {
+      if (data.quality && !data.quality.passed) {
+        console.warn("[magic] quality check:", data.quality.suggestions);
+      }
+      if (mode === "notes" && typeof generated === "string") {
         store.addNote({
           subject: "ai",
           title: `笔记：${input.slice(0, 30)}`,
-          body: data.result.notes,
+          body: generated,
           tags: ["Mango Magic"],
         });
       }

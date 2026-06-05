@@ -135,6 +135,7 @@ export function AgentChat({ subject, onConversationUpdate, className }: AgentCha
           subject,
           messages: nextMessages,
           context,
+          userId: store.userId,
         }),
       });
 
