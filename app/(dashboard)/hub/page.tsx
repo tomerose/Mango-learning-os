@@ -13,6 +13,8 @@ import { useSubjects } from "@/lib/subjects";
 import { MagicCard } from "@/components/hub/magic-card";
 import { MangoOnboarding, shouldShowOnboarding } from "@/components/onboarding/MangoOnboarding";
 import { cn } from "@/lib/utils";
+import { AmbientOrbs } from "@/components/ui/ambient-orbs";
+import { PageTransition } from "@/components/layout/page-transition";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub v7 — Warm Paper · Editorial Wellness · Mobile-First
@@ -81,6 +83,7 @@ export default function HubPage() {
   const dateStr = new Date().toLocaleDateString("zh-CN", { weekday: "long", month: "long", day: "numeric" });
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-10 pb-20">
       {/* ═══ 1. HERO — Warm editorial greeting with watercolor blob ═══ */}
       <section className="relative pt-4 md:pt-10">
@@ -91,9 +94,8 @@ export default function HubPage() {
         >
           {/* Hero Card */}
           <div className="relative overflow-hidden card-hero p-6 sm:p-8 md:p-10">
-            {/* Watercolor blob decoration */}
-            <div className="absolute -top-24 -right-16 w-64 h-64 rounded-full watercolor-amber pointer-events-none animate-breathe" />
-            <div className="absolute -bottom-20 left-1/4 w-48 h-48 rounded-full watercolor-sage pointer-events-none animate-breathe" style={{ animationDelay: "1.5s" }} />
+            {/* Premium SVG gradient orbs */}
+            <AmbientOrbs className="opacity-80" />
 
             <div className="relative z-10 flex flex-col gap-5">
               {/* Date & Greeting */}
@@ -264,5 +266,6 @@ export default function HubPage() {
       {/* ═══ Magic Card Modal ═══ */}
       <MagicCard open={magicOpen} onClose={() => setMagicOpen(false)} />
     </div>
+    </PageTransition>
   );
 }
