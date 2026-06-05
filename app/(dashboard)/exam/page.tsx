@@ -9,12 +9,13 @@ import { NotesTab } from "@/components/knowledge-hub/notes-tab";
 import { FlashcardsTab } from "@/components/knowledge-hub/flashcards-tab";
 import { ResourcesTab } from "@/components/knowledge-hub/resources-tab";
 import { GraphTab } from "@/components/knowledge-hub/graph-tab";
+import { PageTransition } from "@/components/layout/page-transition";
 import { ExamBackground } from "@/components/ui/module-backgrounds";
 
 export default function ExamPage() {
   const [tab, setTab] = React.useState("exam");
 
-  return (
+  return (<PageTransition>
     <div className="relative">
       <ExamBackground />
       <PageShell title="Mangoing" description="联网搜索 · 讲义生成 · 刷题训练 · 知识库管理">
@@ -36,5 +37,6 @@ export default function ExamPage() {
         </div>
       </PageShell>
     </div>
+    </PageTransition>
   );
 }

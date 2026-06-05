@@ -64,7 +64,7 @@ export function CbtReframer() {
           </div>
           <div>
             <h3 className="text-sm font-semibold">CBT Thought Reframer</h3>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-fg-muted">
               Challenge negative thinking patterns
             </p>
           </div>
@@ -72,7 +72,7 @@ export function CbtReframer() {
 
         {/* Input */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+          <label className="text-xs font-medium text-fg-muted mb-1.5 block">
             Write a negative thought you&apos;d like to reframe
           </label>
           <Textarea
@@ -114,7 +114,7 @@ export function CbtReframer() {
             <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/20 rounded-xl p-3">
               <Scale className="size-4 text-purple-500 shrink-0" />
               <div>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                <p className="text-[10px] text-fg-muted font-medium uppercase tracking-wide">
                   Cognitive Distortion
                 </p>
                 <Badge variant="destructive" className="mt-1">
@@ -133,7 +133,7 @@ export function CbtReframer() {
                   {result.evidenceFor.map((e, i) => (
                     <li
                       key={i}
-                      className="text-xs text-muted-foreground flex items-start gap-1"
+                      className="text-xs text-fg-muted flex items-start gap-1"
                     >
                       <span className="text-red-400 mt-0.5">-</span> {e}
                     </li>
@@ -148,7 +148,7 @@ export function CbtReframer() {
                   {result.evidenceAgainst.map((e, i) => (
                     <li
                       key={i}
-                      className="text-xs text-muted-foreground flex items-start gap-1"
+                      className="text-xs text-fg-muted flex items-start gap-1"
                     >
                       <span className="text-emerald-400 mt-0.5">-</span> {e}
                     </li>

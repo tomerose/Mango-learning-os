@@ -68,10 +68,10 @@ function MobileDNA() {
         <h1 className="relative text-2xl font-extrabold tracking-tight">
           Mango <span className="text-primary">DNA</span>
         </h1>
-        <p className="relative text-muted-foreground text-[13px] leading-relaxed mt-2 max-w-xs mx-auto">
+        <p className="relative text-fg-muted text-[13px] leading-relaxed mt-2 max-w-xs mx-auto">
           构建专属 AI 人格——像你一样思考的第二大脑
         </p>
-        <Button size="lg" className="relative mt-5 w-full rounded-xl font-semibold shadow-lg shadow-primary/20">
+        <Button size="lg" className="relative mt-5 w-full rounded-xl font-semibold shadow-md">
           <Rocket className="size-4" /> 创建我的 DNA
         </Button>
       </section>
@@ -87,13 +87,13 @@ function MobileDNA() {
             const Icon = f.icon;
             return (
               <div key={f.title}
-                className="flex flex-col gap-2 rounded-2xl border bg-card p-4 active:scale-[0.98] transition-transform">
+                className="flex flex-col gap-2 rounded-2xl border bg-surface p-4 active:scale-[0.98] transition-transform">
                 <span className="flex size-9 items-center justify-center rounded-xl"
                   style={{ background: `linear-gradient(135deg, color-mix(in oklch, ${f.color} 20%, transparent), color-mix(in oklch, ${f.color} 8%, transparent))` }}>
                   <Icon className="size-4" style={{ color: f.color }} />
                 </span>
                 <p className="text-[13px] font-semibold leading-tight">{f.title}</p>
-                <p className="text-muted-foreground text-[11px] leading-snug">{f.desc}</p>
+                <p className="text-fg-muted text-[11px] leading-snug">{f.desc}</p>
               </div>
             );
           })}
@@ -106,20 +106,20 @@ function MobileDNA() {
           <Zap className="text-primary size-4" />
           <span className="text-sm font-bold">创建流程</span>
         </div>
-        <div className="rounded-2xl border bg-card px-4 py-3">
+        <div className="rounded-2xl border bg-surface px-4 py-3">
           {STEPS.map((s, i) => {
             const active = s.num <= 2;
             return (
               <div key={s.num} className="flex gap-3">
                 <div className="flex flex-col items-center shrink-0 pt-0.5">
                   <span className={`flex size-7 items-center justify-center rounded-full text-xs font-bold ${
-                    active ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-muted-foreground"
+                    active ? "bg-primary text-primary-foreground shadow-sm" : "bg-muted text-fg-muted"
                   }`}>{s.num}</span>
                   {i < STEPS.length - 1 && <div className="w-px flex-1 bg-border my-1" />}
                 </div>
                 <div className={`pb-4 ${!active ? "opacity-45" : ""}`}>
                   <p className="text-[13px] font-semibold">{s.title}</p>
-                  <p className="text-muted-foreground text-[12px] leading-snug mt-0.5">{s.desc}</p>
+                  <p className="text-fg-muted text-[12px] leading-snug mt-0.5">{s.desc}</p>
                 </div>
               </div>
             );
@@ -134,7 +134,7 @@ function MobileDNA() {
           <span className="text-sm font-bold">你的人格画像</span>
         </div>
 
-        <div className="rounded-2xl border-2 border-primary/15 bg-card overflow-hidden">
+        <div className="rounded-2xl border-2 border-primary/15 bg-surface overflow-hidden">
           {/* Header bar */}
           <div className="bg-primary-subtle px-4 py-3.5 flex items-center justify-between border-b border-primary/10">
             <div className="flex items-center gap-2.5">
@@ -143,7 +143,7 @@ function MobileDNA() {
               </span>
               <div>
                 <p className="text-sm font-bold">{PERSONA.name}</p>
-                <p className="text-muted-foreground text-[11px]">{PERSONA.tagline}</p>
+                <p className="text-fg-muted text-[11px]">{PERSONA.tagline}</p>
               </div>
             </div>
             <Badge variant="success" className="text-[10px] gap-1 px-2"><CheckCircle2 className="size-3" />Active</Badge>
@@ -152,8 +152,8 @@ function MobileDNA() {
           {/* Body */}
           <div className="px-4 py-4 flex flex-col gap-4">
             {/* Quote */}
-            <div className="bg-muted/50 rounded-xl px-3 py-2.5 border-l-2 border-primary/30">
-              <p className="text-[13px] leading-relaxed italic text-muted-foreground">「{PERSONA.thinkingStyle}」</p>
+            <div className="bg-bg-muted rounded-xl px-3 py-2.5 border-l-2 border-primary/30">
+              <p className="text-[13px] leading-relaxed italic text-fg-muted">「{PERSONA.thinkingStyle}」</p>
             </div>
 
             {/* Trait bars */}
@@ -162,7 +162,7 @@ function MobileDNA() {
                 <div key={t.label} className="flex items-center gap-2.5">
                   <span className="text-[12px] w-[72px] shrink-0 font-medium">{t.label}</span>
                   <Progress value={t.pct} className="flex-1 h-2 rounded-full" />
-                  <span className="text-[11px] text-muted-foreground w-8 text-right tabular-nums font-mono">{t.pct}</span>
+                  <span className="text-[11px] text-fg-muted w-8 text-right tabular-nums font-mono">{t.pct}</span>
                 </div>
               ))}
             </div>
@@ -177,11 +177,11 @@ function MobileDNA() {
             {/* Meta strip */}
             <div className="grid grid-cols-2 gap-3 text-[11px]">
               <div className="bg-muted/40 rounded-lg px-3 py-2">
-                <p className="text-muted-foreground">模型</p>
+                <p className="text-fg-muted">模型</p>
                 <p className="font-semibold mt-0.5">{PERSONA.model}</p>
               </div>
               <div className="bg-muted/40 rounded-lg px-3 py-2">
-                <p className="text-muted-foreground">更新</p>
+                <p className="text-fg-muted">更新</p>
                 <p className="font-semibold mt-0.5">{PERSONA.updated}</p>
               </div>
             </div>
@@ -201,7 +201,7 @@ function MobileDNA() {
             const avail = a.status === "可用";
             return (
               <div key={a.name}
-                className={`rounded-2xl border bg-card p-4 flex flex-col gap-2.5 active:scale-[0.98] transition-transform ${!avail ? "opacity-55" : ""}`}>
+                className={`rounded-2xl border bg-surface p-4 flex flex-col gap-2.5 active:scale-[0.98] transition-transform ${!avail ? "opacity-55" : ""}`}>
                 <div className="flex items-center justify-between">
                   <span className="flex size-8 items-center justify-center rounded-lg"
                     style={{ background: `linear-gradient(135deg, color-mix(in oklch, ${a.color} 20%, transparent), color-mix(in oklch, ${a.color} 8%, transparent))` }}>
@@ -210,7 +210,7 @@ function MobileDNA() {
                   <Badge variant={avail ? "success" : "secondary"} className="text-[10px] px-1.5">{a.status}</Badge>
                 </div>
                 <p className="text-[13px] font-semibold leading-tight">{a.name}</p>
-                <p className="text-muted-foreground text-[11px] leading-snug">{a.desc}</p>
+                <p className="text-fg-muted text-[11px] leading-snug">{a.desc}</p>
                 <Button size="sm" variant={avail ? "default" : "outline"}
                   className="mt-auto w-full rounded-xl text-xs h-8" disabled={!avail}>
                   {avail ? "启动" : "敬请期待"}
@@ -226,11 +226,11 @@ function MobileDNA() {
         <div className="rounded-2xl card-raised px-5 py-6 text-center flex flex-col items-center gap-3">
           <Dna className="text-primary size-9" />
           <p className="text-sm font-bold">Mango DNA v2.0 即将上线</p>
-          <p className="text-muted-foreground text-[12px] leading-relaxed">当前为 UI 预览。加入等待列表第一时间体验正式版。</p>
+          <p className="text-fg-muted text-[12px] leading-relaxed">当前为 UI 预览。加入等待列表第一时间体验正式版。</p>
           <Button size="lg" className="w-full rounded-xl font-semibold shadow-md">
             <Star className="size-4" /> 加入等待列表
           </Button>
-          <span className="text-muted-foreground text-[10px] flex items-center gap-1">
+          <span className="text-fg-muted text-[10px] flex items-center gap-1">
             <Shield className="size-3" /> 隐私优先 · 数据完全由你控制
           </span>
         </div>
@@ -257,7 +257,7 @@ function DesktopDNA() {
             <h1 className="text-2xl font-bold tracking-tight">Mango DNA</h1>
             <Badge variant="info" className="text-[10px]">Preview</Badge>
           </div>
-          <p className="text-muted-foreground text-sm leading-relaxed">
+          <p className="text-fg-muted text-sm leading-relaxed">
             构建你的专属 AI 人格代理——它会学习你的思维方式、记住你的知识体系，
             成为真正懂你的第二大脑。下一代 Mango Learning OS 核心功能。
           </p>
@@ -278,13 +278,13 @@ function DesktopDNA() {
           {FEATURES.map(f => {
             const Icon = f.icon;
             return (
-              <div key={f.title} className="bg-card flex flex-col gap-3 rounded-xl border p-5 transition-shadow hover:shadow-md">
+              <div key={f.title} className="bg-surface flex flex-col gap-3 rounded-xl border p-5 transition-shadow hover:shadow-md">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-xl"
                   style={{ backgroundColor: `color-mix(in oklch, ${f.color} 15%, transparent)` }}>
                   <Icon className="size-5" style={{ color: f.color }} />
                 </span>
                 <h3 className="text-sm font-semibold">{f.title}</h3>
-                <p className="text-muted-foreground text-xs leading-relaxed">{f.desc}</p>
+                <p className="text-fg-muted text-xs leading-relaxed">{f.desc}</p>
               </div>
             );
           })}
@@ -304,12 +304,12 @@ function DesktopDNA() {
               return (
                 <div key={s.num} className="flex gap-3">
                   <div className="flex flex-col items-center shrink-0">
-                    <span className={`flex size-8 items-center justify-center rounded-full text-xs font-bold ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{s.num}</span>
+                    <span className={`flex size-8 items-center justify-center rounded-full text-xs font-bold ${active ? "bg-primary text-primary-foreground" : "bg-muted text-fg-muted"}`}>{s.num}</span>
                     {i < STEPS.length - 1 && <div className={`w-px flex-1 mt-1 ${active ? "bg-primary/30" : "bg-border"}`} />}
                   </div>
                   <div className={`pb-6 ${!active ? "opacity-50" : ""}`}>
                     <p className="text-sm font-medium">{s.title}</p>
-                    <p className="text-muted-foreground text-xs leading-relaxed">{s.desc}</p>
+                    <p className="text-fg-muted text-xs leading-relaxed">{s.desc}</p>
                   </div>
                 </div>
               );
@@ -328,7 +328,7 @@ function DesktopDNA() {
                   <span className="bg-primary/10 flex size-10 items-center justify-center rounded-full"><Bot className="text-primary size-5" /></span>
                   <div>
                     <div className="flex items-center gap-2"><h3 className="font-semibold">{PERSONA.name}</h3><Badge variant="info">v1.0</Badge></div>
-                    <p className="text-muted-foreground text-xs">{PERSONA.tagline}</p>
+                    <p className="text-fg-muted text-xs">{PERSONA.tagline}</p>
                   </div>
                 </div>
                 <Badge variant="success" className="gap-1"><CheckCircle2 className="size-3" /> Active</Badge>
@@ -336,28 +336,28 @@ function DesktopDNA() {
             </div>
             <CardContent className="flex flex-col gap-5 pt-5">
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1.5">思维风格</p>
+                <p className="text-xs font-medium text-fg-muted mb-1.5">思维风格</p>
                 <p className="text-sm leading-relaxed">{PERSONA.thinkingStyle}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">认知特征</p>
+                <p className="text-xs font-medium text-fg-muted mb-2">认知特征</p>
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   {PERSONA.traits.map(t => (
                     <div key={t.label} className="flex flex-col gap-1">
-                      <div className="flex justify-between text-xs"><span>{t.label}</span><span className="text-muted-foreground tabular-nums">{t.pct}%</span></div>
+                      <div className="flex justify-between text-xs"><span>{t.label}</span><span className="text-fg-muted tabular-nums">{t.pct}%</span></div>
                       <Progress value={t.pct} />
                     </div>
                   ))}
                 </div>
               </div>
               <div>
-                <p className="text-xs font-medium text-muted-foreground mb-1.5">知识领域</p>
+                <p className="text-xs font-medium text-fg-muted mb-1.5">知识领域</p>
                 <div className="flex flex-wrap gap-1.5">{PERSONA.knowledge.map(k => <Badge key={k} variant="secondary" className="text-xs">{k}</Badge>)}</div>
               </div>
-              <div className="bg-muted/50 grid grid-cols-2 gap-x-6 gap-y-2 rounded-lg p-3 text-xs">
-                <div><span className="text-muted-foreground">模型</span><p className="font-medium">{PERSONA.model}</p></div>
-                <div><span className="text-muted-foreground">数据来源</span><p className="font-medium">{PERSONA.trainedOn}</p></div>
-                <div><span className="text-muted-foreground">最后更新</span><p className="font-medium flex items-center gap-1"><Clock className="size-3" />{PERSONA.updated}</p></div>
+              <div className="bg-bg-muted grid grid-cols-2 gap-x-6 gap-y-2 rounded-lg p-3 text-xs">
+                <div><span className="text-fg-muted">模型</span><p className="font-medium">{PERSONA.model}</p></div>
+                <div><span className="text-fg-muted">数据来源</span><p className="font-medium">{PERSONA.trainedOn}</p></div>
+                <div><span className="text-fg-muted">最后更新</span><p className="font-medium flex items-center gap-1"><Clock className="size-3" />{PERSONA.updated}</p></div>
               </div>
             </CardContent>
           </Card>
@@ -378,7 +378,7 @@ function DesktopDNA() {
                     <Badge variant={avail ? "success" : "secondary"} className="text-[10px]">{a.status}</Badge>
                   </div>
                   <h4 className="text-sm font-semibold">{a.name}</h4>
-                  <p className="text-muted-foreground text-xs leading-relaxed">{a.desc}</p>
+                  <p className="text-fg-muted text-xs leading-relaxed">{a.desc}</p>
                   <Button size="sm" variant={avail ? "default" : "outline"} className="mt-auto w-full" disabled={!avail}>
                     {avail ? <><Play className="size-3.5" /> 启动</> : <><Clock className="size-3.5" /> 敬请期待</>}
                   </Button>
@@ -395,7 +395,7 @@ function DesktopDNA() {
           <span className="bg-primary/10 flex size-12 shrink-0 items-center justify-center rounded-2xl"><Dna className="text-primary size-6" /></span>
           <div className="flex-1">
             <p className="font-semibold">Mango DNA 将在 v2.0 正式上线</p>
-            <p className="text-muted-foreground mt-0.5 text-sm">当前为 UI 预览。正式版支持真实文档上传、AI 人格生成与长期记忆持久化。</p>
+            <p className="text-fg-muted mt-0.5 text-sm">当前为 UI 预览。正式版支持真实文档上传、AI 人格生成与长期记忆持久化。</p>
           </div>
           <div className="flex gap-2">
             <Button><Star className="size-4" /> 加入等待列表</Button>

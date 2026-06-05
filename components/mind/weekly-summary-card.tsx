@@ -58,7 +58,7 @@ export function WeeklySummaryCard() {
     if (reflections.length === 0) return "No mood data yet";
     const moods = reflections
       .map((r) => {
-        const match = r.body.match(/Mood: ([😊😐😢😡🤔])/);
+        const match = r.body.match(/Mood: ([平静平常😢😡🤔])/);
         return match ? match[1] : null;
       })
       .filter(Boolean);
@@ -70,8 +70,8 @@ export function WeeklySummaryCard() {
     });
     const top = Object.entries(freq).sort((a, b) => b[1] - a[1])[0];
     const labelMap: Record<string, string> = {
-      "😊": "mostly positive",
-      "😐": "neutral",
+      "平静": "mostly positive",
+      "平常": "neutral",
       "😢": "somewhat low",
       "😡": "frustrated",
       "🤔": "reflective",
@@ -169,7 +169,7 @@ export function WeeklySummaryCard() {
           <div className="flex items-start gap-2.5 bg-background/80 rounded-xl p-3">
             <TrendingUp className="size-4 text-primary mt-0.5 shrink-0" />
             <div>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+              <p className="text-[10px] text-fg-muted font-medium uppercase tracking-wide">
                 Mood Pattern
               </p>
               <p className="text-sm mt-0.5 leading-relaxed">
@@ -182,7 +182,7 @@ export function WeeklySummaryCard() {
           <div className="flex items-start gap-2.5 bg-background/80 rounded-xl p-3">
             <Lightbulb className="size-4 text-amber-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+              <p className="text-[10px] text-fg-muted font-medium uppercase tracking-wide">
                 Key Insight
               </p>
               <p className="text-sm mt-0.5 leading-relaxed">
@@ -195,7 +195,7 @@ export function WeeklySummaryCard() {
           <div className="flex items-start gap-2.5 bg-background/80 rounded-xl p-3">
             <Target className="size-4 text-blue-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+              <p className="text-[10px] text-fg-muted font-medium uppercase tracking-wide">
                 Focus Area
               </p>
               <p className="text-sm mt-0.5 leading-relaxed">
@@ -208,7 +208,7 @@ export function WeeklySummaryCard() {
           <div className="flex items-start gap-2.5 bg-background/80 rounded-xl p-3">
             <Heart className="size-4 text-rose-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+              <p className="text-[10px] text-fg-muted font-medium uppercase tracking-wide">
                 Encouragement
               </p>
               <p className="text-sm mt-0.5 leading-relaxed italic">

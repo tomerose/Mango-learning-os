@@ -17,18 +17,18 @@ type MoodRecord = {
 type Trend = "improving" | "stable" | "declining";
 
 const MOOD_MAP: Record<string, { label: string; score: number }> = {
-  "😊": { label: "Happy", score: 5 },
-  "🤔": { label: "Pensive", score: 4 },
-  "😐": { label: "Neutral", score: 3 },
-  "😢": { label: "Sad", score: 2 },
-  "😡": { label: "Angry", score: 1 },
+  "平静": { label: "Calm", score: 5 },
+  "沉思": { label: "Thoughtful", score: 4 },
+  "平常": { label: "Neutral", score: 3 },
+  "低落": { label: "Low", score: 2 },
+  "烦躁": { label: "Irritated", score: 1 },
 };
 
 function getMoodEmoji(body: string): string {
   for (const emoji of Object.keys(MOOD_MAP)) {
     if (body.includes(emoji)) return emoji;
   }
-  return "😐";
+  return "平常";
 }
 
 function getTrend(scores: number[]): Trend {
@@ -53,7 +53,7 @@ const TREND_CONFIG: Record<
     label: "Improving",
     color: "text-emerald-500",
   },
-  stable: { icon: Minus, label: "Stable", color: "text-muted-foreground" },
+  stable: { icon: Minus, label: "Stable", color: "text-fg-muted" },
   declining: {
     icon: TrendingDown,
     label: "Declining",
@@ -168,7 +168,7 @@ export function MoodTracker() {
                 </div>
 
                 {/* Day label */}
-                <span className="text-[10px] text-muted-foreground/70 truncate w-full text-center">
+                <span className="text-[10px] text-fg-muted/70 truncate w-full text-center">
                   {day.date}
                 </span>
               </div>
@@ -177,7 +177,7 @@ export function MoodTracker() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground/60">
+        <div className="flex items-center justify-center gap-4 text-[10px] text-fg-muted/60">
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-emerald-400 inline-block" />
             Positive

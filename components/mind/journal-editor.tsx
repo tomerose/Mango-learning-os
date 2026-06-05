@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils";
 
 // ─── Types ─────────────────────────────────────────────────────
 
-type MoodEmoji = "😊" | "😐" | "😢" | "😡" | "🤔";
-type MoodLabel = "Happy" | "Neutral" | "Sad" | "Angry" | "Pensive";
+type MoodEmoji = "平静" | "平常" | "低落" | "烦躁" | "沉思";
+type MoodLabel = "Calm" | "Neutral" | "Low" | "Irritated" | "Thoughtful";
 
 interface MoodOption {
   emoji: MoodEmoji;
@@ -22,11 +22,11 @@ interface MoodOption {
 }
 
 const MOOD_OPTIONS: MoodOption[] = [
-  { emoji: "😊", label: "Happy", description: "Feeling good" },
-  { emoji: "😐", label: "Neutral", description: "Just okay" },
-  { emoji: "😢", label: "Sad", description: "Down or blue" },
-  { emoji: "😡", label: "Angry", description: "Frustrated" },
-  { emoji: "🤔", label: "Pensive", description: "Deep in thought" },
+  { emoji: "平静", label: "Calm", description: "Feeling good" },
+  { emoji: "平常", label: "Neutral", description: "Just okay" },
+  { emoji: "低落", label: "Low", description: "Down or blue" },
+  { emoji: "烦躁", label: "Irritated", description: "Frustrated" },
+  { emoji: "沉思", label: "Thoughtful", description: "Deep in thought" },
 ];
 
 // ─── Component ─────────────────────────────────────────────────
@@ -69,7 +69,7 @@ export function JournalEditor() {
 
     try {
       addReflection({
-        mood: mood ?? "😐",
+        mood: mood ?? "平常",
         body: [
           `Mood: ${mood ?? "unspecified"}`,
           `Stress: ${stress}/10`,
@@ -111,7 +111,7 @@ export function JournalEditor() {
                   "flex flex-col items-center gap-0.5 p-2.5 rounded-xl transition-all text-2xl",
                   mood === opt.emoji
                     ? "bg-primary-subtle scale-110 ring-2 ring-primary/30"
-                    : "hover:bg-muted/50 opacity-70 hover:opacity-100"
+                    : "hover:bg-bg-muted/50 opacity-70 hover:opacity-100"
                 )}
               >
                 {opt.emoji}
@@ -140,7 +140,7 @@ export function JournalEditor() {
               max={10}
               value={stress}
               onChange={(e) => setStress(Number(e.target.value))}
-              className="w-full h-1.5 rounded-full appearance-none bg-muted cursor-pointer
+              className="w-full h-1.5 rounded-full appearance-none bg-bg-muted cursor-pointer
                 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
                 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
                 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer
@@ -167,7 +167,7 @@ export function JournalEditor() {
               max={10}
               value={motivation}
               onChange={(e) => setMotivation(Number(e.target.value))}
-              className="w-full h-1.5 rounded-full appearance-none bg-muted cursor-pointer
+              className="w-full h-1.5 rounded-full appearance-none bg-bg-muted cursor-pointer
                 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
                 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
                 [&::-webkit-slider-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:cursor-pointer

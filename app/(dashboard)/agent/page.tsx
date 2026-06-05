@@ -16,6 +16,7 @@ import { ConceptExplainer } from "@/components/agent/concept-explainer";
 import { ExerciseGenerator } from "@/components/agent/exercise-generator";
 import { MistakeAnalyzer } from "@/components/agent/mistake-analyzer";
 import { DocumentImporter } from "@/components/knowledge-tree/document-importer";
+import { PageTransition } from "@/components/layout/page-transition";
 import { SubjectManager } from "@/components/subject-manager";
 import type { SubjectId } from "@/lib/types";
 
