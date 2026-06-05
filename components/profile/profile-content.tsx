@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Trophy, Flame, Clock, Award, BookOpen, Brain, Star, Lock, Target } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,19 +19,20 @@ const achievements = [
   { icon: Target, name: "目标达成者", desc: "完成一个学期目标", unlocked: false, color: "var(--chart-1)" },
 ];
 
-export function ProfileContent() {
-  const { stats, tasks, mode } = useStore();
+// ── 个人档案内容 ───────────────────────────────────────────────
+function ProfileTab() {
+  const { stats, tasks, mode, storagePreference, setStoragePreference, syncLocalToCloud } = useStore();
   const { totalXp, level, xpToNextLevel, xpForCurrentLevel, streakDays, minutesToday } = stats;
+  const [syncing, setSyncing] = React.useState(false);
+  const [syncMsg, setSyncMsg] = React.useState("");
 
   const levelSpan = xpToNextLevel - xpForCurrentLevel || 1;
   const levelProgress = Math.round(((totalXp - xpForCurrentLevel) / levelSpan) * 100);
-
-  // Compute live stats from real data
   const totalTasksDone = tasks.filter((t) => t.done).length;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Identity header */}
+      {/* 身份卡片 */}
       <Card>
         <CardContent className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
           <Avatar className="size-20 text-2xl">
@@ -38,9 +40,7 @@ export function ProfileContent() {
           </Avatar>
           <div className="flex flex-1 flex-col items-center gap-2 sm:items-start">
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-semibold">
-                {mode === "cloud" ? "学习者" : "学习者"}
-              </h1>
+              <h1 className="text-xl font-semibold">学习者</h1>
               <Badge>Lv.{level}</Badge>
             </div>
             <p className="text-muted-foreground text-sm">
@@ -57,7 +57,7 @@ export function ProfileContent() {
         </CardContent>
       </Card>
 
-      {/* Lifetime stats — computed from live store data */}
+      {/* 统计卡片 */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
           { icon: Flame, label: "当前连击", value: `${streakDays} 天`, color: "var(--chart-3)" },
@@ -78,7 +78,55 @@ export function ProfileContent() {
         })}
       </div>
 
-      {/* Achievements */}
+      {/* 数据存储设置 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">数据存储</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">
+                {storagePreference === "local" ? "💻 本地存储" : "☁️ 云端存储"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {storagePreference === "local"
+                  ? "数据保存在当前浏览器，换设备无法同步"
+                  : "数据保存在云端，任何设备登录后自动同步"}
+              </p>
+            </div>
+            <button
+              onClick={() => setStoragePreference(storagePreference === "local" ? "cloud" : "local")}
+              className="text-xs text-primary font-medium hover:underline shrink-0"
+            >
+              {storagePreference === "local" ? "切换到云端" : "切换到本地"}
+            </button>
+          </div>
+
+          {mode === "cloud" && (
+            <div className="pt-3 border-t">
+              <button
+                onClick={async () => {
+                  setSyncing(true); setSyncMsg("");
+                  try {
+                    await syncLocalToCloud();
+                    setSyncMsg("数据已同步到云端 ✅");
+                  } catch {
+                    setSyncMsg("同步失败，请稍后重试");
+                  } finally { setSyncing(false); }
+                }}
+                disabled={syncing}
+                className="w-full rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
+              >
+                {syncing ? "⏳ 同步中…" : "☁️ 一键上传数据到云端"}
+              </button>
+              {syncMsg && <p className="text-xs text-muted-foreground text-center mt-2">{syncMsg}</p>}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 成就墙 */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">成就墙</CardTitle>
@@ -111,8 +159,30 @@ export function ProfileContent() {
         </CardContent>
       </Card>
 
-      {/* Reflection history */}
+      {/* 反思记录 */}
       <ReflectionsSection />
+
+      {/* 关于我们 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">关于我们</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-2">
+          <p>第三自习室出品 · 和你一起成长的学习伴侣。</p>
+          <p className="text-xs">学习路上不孤单，我们一同前行。</p>
+          <div className="mt-3 pt-3 border-t space-y-1 text-xs">
+            <p className="flex items-center gap-2">
+              <span className="font-medium text-foreground">WeChat</span>
+              tokentome222 / sillyfind2025
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
+}
+
+// ── 主入口 ──────────────────────────────────────────────────────
+export function ProfileContent() {
+  return <ProfileTab />;
 }

@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const VALID_CODE = "tokentome222";
+const LOGIN_CODE = "tokentome222";   // 登录/注册邀请码
+const GUEST_CODE = "tokentome111";  // 游客入口邀请码
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -36,10 +37,11 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   function verifyCode(code: string) {
     setInviteCode(code);
-    if (code.trim() === VALID_CODE) {
+    const validCode = isLogin ? LOGIN_CODE : GUEST_CODE;
+    if (code.trim() === LOGIN_CODE || code.trim() === GUEST_CODE) {
       setCodeVerified(true);
       setCodeError(null);
-    } else if (code.trim().length >= VALID_CODE.length) {
+    } else if (code.trim().length >= LOGIN_CODE.length) {
       setCodeError("邀请码不正确，请检查后重试");
       setCodeVerified(false);
     } else {
@@ -49,6 +51,10 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   function continueAsGuest() {
+    if (!codeVerified) {
+      setCodeError("请先输入正确的邀请码");
+      return;
+    }
     window.location.href = "/api/guest";
   }
 
@@ -67,6 +73,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           password,
         });
         if (error) throw error;
+        document.cookie = "mango_visited=1;path=/;max-age=" + 60*60*24*365;
         const redirectTo = searchParams.get("redirectedFrom") || "/dashboard";
         router.push(redirectTo);
         router.refresh();
@@ -78,6 +85,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         });
         if (error) throw error;
         if (data.session) {
+          document.cookie = "mango_visited=1;path=/;max-age=" + 60*60*24*365;
           router.push("/dashboard");
           router.refresh();
         } else {
@@ -165,6 +173,21 @@ export function AuthForm({ mode }: AuthFormProps) {
             <p className="text-primary text-xs font-medium inline-flex items-center gap-1">
               <Key className="size-3" /> 邀请码验证通过
             </p>
+          </div>
+
+          {/* Guest entry — even after code verification */}
+          <button
+            type="button"
+            onClick={continueAsGuest}
+            className="text-muted-foreground text-xs hover:underline text-center -mt-1 mb-1"
+          >
+            以游客身份继续 →
+          </button>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-[10px] text-muted-foreground">或登录</span>
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           <form onSubmit={onSubmit} className="flex flex-col gap-4">

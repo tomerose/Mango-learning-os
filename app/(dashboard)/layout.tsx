@@ -1,30 +1,33 @@
-import { Sidebar } from "@/components/sidebar";
-import { MobileNav } from "@/components/mobile-nav";
+import { SidebarV2 } from "@/components/layout/sidebar-v2";
+import { MobileNavV2 } from "@/components/layout/mobile-nav-v2";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { StoreProvider } from "@/lib/store";
 import { SubjectProvider } from "@/lib/subjects";
 import { UpdateModal } from "@/components/update-modal";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SubjectProvider>
     <StoreProvider>
+      <TooltipProvider delayDuration={300}>
       <UpdateModal />
       {/* ── DESKTOP ──────────────────────────────────────── */}
       <div className="bg-background hidden md:flex min-h-screen">
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <SidebarV2 />
+        <div className="flex min-w-0 flex-1 flex-col ml-[72px] lg:ml-[280px] transition-all duration-300">
           <header className="bg-background/80 sticky top-0 z-10 flex h-16 items-center justify-end gap-2 border-b px-6 backdrop-blur">
             <ThemeToggle /><UserMenu />
           </header>
-          <main className="flex-1 px-8 py-8"><div className="mx-auto w-full max-w-6xl">{children}</div></main>
+          <main className="flex-1 px-6 py-8">
+            <div className="mx-auto w-full max-w-7xl">{children}</div>
+          </main>
         </div>
       </div>
 
-      {/* ── MOBILE: Premium floating glass shell ─────────── */}
+      {/* ── MOBILE ──────────────────────────────────────── */}
       <div className="bg-background flex md:hidden min-h-screen flex-col">
-        {/* Floating glass header */}
         <header className="surface-glass sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between px-4 mx-3 mt-3 rounded-full">
           <div className="flex items-center gap-2.5">
             <div className="size-7 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-sm">
@@ -40,13 +43,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto pt-4">
+        <main className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
           {children}
         </main>
 
-        {/* Floating pill bottom nav */}
-        <MobileNav />
+        <MobileNavV2 />
       </div>
+      </TooltipProvider>
     </StoreProvider>
     </SubjectProvider>
   );

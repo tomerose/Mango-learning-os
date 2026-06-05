@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, ExternalLink, Trash2, BookMarked, Upload } from "lucide-react";
+import { Plus, ExternalLink, Trash2, BookMarked, Upload, Download } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -78,10 +78,24 @@ export function ResourcesTab() {
     setItems(prev => prev.filter(i => i.id !== id));
   }
 
+  function exportResources() {
+    const md = items.map((r) => `- [${r.title}](${r.url || "#"}) — ${r.type} · ${SUBJECT_META[r.subject]?.label ?? r.subject}`).join("\n");
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office"><head><meta charset="utf-8"><style>body{font-family:'Microsoft YaHei',sans-serif;line-height:2;padding:2cm;}h1{font-size:20px;}li{font-size:14px;margin:8px 0;}</style></head><body><h1>📚 学习资料导出</h1><p style="color:#888;">共 ${items.length} 条 · ${new Date().toLocaleDateString("zh-CN")}</p><ul>${items.map((r) => `<li><strong>${r.title}</strong> — ${r.type} · ${SUBJECT_META[r.subject]?.label ?? r.subject}<br><a href="${r.url}">${r.url}</a></li>`).join("")}</ul></body></html>`;
+    const blob = new Blob(["﻿" + html], { type: "application/msword;charset=utf-8" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `Mango_资料_${new Date().toISOString().slice(0,10)}.doc`; a.click(); URL.revokeObjectURL(a.href);
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">{items.length} 个资源</p>
+        <div className="flex items-center gap-2">
+          <p className="text-muted-foreground text-sm">{items.length} 个资源</p>
+          {items.length > 0 && (
+            <button onClick={exportResources} className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
+              <Download className="size-3" /> 导出
+            </button>
+          )}
+        </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button size="sm"><Plus className="size-4" /> 添加资源</Button>

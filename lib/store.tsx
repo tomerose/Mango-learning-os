@@ -21,6 +21,7 @@ import {
   insertQuizAttempt,
   updateFlashcardSchedule,
   addProfileXp,
+  migrateGuestToCloud,
 } from "@/lib/supabase/queries";
 import {
   seedTasks,
@@ -82,6 +83,12 @@ interface StoreValue extends StoreState {
   hydrated: boolean;
   stats: DashboardStats;
   weakAreas: WeakArea[];
+  storagePreference: "local" | "cloud";
+  setStoragePreference: (pref: "local" | "cloud") => void;
+  syncLocalToCloud: () => Promise<void>;
+  guestActionCount: number;
+  guestActionLimit: number;
+  incrementGuestAction: () => boolean; // returns false if limit reached
   toggleTask: (id: string) => void;
   addTask: (task: Omit<Task, "id">) => void;
   addNote: (note: Omit<Note, "id" | "updatedLabel">) => void;
@@ -92,15 +99,15 @@ interface StoreValue extends StoreState {
 }
 
 const initialState: StoreState = {
-  tasks: seedTasks,
-  notes: seedNotes,
-  reflections: seedReflections,
-  flashcards: seedFlashcards,
-  quizAttempts: seedQuizAttempts,
+  tasks: [],
+  notes: [],
+  reflections: [],
+  flashcards: [],
+  quizAttempts: [],
   mode: "guest",
   userId: null,
   xp: 0,
-  streakDays: seedStats.streakDays,
+  streakDays: 0,
 };
 
 const StoreContext = React.createContext<StoreValue | null>(null);
@@ -144,8 +151,8 @@ function deriveStats(s: StoreState): DashboardStats {
       level,
       xpForCurrentLevel: (level - 1) * XP_PER_LEVEL,
       xpToNextLevel: level * XP_PER_LEVEL,
-      minutesToday: seedStats.minutesToday,
-      minutesGoal: seedStats.minutesGoal,
+      minutesToday: 0,
+      minutesGoal: 180,
       tasksDoneToday: doneToday,
       tasksTotalToday: s.tasks.length,
     };
@@ -203,7 +210,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Cloud path — clean slate, no auto-seed.
+      // Cloud path — fetch user data from Supabase.
       const [tasks, notes, flashcards, reflections, quizAttempts] =
         await Promise.all([
           fetchTasks(),
@@ -214,6 +221,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         ]);
       const profile = await fetchProfile(user.id);
 
+      // Login with clean slate — guest data stays in localStorage
+      // but is not loaded in cloud mode. User starts fresh.
       if (cancelled) return;
       setState({
         tasks,
@@ -239,9 +248,39 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // 鈹€鈹€ Persist (guest mode only; cloud lives in the DB) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+  // ── Storage preference ───────────────────────────────────
+  const [storagePreference, setStoragePreferenceState] = React.useState<"local" | "cloud">(() => {
+    try { return (localStorage.getItem("mango-storage-pref") as "local" | "cloud") || "local"; }
+    catch { return "local"; }
+  });
+
+  // ── Guest 2-use total limit (persisted in localStorage, ref for instant reads) ──
+  const GUEST_LIMIT = 2;
+  const GUEST_COUNT_KEY = "mango-guest-action-count";
+  const [guestActionCount, setGuestActionCount] = React.useState(() => {
+    try { return parseInt(localStorage.getItem(GUEST_COUNT_KEY) ?? "0", 10); }
+    catch { return 0; }
+  });
+  const guestCountRef = React.useRef(guestActionCount);
+
+  const incrementGuestAction = React.useCallback((): boolean => {
+    const prev = stateRef.current;
+    if (prev.mode === "cloud") return true;
+    const next = guestCountRef.current + 1;
+    guestCountRef.current = next;
+    setGuestActionCount(next);
+    try { localStorage.setItem(GUEST_COUNT_KEY, String(next)); } catch {}
+    return next <= GUEST_LIMIT;
+  }, []);
+
+  // Guest: force local-only storage
+  const effectiveStorageMode = state.mode === "cloud" ? storagePreference : "local";
+
+  // Persist: always to localStorage when storagePreference is "local"
+  // StoragePreference "cloud" → only Supabase (no localStorage dual-write)
   React.useEffect(() => {
-    if (!hydrated || state.mode !== "guest") return;
+    if (!hydrated) return;
+    if (state.mode !== "guest" && storagePreference !== "local") return;
     try {
       const snap: GuestSnapshot = {
         tasks: state.tasks,
@@ -252,10 +291,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         xp: state.xp,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
-    } catch {
-      // storage full / disabled 鈥?degrade to in-memory only
-    }
-  }, [state, hydrated]);
+    } catch { /* storage full */ }
+  }, [state, hydrated, storagePreference]);
 
   // 鈹€鈹€ Actions 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   const toggleTask = React.useCallback((id: string) => {
@@ -281,6 +318,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const addTask = React.useCallback(
     (task: Omit<Task, "id">) => {
+      if (!incrementGuestAction()) return; // guest limit reached
       const prev = stateRef.current;
       if (prev.mode === "cloud" && prev.userId) {
         upsertTask(prev.userId, task).catch((e) =>
@@ -304,7 +342,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const addNote = React.useCallback(
     (note: Omit<Note, "id" | "updatedLabel">) => {
       const prev = stateRef.current;
-      if (prev.mode === "cloud" && prev.userId) {
+      if (!incrementGuestAction()) return; // guest limit reached
+      if (prev.mode === "cloud" && prev.userId && storagePreference === "cloud") {
         insertNote(prev.userId, note)
           .then((saved) =>
             setState((p) => ({ ...p, notes: [saved, ...p.notes] }))
@@ -419,12 +458,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const setStoragePreference = React.useCallback((pref: "local" | "cloud") => {
+    setStoragePreferenceState(pref);
+    try { localStorage.setItem("mango-storage-pref", pref); } catch {}
+  }, []);
+
+  const syncLocalToCloud = React.useCallback(async () => {
+    const prev = stateRef.current;
+    if (!prev.userId || prev.mode !== "cloud") return;
+    try {
+      await migrateGuestToCloud(prev.userId, {
+        tasks: prev.tasks, notes: prev.notes, reflections: prev.reflections,
+        flashcards: prev.flashcards, quizAttempts: prev.quizAttempts,
+      });
+    } catch (e) { console.error("[store] syncLocalToCloud failed:", e); throw e; }
+  }, []);
+
   const value = React.useMemo<StoreValue>(
     () => ({
       ...state,
       hydrated,
       stats: deriveStats(state),
       weakAreas: aggregateWeakAreas(state.quizAttempts),
+      storagePreference,
+      setStoragePreference,
+      syncLocalToCloud,
+      guestActionCount,
+      guestActionLimit: GUEST_LIMIT,
+      incrementGuestAction,
       toggleTask,
       addTask,
       addNote,
@@ -436,6 +497,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [
       state,
       hydrated,
+      storagePreference,
+      setStoragePreference,
+      syncLocalToCloud,
+      guestActionCount,
+      incrementGuestAction,
       toggleTask,
       addTask,
       addNote,

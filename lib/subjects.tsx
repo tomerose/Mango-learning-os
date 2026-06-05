@@ -17,11 +17,11 @@ export interface SubjectDef {
 }
 
 const SEED: SubjectDef[] = [
-  { id: "ai",         label: "Artificial Intelligence", short: "AI",   color: COLORS[0] },
-  { id: "economics",  label: "Economics",               short: "Econ", color: COLORS[1] },
-  { id: "finance",    label: "Finance",                  short: "Fin",  color: COLORS[2] },
-  { id: "math",       label: "Mathematics",              short: "Math", color: COLORS[3] },
-  { id: "english",    label: "English",                  short: "Eng",  color: COLORS[4] },
+  { id: "ai",         label: "人工智能",   short: "AI",   color: COLORS[0] },
+  { id: "economics",  label: "经济学",     short: "经济", color: COLORS[1] },
+  { id: "finance",    label: "金融学",     short: "金融", color: COLORS[2] },
+  { id: "math",       label: "数学",       short: "数学", color: COLORS[3] },
+  { id: "english",    label: "英语",       short: "英语", color: COLORS[4] },
 ];
 
 function load(): SubjectDef[] {

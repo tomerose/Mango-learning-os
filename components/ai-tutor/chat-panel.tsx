@@ -120,7 +120,7 @@ export function ChatPanel() {
               <Sparkles className="text-primary size-6" />
             </span>
             <div>
-              <p className="font-medium">向 AI 导师提问</p>
+              <p className="font-medium">向 AI 学伴提问</p>
               <p className="text-muted-foreground mt-1 text-sm">
                 选择学科，输入问题，获得结构化讲解
               </p>

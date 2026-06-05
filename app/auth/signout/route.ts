@@ -12,10 +12,11 @@ export async function POST(request: NextRequest) {
     await supabase.auth.signOut();
   }
 
-  const res = NextResponse.redirect(`${origin}/login`, { status: 303 });
-  // Clear any guest opt-in too, so logging out lands on a clean /login
-  // instead of silently re-entering guest mode via a stale cookie.
-  res.cookies.set(GUEST_COOKIE, "", { path: "/", maxAge: 0 });
+  const res = NextResponse.redirect(`${origin}/hub`, { status: 303 });
+  // Set guest + visited cookies so user seamlessly enters guest mode after logout
+  const cookieOpts = { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" as const, httpOnly: false };
+  res.cookies.set(GUEST_COOKIE, "1", cookieOpts);
+  res.cookies.set("mango_visited", "1", cookieOpts);
   return res;
 }
 

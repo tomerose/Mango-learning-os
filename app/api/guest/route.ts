@@ -15,5 +15,8 @@ export async function GET() {
   response.cookies.set(GUEST_COOKIE, "1", {
     path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: false,
   });
+  response.cookies.set("mango_visited", "1", {
+    path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: false,
+  });
   return response;
 }

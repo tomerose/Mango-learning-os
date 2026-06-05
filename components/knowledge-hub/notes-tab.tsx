@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Trash2, FileText, Download, FileUp, Link, Copy } from "lucide-react";
+import { Plus, Trash2, FileText, Download, FileUp, Link, Copy, FileOutput, Printer } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,6 +49,45 @@ export function NotesTab() {
     setTags("");
   }
 
+  // ── Export helpers ─────────────────────────────────────
+  function exportAsWord(note: typeof notes[0]) {
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head><meta charset="utf-8"><style>body{font-family:'Microsoft YaHei',sans-serif;line-height:1.8;padding:2cm;}h1{font-size:22px;}p{font-size:14px;}</style></head>
+<body><h1>${note.title}</h1><p><em>学科: ${SUBJECT_META[note.subject]?.label ?? note.subject} | 标签: ${note.tags.join(", ") || "无"}</em></p><hr><p>${note.body.replace(/\n/g, "<br>")}</p></body></html>`;
+    downloadBlob(html, `${note.title}.doc`, "application/msword");
+  }
+
+  function exportAsPDF(note: typeof notes[0]) {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${note.title}</title>
+<style>body{font-family:'Microsoft YaHei',sans-serif;line-height:1.8;padding:2cm;max-width:800px;margin:auto;color:#1a1a1a;}
+h1{font-size:22px;border-bottom:2px solid #e0e0e0;padding-bottom:8px;}
+.meta{color:#888;font-size:13px;margin-bottom:20px;}
+.content{font-size:14px;white-space:pre-wrap;}</style></head>
+<body><h1>${note.title}</h1><p class="meta">学科: ${SUBJECT_META[note.subject]?.label ?? note.subject} | 标签: ${note.tags.join(", ") || "无"} | ${note.updatedLabel}</p>
+<div class="content">${note.body}</div></body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 300);
+  }
+
+  function exportAll() {
+    const allHtml = notes.map((n) => `<div style="margin-bottom:40px;"><h1>${n.title}</h1><p style="color:#888;">学科: ${SUBJECT_META[n.subject]?.label ?? n.subject} | 标签: ${n.tags.join(", ")}</p><p style="white-space:pre-wrap;">${n.body}</p></div>`).join("<hr>");
+    const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+<head><meta charset="utf-8"><style>body{font-family:'Microsoft YaHei',sans-serif;line-height:1.8;padding:2cm;}h1{font-size:20px;}</style></head>
+<body><h1 style="text-align:center;">📝 Mango OS 笔记导出</h1><p style="text-align:center;color:#888;">共 ${notes.length} 篇 · ${new Date().toLocaleDateString("zh-CN")}</p>${allHtml}</body></html>`;
+    downloadBlob(html, `Mango_笔记_${new Date().toISOString().slice(0,10)}.doc`, "application/msword");
+  }
+
+  function downloadBlob(content: string, filename: string, mime: string) {
+    const blob = new Blob(["﻿" + content], { type: `${mime};charset=utf-8` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+
   function submit() {
     if (!title.trim()) return;
     addNote({
@@ -67,9 +106,16 @@ export function NotesTab() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          {hydrated ? `${notes.length} 篇笔记` : "加载中…"}
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-muted-foreground text-sm">
+            {hydrated ? `${notes.length} 篇笔记` : "加载中…"}
+          </p>
+          {notes.length > 0 && (
+            <button onClick={exportAll} className="text-[10px] text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
+              <Download className="size-3" /> 全部导出
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <ImportNoteDialog
             open={importOpen}
@@ -194,17 +240,11 @@ export function NotesTab() {
                       />
                       {meta.short}
                     </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-xs">
-                        {n.updatedLabel}
-                      </span>
-                      <button
-                        onClick={() => deleteNote(n.id)}
-                        aria-label="删除笔记"
-                        className="text-muted-foreground hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-                      >
-                        <Trash2 className="size-3.5" />
-                      </button>
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground text-xs">{n.updatedLabel}</span>
+                      <button onClick={() => exportAsWord(n)} title="导出 Word" className="text-muted-foreground hover:text-primary opacity-0 transition-opacity group-hover:opacity-100"><FileOutput className="size-3" /></button>
+                      <button onClick={() => exportAsPDF(n)} title="打印 PDF" className="text-muted-foreground hover:text-primary opacity-0 transition-opacity group-hover:opacity-100"><Printer className="size-3" /></button>
+                      <button onClick={() => deleteNote(n.id)} aria-label="删除笔记" className="text-muted-foreground hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100"><Trash2 className="size-3.5" /></button>
                     </div>
                   </div>
                   <h3 className="font-medium">{n.title}</h3>

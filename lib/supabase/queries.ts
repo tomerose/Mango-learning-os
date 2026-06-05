@@ -258,6 +258,32 @@ export async function seedNewUser(userId: string): Promise<void> {
   if (firstErr) throw firstErr;
 }
 
+/** Migrate guest localStorage data to the cloud on first login. */
+export async function migrateGuestToCloud(
+  userId: string,
+  guest: { tasks: Task[]; notes: Note[]; reflections: Reflection[]; flashcards: Flashcard[]; quizAttempts: QuizAttempt[] }
+): Promise<void> {
+  const supabase = createClient();
+  const { tasks, notes, reflections, flashcards, quizAttempts } = guest;
+
+  const taskRows = tasks.map((t) => ({ ...toTaskRow(t), id: undefined, user_id: userId }));
+  const noteRows = notes.map((n) => ({ ...toNoteRow(n), id: undefined, user_id: userId }));
+  const reflRows = reflections.map((r) => ({ ...toReflectionRow(r), id: undefined, user_id: userId }));
+  const cardRows = flashcards.map((c) => ({ ...toFlashcardRow(c), id: undefined, user_id: userId }));
+  const quizRows = quizAttempts.map((a) => ({ ...toQuizAttemptRow(a), id: undefined, user_id: userId }));
+
+  const results = await Promise.all([
+    supabase.from("tasks").insert(taskRows.length > 0 ? taskRows : []),
+    supabase.from("knowledge_notes").insert(noteRows.length > 0 ? noteRows : []),
+    supabase.from("reflections").insert(reflRows.length > 0 ? reflRows : []),
+    supabase.from("flashcards").insert(cardRows.length > 0 ? cardRows : []),
+    supabase.from("quiz_attempts").insert(quizRows.length > 0 ? quizRows : []),
+  ]);
+
+  const firstErr = results.find((r) => r.error)?.error;
+  if (firstErr) throw firstErr;
+}
+
 // ---- Exam Questions (user bank) --------------------------------
 export async function fetchExamQuestions(): Promise<import("@/lib/types").ExamQuestion[]> {
   const supabase = createClient();
