@@ -3,10 +3,13 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Brain, FileText, Sparkles, X, ArrowRight } from "lucide-react";
+import { Brain, FileText, Sparkles, X, ArrowRight, Loader2, Trees, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { useSubjects } from "@/lib/subjects";
+import { listOfficialForests, getOfficialForest, generateForest, type KnowledgeForest as ForestType } from "@/lib/ai/forest-generator";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 /* ═══════════════════════════════════════════════════════════════
    Knowledge Forest v2 — 3D Spherical Orbital Knowledge Network
@@ -117,8 +120,90 @@ export function KnowledgeForest() {
   const cx = 200, cy = 200;
   const totalConcepts = nodes.length;
 
+  const [genPrompt, setGenPrompt] = React.useState("");
+  const [genLoading, setGenLoading] = React.useState(false);
+  const [activeForest, setActiveForest] = React.useState<ForestType | null>(null);
+  const officials = listOfficialForests();
+
+  async function handleGenerate() {
+    if (!genPrompt.trim()) return;
+    setGenLoading(true);
+    const forest = await generateForest(genPrompt.trim());
+    setActiveForest(forest);
+    setGenLoading(false);
+  }
+
+  function loadOfficial(key: string) {
+    const forest = getOfficialForest(key);
+    if (forest) setActiveForest(forest);
+  }
+
   return (
     <div className="flex flex-col gap-6">
+      {/* ── AI Forest Generator ── */}
+      <div className="card-card p-5 flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <Sparkles className="size-5 text-primary" />
+          <p className="text-small font-medium">生成知识森林</p>
+        </div>
+        <div className="flex gap-2">
+          <Input
+            value={genPrompt}
+            onChange={e => setGenPrompt(e.target.value)}
+            placeholder='输入学习目标，如"IELTS 7.5"或"成为AI工程师"'
+            className="flex-1"
+            onKeyDown={e => e.key === "Enter" && handleGenerate()}
+          />
+          <Button onClick={handleGenerate} disabled={genLoading || !genPrompt.trim()}>
+            {genLoading ? <Loader2 className="size-4 animate-spin mr-1" /> : <Sparkles className="size-4 mr-1" />}
+            生成
+          </Button>
+        </div>
+
+        {/* Official forests */}
+        {officials.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-caption">官方森林：</span>
+            {officials.map(f => (
+              <button key={f.key} onClick={() => loadOfficial(f.key)}
+                className="inline-flex items-center gap-1 text-xs rounded-full border border-border px-3 py-1 hover:bg-primary-subtle hover:border-primary/30 transition-colors">
+                <Trees className="size-3" /> {f.title}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Active forest info */}
+      {activeForest && (
+        <div className="card-card p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-small font-medium">{activeForest.title}</p>
+              <p className="text-caption mt-0.5">{activeForest.description} · 预计 {activeForest.estimatedWeeks} 周</p>
+            </div>
+            <button onClick={() => setActiveForest(null)} className="text-caption hover:underline">清除</button>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {activeForest.topics.slice(0, 8).map(t => (
+              <span key={t.name} className="text-xs bg-bg-muted rounded-lg px-2 py-0.5">{t.name}</span>
+            ))}
+          </div>
+          {activeForest.learningPath.length > 0 && (
+            <div className="flex flex-col gap-1.5 mt-1">
+              <p className="text-label">学习路径</p>
+              {activeForest.learningPath.slice(0, 3).map((p, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  <span className="size-5 rounded-full bg-primary-subtle text-primary flex items-center justify-center text-[10px] font-bold">{i+1}</span>
+                  <span className="font-medium">{p.phase}</span>
+                  <span className="text-fg-muted">{p.duration}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <p className="text-small text-fg-muted">
         {totalConcepts > 0 ? `${totalConcepts} 个知识节点 · ${notes.length} 条笔记` : "创建笔记后，知识网络将自动生长"}
       </p>
