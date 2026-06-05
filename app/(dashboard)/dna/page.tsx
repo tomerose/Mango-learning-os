@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MangoDNAContent } from "@/components/mango-dna/mango-dna-content";
 import { VoiceSoulContent } from "@/components/mango-dna/voice-soul/VoiceSoulContent";
 import { SkillTree } from "@/components/ui/skill-tree";
+import { useRouter } from "next/navigation";
 
 const DEMO_SKILLS = [
   { label: "深度学习", pct: 72, color: "var(--color-primary)", children: [
@@ -22,6 +23,7 @@ const DEMO_SKILLS = [
 
 export default function DnaPage() {
   const [tab, setTab] = React.useState("dna");
+  const router = useRouter();
 
   return (
     <PageShell title="Mango DNA" description="你的学习身份与成长轨迹">
@@ -33,7 +35,7 @@ export default function DnaPage() {
         <TabsContent value="dna" className="mt-4 flex flex-col gap-6">
           <div className="card-card p-5">
             <p className="text-small font-medium mb-4">技能树</p>
-            <SkillTree skills={DEMO_SKILLS} />
+            <SkillTree skills={DEMO_SKILLS} onSelect={(skill) => router.push(`/agent?subject=${skill.label === "深度学习" ? "ai" : skill.label === "经济学" ? "economics" : "math"}`)} />
           </div>
           <MangoDNAContent />
         </TabsContent>

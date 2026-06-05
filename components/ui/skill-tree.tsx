@@ -10,24 +10,25 @@ import { cn } from "@/lib/utils";
    ═══════════════════════════════════════════════════════════════ */
 
 interface Skill {
-  label: string; pct: number; color?: string; children?: Skill[];
+  label: string; pct: number; color?: string; href?: string; children?: Skill[];
 }
 
-interface SkillTreeProps { skills: Skill[]; className?: string; }
+interface SkillTreeProps { skills: Skill[]; className?: string; onSelect?: (skill: Skill) => void; }
 
-function SkillBranch({ skill, depth = 0 }: { skill: Skill; depth?: number }) {
+function SkillBranch({ skill, depth = 0, onSelect }: { skill: Skill; depth?: number; onSelect?: (skill: Skill) => void }) {
   const hasChildren = skill.children && skill.children.length > 0;
   const color = skill.color ?? "var(--color-primary)";
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Node */}
-      <motion.div
-        className="flex items-center gap-3"
+      {/* Node — clickable */}
+      <motion.button
+        className="flex items-center gap-3 text-left hover:bg-bg-muted rounded-xl p-2 -mx-2 transition-colors duration-200"
         initial={{ opacity: 0, x: -12 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
         transition={{ delay: depth * 0.1, duration: 0.5 }}
+        onClick={() => onSelect?.(skill)}
       >
         {/* Progress ring */}
         <div className="relative size-10 shrink-0">
@@ -60,13 +61,13 @@ function SkillBranch({ skill, depth = 0 }: { skill: Skill; depth?: number }) {
             <span className="text-caption">{skill.pct < 30 ? "初学" : skill.pct < 60 ? "进阶" : skill.pct < 85 ? "熟练" : "精通"}</span>
           </div>
         </div>
-      </motion.div>
+      </motion.button>
 
       {/* Children */}
       {hasChildren && (
         <div className="ml-5 pl-4 border-l border-border/50 flex flex-col gap-2">
           {skill.children!.map((child) => (
-            <SkillBranch key={child.label} skill={child} depth={depth + 1} />
+            <SkillBranch key={child.label} skill={child} depth={depth + 1} onSelect={onSelect} />
           ))}
         </div>
       )}
@@ -74,11 +75,11 @@ function SkillBranch({ skill, depth = 0 }: { skill: Skill; depth?: number }) {
   );
 }
 
-export function SkillTree({ skills, className }: SkillTreeProps) {
+export function SkillTree({ skills, className, onSelect }: SkillTreeProps) {
   return (
     <div className={cn("flex flex-col gap-3", className)}>
       {skills.map((skill) => (
-        <SkillBranch key={skill.label} skill={skill} />
+        <SkillBranch key={skill.label} skill={skill} onSelect={onSelect} />
       ))}
     </div>
   );

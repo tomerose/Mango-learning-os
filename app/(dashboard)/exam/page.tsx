@@ -8,7 +8,7 @@ import { ExamWorkspace } from "@/components/exam/exam-workspace";
 import { NotesTab } from "@/components/knowledge-hub/notes-tab";
 import { FlashcardsTab } from "@/components/knowledge-hub/flashcards-tab";
 import { ResourcesTab } from "@/components/knowledge-hub/resources-tab";
-import { GraphTab } from "@/components/knowledge-hub/graph-tab";
+import { KnowledgeNetwork } from "@/components/knowledge-hub/knowledge-network";
 import { PageTransition } from "@/components/layout/page-transition";
 import { ExamBackground } from "@/components/ui/module-backgrounds";
 import { StepWizard } from "@/components/ui/step-wizard";
@@ -56,7 +56,7 @@ export default function ExamPage() {
             <TabsContent value="notes" className="mt-4"><NotesTab /></TabsContent>
             <TabsContent value="flashcards" className="mt-4"><FlashcardsTab /></TabsContent>
             <TabsContent value="resources" className="mt-4"><ResourcesTab /></TabsContent>
-            <TabsContent value="graph" className="mt-4"><GraphTab /></TabsContent>
+            <TabsContent value="graph" className="mt-4"><KnowledgeNetwork /></TabsContent>
           </Tabs>
           </div>
         </div>
