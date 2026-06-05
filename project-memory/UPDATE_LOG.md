@@ -1,5 +1,30 @@
 # MangoLearningOS — Update Log
 
+## 2026-06-06 — Push to Production (v0.1)
+- **Commit**: 02aaa3c — 123 files, 20,521 insertions
+- **Deployed**: https://mangoleaningos.top (Vercel auto-deploy)
+- **Tunnel**: https://devoted-turning-citizen-specialist.trycloudflare.com
+- **Project**: D:\Claudecoda学习\AI-Learning-OS
+
+### Final fixes before push
+- Exam practice tab: null-safe optional chaining, crash-free
+- Guest invite code: `tokentome111` for guest, `tokentome222` for login
+- Signout: sets guest cookie → seamless re-entry
+- First visit → /login, subsequent → /hub via `mango_visited` cookie
+- All 7 windows verified HTTP 200
+- Mobile responsive: single-column, safe-area, overflow prevention
+- Notes/Resources export: Word (.doc) + PDF (print dialog)
+- Mind Garden companion: caring therapist prompt, no interrogation
+- Premium Onboarding: first-visit only, localStorage persisted
+- Version unified: v0.1 except Mango DNA (v2.0)
+
+### Known issues (next session)
+- [ ] Flashcards SM-2: needs user-generated flashcards to demonstrate
+- [ ] Whisper API: ready architecture, needs OPENAI_API_KEY
+- [ ] Some components lack skeleton loading states
+- [ ] Voice Soul: voice cloning needs TTS integration (ElevenLabs/Cartesia)
+- [ ] Mangoing 刷题训练 quick-quiz button: input + API call functional but UI needs polish
+
 ## 2026-06-05 — 去AI化 + UI/UX Pro Max 优化
 
 ### 去AI化（标签重命名）
