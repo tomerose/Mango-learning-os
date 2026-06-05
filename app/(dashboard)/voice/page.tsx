@@ -39,6 +39,14 @@ function VoicePageInner() {
   const [waveHeights, setWaveHeights] = React.useState<number[]>(Array.from({ length: WAVE_BARS }, () => 8));
   const [greeted, setGreeted] = React.useState(false);
   const [status, setStatus] = React.useState("");
+  const [hasSpeech, setHasSpeech] = React.useState(true);
+  const [textInput, setTextInput] = React.useState("");
+
+  // Detect platform capabilities
+  React.useEffect(() => {
+    const hasSR = !!(typeof window !== "undefined" && ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition));
+    setHasSpeech(hasSR);
+  }, []);
 
   const synthRef = React.useRef<SpeechSynthesis | null>(null);
   const recogRef = React.useRef<any>(null);
@@ -114,24 +122,19 @@ function VoicePageInner() {
     setIsThinking(true);
     setStatus("芒宝正在思考...");
 
-    // Add user turn
     const newConv: Turn[] = [...convRef.current, { role: "user", text: userText }];
     setConversation(newConv);
 
     try {
-      // Call AI with persona prompt
-      const messages = [
-        { role: "system", content: activePersona.prompt },
-        ...newConv.map(t => ({ role: t.role as "user" | "assistant", content: t.text })),
-      ];
-
-      const res = await fetch("/api/ai/agent", {
+      // Use the platform-agnostic Voice Chat API
+      const history = newConv.map(t => ({ role: t.role as "user" | "assistant", content: t.text }));
+      const res = await fetch("/api/voice/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: "general", messages }),
+        body: JSON.stringify({ text: userText, personaId: activePersona.id, history }),
       });
 
-      if (!res.ok || !res.body) throw new Error("AI unavailable");
+      if (!res.ok || !res.body) throw new Error("API unavailable");
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -144,13 +147,10 @@ function VoicePageInner() {
         setStatus("芒宝正在回答...");
       }
 
-      // Add AI response
       const aiText = responseText.trim() || "抱歉，我没有理解你的意思，可以再说一遍吗？";
       const finalConv: Turn[] = [...newConv, { role: "assistant", text: aiText }];
       setConversation(finalConv);
       setStatus("");
-
-      // Speak the response
       speak(aiText);
     } catch {
       setStatus("网络出错了，请重试");
@@ -280,9 +280,30 @@ function VoicePageInner() {
           </div>
         </div>
 
-        <div className="absolute bottom-16 text-center px-8">
-          <p className="text-xs text-white/25">{activePersona.teachingStyle}</p>
-          {status && !isListening && <p className="text-xs text-white/40 mt-1">{status}</p>}
+        {/* Text input fallback for platforms without speech */}
+        {!hasSpeech && (
+          <div className="absolute bottom-16 left-0 right-0 px-6">
+            <div className="flex gap-2 max-w-md mx-auto">
+              <input
+                type="text"
+                value={textInput}
+                onChange={e => setTextInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && textInput.trim()) { handleUserSpeech(textInput.trim()); setTextInput(""); } }}
+                placeholder="输入文字对话..."
+                className="flex-1 bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
+              />
+              <button
+                onClick={() => { if (textInput.trim()) { handleUserSpeech(textInput.trim()); setTextInput(""); } }}
+                disabled={isThinking}
+                className="bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white hover:bg-white/20 transition-colors disabled:opacity-50">
+                发送
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="absolute bottom-4 text-center px-8">
+          <p className="text-[10px] text-white/15">Voice OS · 支持 Chrome/Edge 语音 · 全平台文字对话</p>
         </div>
       </motion.div>
     </PageTransition>
