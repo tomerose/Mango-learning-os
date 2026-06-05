@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarCheck, Plus, Sparkles, Layers, Target } from "lucide-react";
+import { CalendarCheck, Plus, Sparkles, Layers, Target, GraduationCap } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { useSubjects } from "@/lib/subjects";
 import { FlashcardsTab } from "@/components/knowledge-hub/flashcards-tab";
+import { ExamWorkspace } from "@/components/exam/exam-workspace";
 import type { SubjectId, Priority } from "@/lib/types";
 
 const PRIORITIES: { id: Priority; label: string }[] = [
@@ -65,9 +66,10 @@ export function PlannerContent() {
 
   return (
     <Tabs value={mainTab} onValueChange={setMainTab}>
-      <TabsList className="w-full max-w-xl">
+      <TabsList className="w-full max-w-2xl">
         <TabsTrigger value="tasks"><CalendarCheck className="size-3.5 mr-1" />任务</TabsTrigger>
         <TabsTrigger value="plan"><Sparkles className="size-3.5 mr-1" />智能计划</TabsTrigger>
+        <TabsTrigger value="exam"><GraduationCap className="size-3.5 mr-1" />考试备战</TabsTrigger>
         <TabsTrigger value="flashcards"><Layers className="size-3.5 mr-1" />闪卡复习</TabsTrigger>
       </TabsList>
 
@@ -145,6 +147,11 @@ export function PlannerContent() {
             </div>
           )}
         </div>
+      </TabsContent>
+
+      {/* ── Exam Prep Tab (考试备战从 Mangoing 迁入) ── */}
+      <TabsContent value="exam" className="mt-4">
+        <ExamWorkspace />
       </TabsContent>
 
       {/* ── Flashcards Tab (exam prep moved from Mangoing) ── */}

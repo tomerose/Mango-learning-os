@@ -75,10 +75,14 @@ export const seedActivity: ActivityEvent[] = [
 ];
 
 export const seedNotes: Note[] = [
-  { id: "n1", title: "Transformer 自注意力机制", subject: "ai", body: "Q/K/V 的本质是可学习的检索系统：Query 去和所有 Key 算相似度，softmax 归一化后对 Value 加权求和。", tags: ["深度学习", "NLP"], updatedLabel: "2h ago" },
-  { id: "n2", title: "消费者剩余 vs 生产者剩余", subject: "economics", body: "消费者剩余 = 需求曲线下方、价格上方的面积；生产者剩余 = 价格下方、供给曲线上方的面积。", tags: ["微观经济"], updatedLabel: "5h ago" },
-  { id: "n3", title: "DCF 三表联动逻辑", subject: "finance", body: "利润表的净利润 → 现金流量表起点 → 影响资产负债表的现金与未分配利润，三表通过勾稽关系闭环。", tags: ["估值", "建模"], updatedLabel: "1d ago" },
-  { id: "n4", title: "特征值的几何意义", subject: "math", body: "特征向量是线性变换下方向不变的向量，特征值是其被拉伸的倍数。", tags: ["线性代数"], updatedLabel: "2d ago" },
+  { id: "n1", title: "Transformer 自注意力机制", subject: "ai", body: "Q/K/V 的本质是可学习的检索系统：Query 去和所有 Key 算相似度，softmax 归一化后对 Value 加权求和。多头注意力允许多个表示子空间。", tags: ["深度学习", "NLP", "注意力机制", "Transformer"], updatedLabel: "2h ago" },
+  { id: "n2", title: "消费者剩余 vs 生产者剩余", subject: "economics", body: "消费者剩余 = 需求曲线下方、价格上方的面积；生产者剩余 = 价格下方、供给曲线上方的面积。总剩余最大化时市场效率最高。", tags: ["微观经济", "市场效率", "供需曲线", "福利经济学"], updatedLabel: "5h ago" },
+  { id: "n3", title: "DCF 三表联动逻辑", subject: "finance", body: "利润表的净利润 → 现金流量表起点 → 影响资产负债表的现金与未分配利润，三表通过勾稽关系闭环。", tags: ["估值", "建模", "DCF", "财务报表"], updatedLabel: "1d ago" },
+  { id: "n4", title: "特征值与特征向量的几何意义", subject: "math", body: "特征向量是线性变换下方向不变的向量，特征值是其被拉伸的倍数。对角化可以将矩阵分解为特征值矩阵。", tags: ["线性代数", "特征值", "对角化", "矩阵分解"], updatedLabel: "2d ago" },
+  { id: "n5", title: "反向传播算法推导", subject: "ai", body: "链式法则逐层计算梯度。输出层误差 → 隐藏层梯度 → 参数更新。关键理解：梯度消失来源于sigmoid导数饱和。", tags: ["深度学习", "反向传播", "梯度下降", "优化算法"], updatedLabel: "1d ago" },
+  { id: "n6", title: "市场失灵与外部性", subject: "economics", body: "外部性导致私人成本≠社会成本。负外部性→过度生产，正外部性→生产不足。庇古税和科斯定理是两种解决方案。", tags: ["微观经济", "市场失灵", "外部性", "公共政策"], updatedLabel: "3d ago" },
+  { id: "n7", title: "CAPM 资本资产定价模型", subject: "finance", body: "E(Ri) = Rf + βi(E(Rm)-Rf)。β衡量系统性风险，α衡量超额收益。CAPM假设市场有效、无交易成本。", tags: ["估值", "CAPM", "风险定价", "投资组合"], updatedLabel: "2d ago" },
+  { id: "n8", title: "奇异值分解 SVD", subject: "math", body: "A = UΣV^T。U的列是左奇异向量，V的列是右奇异向量，Σ对角线是奇异值。SVD适用于任何矩阵，是最重要的矩阵分解。", tags: ["线性代数", "SVD", "矩阵分解", "降维"], updatedLabel: "4d ago" },
 ];
 
 export const seedReflections: Reflection[] = [
