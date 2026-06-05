@@ -140,7 +140,7 @@ export function MangoboCompanion() {
         {/* Mangobo button */}
         <motion.button
           onClick={() => { setOpen(!open); setShowBubble(false); }}
-          className="relative size-[72px] rounded-full overflow-hidden shadow-xl border-2 border-primary/20 cursor-pointer"
+          className="relative size-[56px] sm:size-[72px] rounded-full overflow-hidden shadow-xl border-2 border-primary/20 cursor-pointer"
           whileHover={{ scale: 1.08, boxShadow: "0 0 30px rgba(197,139,116,0.3)" }}
           whileTap={{ scale: 0.95 }}
         >
@@ -148,6 +148,8 @@ export function MangoboCompanion() {
             ref={videoRef}
             src="/mangobo.mp4"
             autoPlay loop muted playsInline
+            preload="auto"
+            poster="/favicon-32.png"
             className="absolute inset-0 w-full h-full object-cover rounded-full"
           />
           {/* Glass overlay */}
@@ -165,13 +167,13 @@ export function MangoboCompanion() {
               className="fixed inset-0 z-[155] bg-black/20"
               onClick={() => setOpen(false)}
             />
-            {/* Panel */}
+            {/* Panel — bottom sheet on mobile, popover on desktop */}
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed bottom-32 right-4 z-[160] w-72 bg-surface/95 backdrop-blur-xl border border-border rounded-3xl shadow-2xl overflow-hidden"
+              className="fixed bottom-24 sm:bottom-32 right-2 sm:right-4 left-2 sm:left-auto z-[160] sm:w-72 bg-surface/95 backdrop-blur-xl border border-border rounded-3xl shadow-2xl overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border/50">

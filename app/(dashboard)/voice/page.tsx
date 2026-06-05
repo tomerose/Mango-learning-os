@@ -280,30 +280,28 @@ function VoicePageInner() {
           </div>
         </div>
 
-        {/* Text input fallback for platforms without speech */}
-        {!hasSpeech && (
-          <div className="absolute bottom-16 left-0 right-0 px-6">
-            <div className="flex gap-2 max-w-md mx-auto">
-              <input
-                type="text"
-                value={textInput}
-                onChange={e => setTextInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && textInput.trim()) { handleUserSpeech(textInput.trim()); setTextInput(""); } }}
-                placeholder="输入文字对话..."
-                className="flex-1 bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
-              />
-              <button
-                onClick={() => { if (textInput.trim()) { handleUserSpeech(textInput.trim()); setTextInput(""); } }}
-                disabled={isThinking}
-                className="bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white hover:bg-white/20 transition-colors disabled:opacity-50">
-                发送
-              </button>
-            </div>
+        {/* Text input — always available for all platforms */}
+        <div className="absolute bottom-16 left-0 right-0 px-4 sm:px-6">
+          <div className="flex gap-2 max-w-md mx-auto">
+            <input
+              type="text"
+              value={textInput}
+              onChange={e => setTextInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && textInput.trim()) { handleUserSpeech(textInput.trim()); setTextInput(""); } }}
+              placeholder={hasSpeech ? "输入文字或点击上方麦克风..." : "输入文字开始对话..."}
+              className="flex-1 bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/30"
+            />
+            <button
+              onClick={() => { if (textInput.trim()) { handleUserSpeech(textInput.trim()); setTextInput(""); } }}
+              disabled={isThinking || !textInput.trim()}
+              className="bg-white/10 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white hover:bg-white/20 transition-colors disabled:opacity-30">
+              发送
+            </button>
           </div>
-        )}
+        </div>
 
-        <div className="absolute bottom-4 text-center px-8">
-          <p className="text-[10px] text-white/15">Voice OS · 支持 Chrome/Edge 语音 · 全平台文字对话</p>
+        <div className="absolute bottom-2 text-center px-8">
+          <p className="text-[10px] text-white/15">Mango Voice · {hasSpeech ? "Chrome/Edge 支持语音 · " : ""}全平台文字对话</p>
         </div>
       </motion.div>
     </PageTransition>
