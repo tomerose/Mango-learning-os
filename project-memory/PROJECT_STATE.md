@@ -1,10 +1,17 @@
 # MangoLearningOS — Project State
 
-**Updated:** 2026-06-05 | **Version:** 0.1
+**Updated:** 2026-06-06 | **Version:** v6 Warm Paper Wellness
 
-## Stack
+## Stack (v6)
 Next.js 15.5 (App Router) · React 19 · TypeScript 5.8 · Tailwind CSS 4.1
 shadcn/ui (New York) · Supabase (PostgreSQL + RLS) · DeepSeek AI · Vercel
+
+## Design System (v6 Warm Paper Wellness)
+- Palette: oklch(0.978 0.005 60) bg | oklch(0.58 0.16 75) primary | oklch(0.85 0.04 140) accent
+- Typography: Cormorant Garamond (serif display) + Inter (geometric sans)
+- Surface: 6-level (paper/card/floating/glass/focus/hero)
+- Shadow: 0 8px 30px rgb(0,0,0,0.04)
+- Key components: AmbientOrbs, LearningCards, StepWizard, SkillTree, MotionSystem
 
 ## Architecture
 - **Dual-mode persistence:** guest (localStorage) / cloud (Supabase + RLS)

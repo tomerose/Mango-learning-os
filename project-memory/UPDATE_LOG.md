@@ -1,5 +1,19 @@
 # MangoLearningOS — Update Log
 
+## 2026-06-06 — v6 Warm Paper Wellness (complete redesign)
+- **Commit:** 401368a | **Deployed:** https://mangoleaningos.top
+- **Design System:** oklch warm paper palette, Cormorant Garamond + Inter, 6-level surface
+- **New Components (12):** AmbientOrbs, FloatingParticles, LearningCards, StepWizard, SkillTree, MotionSystem, ModuleBackgrounds, PageTransition, Captcha, ContentEngine, Quality, Templates
+- **Auth:** Guest `tokentome111` / Login `tokentome222` + Canvas CAPTCHA on signup
+- **AI:** Unified Content Engine (12 modes), Memory read loop fixed
+- **Data:** Cloud auto-seed demo data, Guest 50 actions
+- **Flashcards:** SM-2 3D flip animation (perspective + rotateY)
+- **Hub:** Hero card + SVG gradient orbs + floating particles + staggered reveals
+- **Exam:** 6-step StepWizard, 3D flashcard review
+- **DNA:** SVG SkillTree with demo data
+- **Mind Garden:** De-emoji mood labels, watercolor backgrounds
+- **Layout:** PageTransition AnimatePresence on hub/agent/grow
+
 ## 2026-06-06 — Push to Production (v0.1)
 - **Commit**: 02aaa3c — 123 files, 20,521 insertions
 - **Deployed**: https://mangoleaningos.top (Vercel auto-deploy)

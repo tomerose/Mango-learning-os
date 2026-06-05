@@ -1,6 +1,6 @@
 # MangoLearningOS — Session Handoff
 
-> **Last session:** 2026-06-06 (ended with production deploy) | **Next session starts here**
+> **Last session:** 2026-06-06 (v6 Warm Paper Wellness complete) | **Next session starts here**
 
 ## Quick Start
 ```bash
@@ -10,54 +10,51 @@ npm run dev -- -p 3030
 # Production: https://mangoleaningos.top (Vercel auto-deploy)
 ```
 
-## Project State
-- **Version:** 0.1 (Mango DNA stays as v2.0)
-- **Commit:** 02aaa3c on `main`, pushed to `origin/main`
-- **Stack:** Next.js 15.5 + React 19 + Tailwind 4.1 + shadcn/ui + Supabase + DeepSeek
-- **TypeScript:** zero errors
+## Current State
+- **Version:** v6 Warm Paper Wellness | **Commit:** `401368a` on `main`
+- **Stack:** Next.js 15.5 + React 19 + Tailwind 4 + shadcn/ui + Supabase + DeepSeek
+- **Design System:** oklch warm paper palette, 6-level surface, Cormorant Garamond + Inter
+- **TypeScript:** zero errors | **Build:** passing
 
-## Architecture (7 Windows)
-| Route | Name | Key Features |
-|-------|------|-------------|
-| `/hub` | Mangosum | Dashboard + Mango Magic (5 AI modes) + Onboarding |
-| `/agent` | Mango Tutor | Chat · Explain · Practice · Knowledge Import + Subject Manager |
-| `/exam` | Mangoing | Exam Prep + Notes + Flashcards + Resources + Knowledge Graph |
-| `/grow` | Mango Friend | Mind Garden · AI Companion · Projects |
-| `/planner` | Mango Plan | AI Plan Generation + Task Management |
-| `/dna` | Mango DNA | AI Personality + Voice Soul Distillation |
-| `/profile` | Mango | Stats · Achievements · Storage Pref · Cloud Sync |
+## Architecture (7 Windows → 4-core)
+| Route | Name | Key Changes v6 |
+|-------|------|---------------|
+| `/hub` | Mangosum | Hero card + AmbientOrbs SVG + FloatingParticles + StaggerReveal |
+| `/agent` | Mango Tutor | Warm-paper tokens, PageTransition, unified Content Engine |
+| `/exam` | Mangoing | 6-step StepWizard + 3D flashcard flip + SM-2 review |
+| `/grow` | Mango Friend | De-emoji moods, watercolor blobs, PageTransition |
+| `/planner` | Mango Plan | Warm-paper styling |
+| `/dna` | Mango DNA | SkillTree SVG progress rings + demo data |
+| `/profile` | Mango | Stats + achievements |
 
-## Key Files to Know
-- `lib/store.tsx` — dual-mode state (guest localStorage / cloud Supabase), guest 2-use limit
-- `lib/ai/client.ts` — OpenAI-compatible AI client (streamChat, completeChat, extractJson)
-- `lib/ai/prompts.ts` — all system prompts including structured learning
-- `lib/navigation-v2.ts` — nav items, redirect map, mobile nav
-- `app/globals.css` — Morandi color palette, paper texture, mobile responsive
-- `app/page.tsx` — root redirect (first visit → /login, subsequent → /hub)
-- `components/auth/auth-form.tsx` — login/signup/guest with invite codes
-- `components/onboarding/MangoOnboarding.tsx` — 5-stage welcome (first-visit only)
+## Design System v6
+- **Palette:** oklch(0.978 0.005 60) warm paper bg | oklch(0.58 0.16 75) mango amber primary
+- **Secondary:** oklch(0.85 0.04 140) soft sage | **Text:** oklch(0.25 0.03 140) deep forest slate
+- **Typography:** Cormorant Garamond (serif display) + Inter (geometric sans body)
+- **6-level surface:** card-paper/card-card/card-floating/card-glass/card-focus/card-hero
+- **Shadows:** 0 8px 30px rgb(0,0,0,0.04) per spec
 
-## Invite Codes
-- Guest mode: `tokentome111`
-- Login/Register: `tokentome222`
+## Key Components (12 premium)
+- `components/ui/ambient-orbs.tsx` — SVG radial gradient orbs + floating particles
+- `components/ui/learning-cards.tsx` — 6-step expandable concept cards
+- `components/ui/step-wizard.tsx` — Horizontal step flow with AnimatePresence
+- `components/ui/skill-tree.tsx` — SVG progress rings + organic branches
+- `components/ui/motion-system.tsx` — StaggerReveal/FadeIn/ScaleIn/BreathingElement
+- `components/ui/module-backgrounds.tsx` — 6 unique ambient backgrounds
+- `components/layout/page-transition.tsx` — AnimatePresence route transitions
+- `components/auth/captcha.tsx` — Canvas math challenge CAPTCHA
 
-## Guest Limits
-- 2 total actions (addNote, addTask, generate, etc.)
-- Counter persisted in localStorage (`mango-guest-action-count`)
-- Ref-based for instant reads (no race condition)
+## Core Architecture
+- **Content Engine:** `lib/ai/content-engine.ts` — 12-mode unified AI generation
+- **Quality:** `lib/ai/quality.ts` — 7-element validation + LRU cache + retry
+- **Templates:** `lib/ai/templates.ts` — Unified prompt templates with oklch theme
+- **Memory Loop:** Agent route reads `summarizeContext()` before each call
+- **Auth:** Guest `tokentome111`, Login `tokentome222`, CAPTCHA on signup
+- **Data:** Cloud auto-seed demo data, Guest 50 actions
 
-## Project Memory System
-Read/write these before/after every task:
-- `project-memory/PROJECT_STATE.md` — architecture reference
-- `project-memory/FEATURES.md` — complete feature inventory
-- `project-memory/BUGFIX_HISTORY.md` — bug history + known issues
-- `project-memory/UPDATE_LOG.md` — chronological update history
-- `project-memory/REGRESSION_CHECKLIST.md` — verify before push
-- `project-memory/SESSION_HANDOFF.md` — this file
-
-## Workflow
-1. `cd D:\Claudecoda学习\AI-Learning-OS`
-2. `npm run dev -- -p 3030`
-3. `cloudflared tunnel --url http://localhost:3030 --no-autoupdate`
-4. Develop → verify via tunnel → user approves → git push → Vercel deploy
-5. Never overwrite existing features. Always log changes. Stability > new features.
+## Known Gaps (next session)
+- [ ] GSAP ScrollTrigger not fully utilized (useGsapScroll hook exists)
+- [ ] Mobile verification needed on real devices (iPhone 15/16 Pro)
+- [ ] StepWizard on exam page shows descriptions but doesn't control tab switching
+- [ ] LearningCards in ConceptExplainer needs AI data flow to show content
+- [ ] VoiceSoul/DNA distillation not connected to Agent system prompt
