@@ -1,26 +1,24 @@
 // ═══════════════════════════════════════════════════════════════
-// Voice Chat API — Platform-agnostic voice conversation
-// Accepts text input, returns AI response + TTS-ready text.
-// Desktop/Mobile/Web all call the same endpoint.
+// Voice Chat API v2 — Deepgram-grade architecture
+// Cross-platform: Web / Desktop / Mobile / Mini-program
+// Enriched with web search context for high-quality responses.
+//
+// POST { text, personaId, history[] }
+// → Returns SSE stream with AI response chunks
+//
+// Future: add audio input (WebSocket for real-time STT)
+// Future: add audio output (TTS audio bytes in response)
 // ═══════════════════════════════════════════════════════════════
 
-import { NextRequest, NextResponse } from "next/server";
-import { completeChat, streamChat } from "@/lib/ai/client";
+import { NextRequest } from "next/server";
+import { streamChat, type ChatMessage } from "@/lib/ai/client";
 import { createRateLimiter } from "@/lib/rate-limit";
+import { buildEnrichedPrompt, generateSearchLinks } from "@/lib/ai/search-enrichment";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const limiter = createRateLimiter({ requests: 20, window: 60000 });
-
-// Persona system prompts
-const PERSONAS: Record<string, string> = {
-  "ielts-examiner": "你是IELTS口语考官。按Part1/2/3流程提问，评分4维度。每次回答后给简短反馈。用英语对话。",
-  "korean-teacher": "你是韩语老师。根据学生水平用韩语和中文混合教学。纠正发音，讲解语法。",
-  "ai-mentor": "你是AI/ML技术导师。从数学直觉出发讲解概念。批判性思维优先——反问引导。中文讲解，术语带英文。",
-  "startup-advisor": "你是创业顾问。帮助分析市场、验证想法、设计MVP。结合实际案例给出可操作建议。中文对话。",
-  "research-supervisor": "你是学术研究导师。指导论文选题、文献综述、研究方法、学术写作。中文对话。",
-};
+const limiter = createRateLimiter({ requests: 30, window: 60000 });
 
 interface VoiceChatRequest {
   text: string;
@@ -31,41 +29,51 @@ interface VoiceChatRequest {
 export async function POST(req: NextRequest) {
   const clientId = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
   if (!limiter.check(clientId)) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    return new Response("Too many requests", { status: 429, headers: { "Retry-After": "60" } });
   }
 
   let body: VoiceChatRequest;
   try { body = await req.json(); } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return new Response("Invalid JSON", { status: 400 });
   }
 
   const { text, personaId = "ai-mentor", history = [] } = body;
   if (!text?.trim()) {
-    return NextResponse.json({ error: "text is required" }, { status: 400 });
+    return new Response("text is required", { status: 400 });
   }
 
-  const personaPrompt = PERSONAS[personaId] ?? PERSONAS["ai-mentor"];
-
   try {
-    // Use streaming for faster first response
-    const messages = [
-      { role: "system" as const, content: `${personaPrompt}\n\n保持回复简洁（2-4句话），适合语音朗读。` },
-      ...history.slice(-10),
-      { role: "user" as const, content: text },
+    // Build enriched system prompt
+    const systemPrompt = buildEnrichedPrompt(personaId, text);
+
+    const messages: ChatMessage[] = [
+      { role: "system", content: systemPrompt },
+      ...history.slice(-10).map(h => ({ role: h.role as "user" | "assistant", content: h.content })),
+      { role: "user", content: text },
     ];
 
     const stream = await streamChat(messages, { temperature: 0.7 });
+
     return new Response(stream, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
         "X-Persona": personaId,
       },
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Voice chat failed" },
-      { status: 502 },
-    );
+    return new Response(err instanceof Error ? err.message : "Voice chat failed", { status: 502 });
   }
+}
+
+// ═══ GET: Search links for a topic ═══
+export async function GET(req: NextRequest) {
+  const topic = req.nextUrl.searchParams.get("q");
+  if (!topic) return new Response('{"links":[]}', { status: 400, headers: { "Content-Type": "application/json" } });
+
+  const links = generateSearchLinks(topic);
+  return new Response(JSON.stringify({ topic, links }), {
+    headers: { "Content-Type": "application/json" },
+  });
 }
