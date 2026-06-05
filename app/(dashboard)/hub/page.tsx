@@ -9,6 +9,10 @@ import {
   BarChart2,
   GraduationCap,
   ArrowRight,
+  Layers,
+  Network,
+  Heart,
+  Bot,
   Flame,
   TrendingUp,
 } from "lucide-react";
@@ -56,6 +60,9 @@ export default function HubPage() {
 
       {/* ═══ Mango Magic Card (full-screen dialog) ═══ */}
       <MagicCard open={magicOpen} onClose={() => setMagicOpen(false)} />
+
+      {/* ═══ Highlight: Hidden Gems — SM-2 Flashcard Review + Knowledge Graph + CBT ═══ */}
+      <HighValueFeatures />
 
       {/* ═══ Bento Dashboard ═══ */}
       <BentoGrid columns={4}>
@@ -392,5 +399,89 @@ function UpcomingExamsContent() {
         <a href="/exam">查看全部 →</a>
       </Button>
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HighValueFeatures — expose hidden gems on the home page
+   SM-2 Flashcards · Knowledge Graph · CBT Reframer · Agent Memory
+   ───────────────────────────────────────────────────────────── */
+
+function HighValueFeatures() {
+  const { flashcards } = useStore();
+  const dueCount = React.useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return flashcards.filter((f) => f.dueOn <= today).length;
+  }, [flashcards]);
+
+  const gems = [
+    {
+      icon: Layers,
+      label: "闪卡复习",
+      value: dueCount > 0 ? `${dueCount} 张待复习` : "去创建闪卡",
+      desc: "间隔重复 · 科学记忆",
+      href: "/exam",
+      color: "from-violet-500/10 to-violet-500/5",
+      urgent: dueCount > 0,
+    },
+    {
+      icon: Network,
+      label: "知识图谱",
+      value: "可视化知识",
+      desc: "概念关联 · 体系构建",
+      href: "/exam",
+      color: "from-emerald-500/10 to-emerald-500/5",
+      urgent: false,
+    },
+    {
+      icon: Heart,
+      label: "CBT 认知重构",
+      value: "换个角度看问题",
+      desc: "情绪管理 · 心理工具",
+      href: "/grow",
+      color: "from-rose-500/10 to-rose-500/5",
+      urgent: false,
+    },
+    {
+      icon: Bot,
+      label: "Agent 记忆",
+      value: "AI 了解你的学习",
+      desc: "薄弱分析 · 个性化推荐",
+      href: "/agent",
+      color: "from-amber-500/10 to-amber-500/5",
+      urgent: false,
+    },
+  ];
+
+  return (
+    <ScrollReveal direction="up">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {gems.map((gem) => (
+          <motion.a
+            key={gem.label}
+            href={gem.href}
+            className="group relative overflow-hidden rounded-2xl border border-border/50 bg-card p-4 transition-all duration-200 hover:border-primary/20 hover:shadow-md"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {gem.urgent && (
+              <span className="absolute top-2 right-2 size-2 rounded-full bg-orange-500 animate-pulse" />
+            )}
+            <div className="flex flex-col gap-2">
+              <span className={`flex size-9 items-center justify-center rounded-xl bg-gradient-to-br ${gem.color}`}>
+                <gem.icon className="size-4 text-primary" strokeWidth={2} />
+              </span>
+              <div>
+                <p className="text-sm font-semibold">{gem.label}</p>
+                <p className={`text-xs mt-0.5 ${gem.urgent ? "text-orange-500 font-medium" : "text-muted-foreground"}`}>
+                  {gem.value}
+                </p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">{gem.desc}</p>
+              </div>
+            </div>
+          </motion.a>
+        ))}
+      </div>
+    </ScrollReveal>
   );
 }
