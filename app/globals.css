@@ -25,14 +25,14 @@
   --radius-3xl: 1.75rem;  --radius-4xl: 2rem;    --radius-full: 9999px;
 
   /* ═══ Color: Warm Paper Light ═══ */
-  --color-bg:            #F7F4EF;
-  --color-bg-subtle:     #F0EDE6;
-  --color-bg-muted:      #E8E5DD;
+  --color-bg:            #F2EEEB;
+  --color-bg-subtle:     #EDE8E4;
+  --color-bg-muted:      #E6E0DB;
 
-  --color-surface:       #FCFAF7;
-  --color-surface-low:   #F8F6F2;
-  --color-surface-high:  #F2EFEA;
-  --color-surface-highest: #EBE8E2;
+  --color-surface:       #FFFFFF;
+  --color-surface-low:   #FAF8F6;
+  --color-surface-high:  #F5F2EF;
+  --color-surface-highest: #F0ECE8;
 
   /* Foreground — deep forest slate, not black */
   --color-fg:            #2D2A24;
@@ -40,16 +40,16 @@
   --color-fg-subtle:     #9E9A92;
   --color-fg-disabled:   #C5C2BA;
 
-  /* Primary — mango amber, warm and inviting */
-  --color-primary:           #C67B2D;
-  --color-primary-hover:     #B56E24;
-  --color-primary-active:    #A46220;
-  --color-primary-subtle:    #FBF3E8;
+  /* Primary — warm peach (matched to reference) */
+  --color-primary:           #C58B74;
+  --color-primary-hover:     #B57A64;
+  --color-primary-active:    #A56A55;
+  --color-primary-subtle:    #FBF2ED;
   --color-primary-on:        #FFFFFF;
 
-  /* Accent — soft sage green */
-  --color-accent:            #7A9B7E;
-  --color-accent-subtle:     #F2F7F1;
+  /* Accent — soft sage green (matched to reference) */
+  --color-accent:            #8A9E8B;
+  --color-accent-subtle:     #F2F6F1;
   --color-accent-on:         #FFFFFF;
 
   /* Semantic */
@@ -101,10 +101,10 @@
   --color-fg-subtle:     #6B6760;
   --color-fg-disabled:   #4A4640;
 
-  --color-primary:           #D49145;
-  --color-primary-hover:     #E09E52;
-  --color-primary-active:    #C08035;
-  --color-primary-subtle:    #2A2015;
+  --color-primary:           #D4A090;
+  --color-primary-hover:     #E0B0A0;
+  --color-primary-active:    #C09080;
+  --color-primary-subtle:    #2A1F1A;
   --color-primary-on:        #1A1814;
 
   --color-accent:            #8AAA8E;

@@ -19,9 +19,9 @@ export function AmbientOrbs({ className, variant = "multi" }: OrbProps) {
         <defs>
           {/* Amber glow */}
           <radialGradient id="orb-amber" cx="35%" cy="30%" r="50%" fx="30%" fy="25%">
-            <stop offset="0%" stopColor="#D49145" stopOpacity="0.18" />
-            <stop offset="40%" stopColor="#C67B2D" stopOpacity="0.08" />
-            <stop offset="70%" stopColor="#D49145" stopOpacity="0.02" />
+            <stop offset="0%" stopColor="#DCAE97" stopOpacity="0.20" />
+            <stop offset="40%" stopColor="#C58B74" stopOpacity="0.08" />
+            <stop offset="70%" stopColor="#DCAE97" stopOpacity="0.02" />
             <stop offset="100%" stopColor="transparent" stopOpacity="0" />
           </radialGradient>
           {/* Sage glow */}
