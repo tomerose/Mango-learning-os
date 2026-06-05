@@ -194,119 +194,141 @@ function LeftWing() {
 // ═══════════════════════════════════════════════════════════════
 function CenterCore({ onMagicClick }: { onMagicClick: () => void }) {
   const { stats, tasks } = useStore();
-  const [rot, setRot] = React.useState(0);
   const done = tasks.filter((t) => t.done).length;
   const all = tasks.length;
 
-  React.useEffect(() => {
-    const id = setInterval(() => setRot((r) => r + 0.3), 50);
-    return () => clearInterval(id);
-  }, []);
-
   return (
-    <div className="flex flex-col items-center justify-center gap-8 py-6">
-      {/* ── Orbital Core ── */}
-      <div className="relative flex items-center justify-center">
-        {/* Outer ambient glow */}
-        <motion.div
-          className="absolute size-72 rounded-full"
-          style={{ background: "radial-gradient(circle, rgba(251,146,60,0.08) 0%, transparent 70%)" }}
-          animate={{ scale: [1, 1.12, 1], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        />
+    <div className="relative flex flex-col items-center justify-center py-4 bg-transparent rounded-3xl overflow-hidden min-h-[420px]">
+      {/* 1. Grid + Radial Energy Backlight */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff03_1px,transparent_1px),linear-gradient(to_bottom,#ffffff03_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      <motion.div
+        className="absolute w-[300px] h-[300px] rounded-full bg-amber-500/10 blur-[80px] mix-blend-screen"
+        animate={{ opacity: [0.4, 0.7, 0.4] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
 
-        {/* Outer ring */}
-        <div className="absolute size-64 rounded-full border border-amber-500/[0.06]"
-          style={{ transform: `rotate(${rot}deg)` }} />
-        <div className="absolute size-56 rounded-full border border-dashed border-amber-500/[0.08]"
-          style={{ transform: `rotate(${-rot * 0.65}deg)` }} />
-        <div className="absolute size-48 rounded-full border border-amber-500/[0.04]"
-          style={{ transform: `rotate(${rot * 0.4}deg)` }} />
+      {/* 2. Orbital Rings System */}
+      <div className="relative flex items-center justify-center w-[280px] h-[280px]">
+        {/* Outer tactical radar ring — slow CW */}
+        <motion.svg
+          className="absolute w-full h-full text-slate-700/40"
+          viewBox="0 0 200 200"
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
+        >
+          <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" strokeWidth="0.7" strokeDasharray="4 8" />
+          <circle cx="100" cy="100" r="95" fill="none" stroke="url(#cyber-glow)" strokeWidth="1.5" strokeDasharray="40 140" />
+        </motion.svg>
 
-        {/* Orbital nodes */}
+        {/* Mid ring — fast CCW with neon highlights */}
+        <motion.svg
+          className="absolute w-[85%] h-[85%] text-amber-500/20"
+          viewBox="0 0 200 200"
+          animate={{ rotate: -360 }}
+          transition={{ repeat: Infinity, ease: "linear", duration: 25 }}
+        >
+          <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="30 10 5 10" />
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="10 190" className="drop-shadow-[0_0_6px_#f59e0b]" />
+        </motion.svg>
+
+        {/* Inner precision ring — fast CW */}
+        <motion.svg
+          className="absolute w-[70%] h-[70%] text-amber-500/10"
+          viewBox="0 0 200 200"
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, ease: "linear", duration: 15 }}
+        >
+          <circle cx="100" cy="100" r="60" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 6" />
+        </motion.svg>
+
+        {/* 3. Crosshair Targeting Lines */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+          <div className="absolute h-full w-[1px] bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+          <span className="absolute top-8 left-8 text-[8px] text-slate-600 font-mono select-none">+</span>
+          <span className="absolute top-8 right-8 text-[8px] text-slate-600 font-mono select-none">+</span>
+          <span className="absolute bottom-8 left-8 text-[8px] text-slate-600 font-mono select-none">+</span>
+          <span className="absolute bottom-8 right-8 text-[8px] text-slate-600 font-mono select-none">+</span>
+        </div>
+
+        {/* 4. Orbital Nodes — 5 particle satellites */}
         {[0, 72, 144, 216, 288].map((angle, i) => (
           <motion.div
             key={i}
             className="absolute size-2 rounded-full bg-amber-400/80 shadow-[0_0_10px_rgba(251,191,36,0.5)]"
-            style={{
-              transform: `rotate(${angle + rot * 0.5}deg) translateX(88px)`,
-            }}
-            animate={{ scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 2.2, repeat: Infinity, delay: i * 0.44 }}
+            style={{ transform: `rotate(${angle}deg) translateX(110px)` }}
+            animate={{ rotate: [0, 360], scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ rotate: { repeat: Infinity, duration: 12, ease: "linear" }, scale: { repeat: Infinity, duration: 2.2, delay: i * 0.4 }, opacity: { repeat: Infinity, duration: 2.2, delay: i * 0.4 } }}
           />
         ))}
 
-        {/* ── Core Energy Source (Mango Ball) ── */}
-        <motion.button
+        {/* 5. Core Mango Capsule — breathing + hover oscillation */}
+        <motion.div
+          className="relative z-10 flex flex-col items-center justify-center w-32 h-32 rounded-full border border-amber-500/30 bg-[#0D121F]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(245,158,11,0.2)] cursor-pointer"
+          animate={{ y: [0, -8, 0], scale: [1, 1.02, 1] }}
+          whileHover={{ scale: 1.08, boxShadow: "0 0 40px rgba(245,158,11,0.4)", borderColor: "rgba(245,158,11,0.6)" }}
+          transition={{ y: { repeat: Infinity, duration: 4, ease: "easeInOut" }, scale: { repeat: Infinity, duration: 4, ease: "easeInOut" }, default: { type: "spring", stiffness: 300, damping: 15 } }}
           onClick={onMagicClick}
-          className="relative z-10 flex flex-col items-center"
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 400, damping: 15 }}
         >
-          {/* Multi-layer radial backlight */}
-          <motion.div
-            className="absolute size-40 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(251,146,60,0.25) 0%, rgba(251,146,60,0.06) 50%, transparent 80%)" }}
-            animate={{ scale: [1, 1.18, 1], opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute size-32 rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(253,224,71,0.18) 0%, transparent 70%)" }}
-            animate={{ scale: [1.1, 1, 1.1], opacity: [0.4, 0.8, 0.4] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          />
+          {/* Inner particle glow */}
+          <div className="absolute w-12 h-12 bg-amber-500/40 rounded-full blur-md animate-ping opacity-20" />
 
-          {/* SVG Mango */}
+          {/* Mango SVG with neon drop-shadow */}
           <motion.svg
-            width="88" height="88" viewBox="0 0 100 100" fill="none"
-            className="drop-shadow-[0_0_28px_rgba(251,146,60,0.55)] relative z-10"
-            animate={{ rotate: [0, 5, -3, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            width="52" height="52" viewBox="0 0 100 100" fill="none"
+            className="drop-shadow-[0_0_14px_rgba(245,158,11,0.9)] filter contrast-125 select-none relative z-10"
+            animate={{ rotate: [0, 4, -2, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           >
             <defs>
-              <radialGradient id="v2-mango-g" cx="40%" cy="35%" r="60%">
+              <radialGradient id="core-mango-g" cx="40%" cy="35%" r="60%">
                 <stop offset="0%" stopColor="#fef3c7" />
                 <stop offset="35%" stopColor="#fb923c" />
                 <stop offset="100%" stopColor="#c2410c" />
               </radialGradient>
             </defs>
             <ellipse cx="62" cy="14" rx="12" ry="6" fill="#4ade80" transform="rotate(-30 62 14)" />
-            <ellipse cx="50" cy="62" rx="28" ry="34" fill="url(#v2-mango-g)" />
+            <ellipse cx="50" cy="62" rx="28" ry="34" fill="url(#core-mango-g)" />
           </motion.svg>
-        </motion.button>
+
+          {/* INITIATE text */}
+          <motion.div
+            className="absolute -bottom-5 font-mono text-[10px] tracking-[0.2em] text-amber-400 font-bold opacity-80 select-none"
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          >
+            INITIATE
+          </motion.div>
+        </motion.div>
+
+        {/* 6. SVG Neon Gradient Defs */}
+        <svg className="absolute w-0 h-0">
+          <defs>
+            <linearGradient id="cyber-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity="1" />
+              <stop offset="50%" stopColor="#f43f5e" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
 
-      {/* ── Status Readout ── */}
-      <div className="flex items-center gap-5">
-        {[
-          { label: "Missions", val: `${done}/${all}`, sub: "complete" },
-          { label: "Focus", val: `${stats?.minutesToday ?? 0}m`, sub: "today" },
-          { label: "Power", val: `${(stats?.level ?? 1) * 100}`, sub: "rating" },
-        ].map((s) => (
-          <div key={s.label} className="flex flex-col items-center gap-0.5">
-            <span className="text-lg font-bold font-mono tabular-nums text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.3)]">{s.val}</span>
-            <span className="text-[9px] font-mono uppercase tracking-[0.15em] text-slate-500">{s.label}</span>
-            <span className="text-[8px] font-mono text-slate-700">{s.sub}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Quick Jump ── */}
-      <div className="flex gap-1.5">
-        {[
-          { icon: Layers, label: "Cards", href: "/exam" },
-          { icon: GraduationCap, label: "Exam", href: "/exam" },
-          { icon: Network, label: "Graph", href: "/exam" },
-          { icon: Heart, label: "Garden", href: "/grow" },
-        ].map((x) => (
-          <Link key={x.label} href={x.href}
-            className="flex flex-col items-center gap-1 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2 hover:border-amber-500/20 hover:bg-amber-500/[0.04] transition-all group min-h-[56px] min-w-[56px] justify-center">
-            <x.icon className="size-4 text-slate-500 group-hover:text-amber-400 transition-colors" />
-            <span className="text-[9px] font-mono text-slate-600 group-hover:text-slate-400 uppercase tracking-widest">{x.label}</span>
-          </Link>
-        ))}
+      {/* 7. Status Panel */}
+      <div className="flex gap-8 font-mono text-[10px] text-slate-400 mt-2">
+        <div className="flex flex-col items-center">
+          <span className="text-white font-semibold drop-shadow-[0_0_4px_#f59e0b] tabular-nums">{done} / {all}</span>
+          <span className="text-[8px] text-slate-500">MISSIONS</span>
+        </div>
+        <div className="w-[1px] h-6 bg-white/10" />
+        <div className="flex flex-col items-center">
+          <span className="text-amber-400 font-semibold tabular-nums">{stats?.minutesToday ?? 0}<span className="text-[8px]">m</span></span>
+          <span className="text-[8px] text-slate-500">FOCUS</span>
+        </div>
+        <div className="w-[1px] h-6 bg-white/10" />
+        <div className="flex flex-col items-center">
+          <span className="text-white font-semibold drop-shadow-[0_0_4px_#f59e0b] tabular-nums">{(stats?.level ?? 1) * 100}</span>
+          <span className="text-[8px] text-slate-500">POWER</span>
+        </div>
       </div>
     </div>
   );
