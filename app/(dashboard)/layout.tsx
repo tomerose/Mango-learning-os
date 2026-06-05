@@ -16,7 +16,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* ── DESKTOP ──────────────────────────────────────── */}
       <div className="bg-background hidden md:flex min-h-screen">
         <SidebarV2 />
-        <div className="flex min-w-0 flex-1 flex-col ml-[72px] lg:ml-[280px] transition-all duration-300">
+        <div className="flex min-w-0 flex-1 flex-col ml-[68px] lg:ml-[260px] transition-all duration-300 ease-out">
           <header className="bg-background/80 sticky top-0 z-10 flex h-16 items-center justify-end gap-2 border-b px-6 backdrop-blur">
             <ThemeToggle /><UserMenu />
           </header>
@@ -28,15 +28,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* ── MOBILE ──────────────────────────────────────── */}
       <div className="bg-background flex md:hidden min-h-screen flex-col">
-        <header className="surface-glass sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between px-4 mx-3 mt-3 rounded-full">
+        <header className="surface-glass sticky top-0 z-30 flex h-11 shrink-0 items-center justify-between px-4 mx-3 mt-3 rounded-full">
           <div className="flex items-center gap-2.5">
-            <div className="size-7 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-sm">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-sm">
               <GraduationCapSVG />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-bold text-[13px] tracking-tight">第三自习室</span>
-              <span className="text-[10px] text-muted-foreground/60 font-medium tracking-wide">把焦虑变成准备</span>
-            </div>
+            </span>
+            <span className="font-bold text-[13px] tracking-tight">Mango OS</span>
           </div>
           <div className="flex items-center gap-0">
             <ThemeToggle /><UserMenu />

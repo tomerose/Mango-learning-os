@@ -1,25 +1,21 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// ─────────────────────────────────────────────────────────────
-// Standard page wrapper for all V2.0 routes.
-// Provides consistent header + content area with optional
-// right sidebar slot (used by /agent, /knowledge-tree).
-// ─────────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────
+   PageShell v4 — consistent wrapper for all routes
+   Supports: loading skeleton, right panel, constrained width
+   ───────────────────────────────────────────────────────────── */
 
 interface Props {
-  /** Page title shown in header */
   title: string;
-  /** Optional subtitle / description */
   description?: string;
-  /** Actions slot — buttons, filters, etc. shown in header right */
   actions?: React.ReactNode;
-  /** Optional right panel (e.g., agent context, knowledge node detail) */
   rightPanel?: React.ReactNode;
-  /** Main content */
   children: React.ReactNode;
-  /** Constrain main content max-width */
   maxWidth?: "md" | "lg" | "xl" | "full";
+  loading?: boolean;
+  loadingRows?: number;
   className?: string;
 }
 
@@ -37,6 +33,8 @@ export function PageShell({
   rightPanel,
   children,
   maxWidth = "xl",
+  loading = false,
+  loadingRows = 4,
   className,
 }: Props) {
   return (
@@ -44,23 +42,55 @@ export function PageShell({
       {/* Header */}
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-          {description && (
-            <p className="text-muted-foreground text-sm">{description}</p>
+          {loading ? (
+            <>
+              <Skeleton className="h-7 w-44" />
+              <Skeleton className="h-4 w-64" />
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+              {description && (
+                <p className="text-muted-foreground text-sm">{description}</p>
+              )}
+            </>
           )}
         </div>
-        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+        {actions && (
+          <div className="flex items-center gap-2 shrink-0">{actions}</div>
+        )}
       </header>
 
       {/* Body */}
       <div className="flex gap-6">
-        <main className={cn("flex-1 min-w-0", maxWidthClasses[maxWidth], className)}>
-          {children}
+        <main
+          className={cn(
+            "flex-1 min-w-0",
+            maxWidthClasses[maxWidth],
+            className,
+          )}
+        >
+          {loading ? (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: loadingRows }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 rounded-xl border border-border/50 p-4"
+                >
+                  <Skeleton variant="circular" className="size-10" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-3.5 w-2/3" />
+                    <Skeleton className="h-2.5 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            children
+          )}
         </main>
         {rightPanel && (
-          <aside className="hidden xl:block w-80 shrink-0">
-            {rightPanel}
-          </aside>
+          <aside className="hidden xl:block w-80 shrink-0">{rightPanel}</aside>
         )}
       </div>
     </div>
