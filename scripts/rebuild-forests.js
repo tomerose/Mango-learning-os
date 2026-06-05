@@ -1,90 +1,12 @@
-// ═══════════════════════════════════════════════════════════════
-// AI Knowledge Forest Generator
-// User enters "IELTS 7.5" → AI generates full knowledge forest
-// including: graph, notes, resources, learning path, flashcards
-// ═══════════════════════════════════════════════════════════════
+const fs = require("fs");
+let f = fs.readFileSync("D:/Claudecoda学习/AI-Learning-OS/lib/ai/forest-generator.ts", "utf8");
 
-import { completeChat, extractJson } from "@/lib/ai/client";
+const startMarker = "export const OFFICIAL_FORESTS";
+const endMarker = "// ═══ AI Generator ═══";
+const start = f.indexOf(startMarker);
+const end = f.indexOf(endMarker);
 
-export interface ForestTopic {
-  name: string;
-  type: "concept" | "skill" | "book" | "paper" | "topic" | "formula" | "project";
-  summary: string;
-  children: string[]; // related topic names
-}
-
-export interface ForestResource {
-  title: string;
-  type: "book" | "course" | "video" | "paper" | "website" | "project";
-  url?: string;
-  description: string;
-  forTopic: string;
-}
-
-export interface ForestNote {
-  title: string;
-  topic: string;
-  body: string;
-  tags: string[];
-}
-
-export interface ForestPath {
-  phase: string;
-  duration: string;
-  tasks: string[];
-  topics: string[];
-}
-
-export interface KnowledgeForest {
-  title: string;
-  description: string;
-  topics: ForestTopic[];
-  resources: ForestResource[];
-  notes: ForestNote[];
-  learningPath: ForestPath[];
-  flashcards: { front: string; back: string }[];
-  tutorPrompts: string[];
-  estimatedWeeks: number;
-}
-
-const FOREST_SYSTEM = `你是知识森林生成引擎。根据用户的学习目标，生成完整的知识体系。
-
-输出严格JSON：
-{
-  "title": "森林标题",
-  "description": "一句话描述",
-  "estimatedWeeks": 8,
-  "topics": [
-    {"name":"主题名","type":"concept|skill|book|paper|topic|formula|project","summary":"一句话定义","children":["子主题1","子主题2"]}
-  ],
-  "resources": [
-    {"title":"资源名","type":"book|course|video|paper|website|project","url":"","description":"简介","forTopic":"关联主题"}
-  ],
-  "notes": [
-    {"title":"笔记标题","topic":"关联主题","body":"笔记内容(100-300字)","tags":["标签"]}
-  ],
-  "learningPath": [
-    {"phase":"阶段名","duration":"2周","tasks":["任务"],"topics":["主题"]}
-  ],
-  "flashcards": [
-    {"front":"问题","back":"答案"}
-  ],
-  "tutorPrompts": ["AI导师引导问题"]
-}
-
-要求：
-- 生成8-15个知识主题节点
-- 每个主题有简要定义
-- 6-10个学习资源推荐
-- 3-5条笔记
-- 3-5个学习阶段
-- 5-8张闪卡
-- 主题之间有合理的层次关系
-- 内容具体、准确、可操作`;
-
-// ═══ Pre-built Official Forests (fallback when AI unavailable) ═══
-
-export const OFFICIAL_FORESTS: Record<string, KnowledgeForest> = {
+const replacement = `export const OFFICIAL_FORESTS: Record<string, KnowledgeForest> = {
   'ielts-75': {
     title: 'IELTS 7.5+ 知识森林', description: '雅思高分备考完整知识体系', estimatedWeeks: 12,
     topics: [
@@ -211,31 +133,12 @@ export function listOfficialForests(): { key: string; title: string; desc: strin
   ];
 }
 
-// ═══ AI Generator ═══// ═══ AI Generator ═══
+// ═══ AI Generator ═══`;
 
-export async function generateForest(query: string): Promise<KnowledgeForest> {
-  try {
-    const raw = await completeChat([
-      { role: "system", content: FOREST_SYSTEM },
-      { role: "user", content: `请为以下学习目标生成知识森林：${query}` },
-    ], { temperature: 0.5 });
-
-    const json = extractJson(raw);
-    const parsed = JSON.parse(json);
-
-    return {
-      title: parsed.title ?? `${query} 知识森林`,
-      description: parsed.description ?? "",
-      estimatedWeeks: parsed.estimatedWeeks ?? 8,
-      topics: parsed.topics ?? [],
-      resources: parsed.resources ?? [],
-      notes: parsed.notes ?? [],
-      learningPath: parsed.learningPath ?? [],
-      flashcards: parsed.flashcards ?? [],
-      tutorPrompts: parsed.tutorPrompts ?? [],
-    };
-  } catch {
-    // Return the IELTS forest as fallback
-    return OFFICIAL_FORESTS["ielts-75"];
-  }
-}
+f = f.slice(0, start) + replacement + f.slice(end);
+fs.writeFileSync("D:/Claudecoda学习/AI-Learning-OS/lib/ai/forest-generator.ts", f);
+console.log("Forests rebuilt with all 4 entries");
+console.log("Has ielts-75:", f.includes("'ielts-75'"));
+console.log("Has toefl-100:", f.includes("'toefl-100'"));
+console.log("Has ai-engineer:", f.includes("'ai-engineer'"));
+console.log("Has cfa-l1:", f.includes("'cfa-l1'"));

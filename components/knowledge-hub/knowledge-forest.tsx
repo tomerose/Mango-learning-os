@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Brain, FileText, Sparkles, X, ArrowRight, Loader2, Trees, BookOpen } from "lucide-react";
+import { Brain, FileText, Sparkles, X, ArrowRight, Loader2, Trees, BookOpen, Download, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { useSubjects } from "@/lib/subjects";
@@ -31,16 +31,27 @@ function sphericalToXY(theta: number, phi: number, radius: number, cx: number, c
 }
 
 export function KnowledgeForest() {
-  const { notes } = useStore();
+  const { notes, addNote } = useStore();
   const { subjects, getMeta } = useSubjects();
   const [selectedNode, setSelectedNode] = React.useState<OrbitalNode | null>(null);
   const [rotation, setRotation] = React.useState(0);
+  const [mouseOver, setMouseOver] = React.useState(false);
+  const [savedForests, setSavedForests] = React.useState<string[]>([]);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  // Slow auto-rotation
+  // Slow auto-rotation (pauses on hover)
   React.useEffect(() => {
+    if (mouseOver) return;
     const id = setInterval(() => setRotation(r => r + 0.15), 50);
     return () => clearInterval(id);
+  }, [mouseOver]);
+
+  // Mouse drag rotates faster
+  const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    setRotation(r => r + x * 0.5);
   }, []);
 
   // Build orbital nodes from note tags
@@ -138,6 +149,23 @@ export function KnowledgeForest() {
     if (forest) setActiveForest(forest);
   }
 
+  function saveForestToNotes() {
+    if (!activeForest) return;
+    // Add all forest notes to the store
+    activeForest.notes.forEach(n => {
+      addNote({ title: n.title, subject: "ai", body: n.body, tags: n.tags });
+    });
+    // Add flashcards
+    activeForest.flashcards.forEach(c => {
+      try {
+        const existing = JSON.parse(localStorage.getItem("mango-forest-flashcards") ?? "[]");
+        existing.push(c);
+        localStorage.setItem("mango-forest-flashcards", JSON.stringify(existing));
+      } catch {}
+    });
+    setSavedForests(prev => [...prev, activeForest.title]);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* ── AI Forest Generator ── */}
@@ -182,7 +210,16 @@ export function KnowledgeForest() {
               <p className="text-small font-medium">{activeForest.title}</p>
               <p className="text-caption mt-0.5">{activeForest.description} · 预计 {activeForest.estimatedWeeks} 周</p>
             </div>
-            <button onClick={() => setActiveForest(null)} className="text-caption hover:underline">清除</button>
+            <div className="flex items-center gap-2">
+              {savedForests.includes(activeForest.title) ? (
+                <span className="text-xs text-emerald-500 flex items-center gap-1"><Check className="size-3" />已保存</span>
+              ) : (
+                <button onClick={saveForestToNotes} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                  <Download className="size-3" />保存到我的笔记
+                </button>
+              )}
+              <button onClick={() => setActiveForest(null)} className="text-caption hover:underline">清除</button>
+            </div>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {activeForest.topics.slice(0, 8).map(t => (
@@ -209,7 +246,10 @@ export function KnowledgeForest() {
       </p>
 
       {/* ── 3D Spherical Network ── */}
-      <div ref={containerRef} className="relative w-full max-w-[440px] mx-auto aspect-square">
+      <div ref={containerRef} className="relative w-full max-w-[440px] mx-auto aspect-square cursor-grab active:cursor-grabbing"
+        onMouseEnter={() => setMouseOver(true)}
+        onMouseLeave={() => setMouseOver(false)}
+        onMouseMove={handleMouseMove}>
         {/* Central core glow */}
         <motion.div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-32 rounded-full"
