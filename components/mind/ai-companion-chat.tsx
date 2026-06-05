@@ -104,9 +104,9 @@ export function AiCompanionChat() {
     <Card className="rounded-2xl overflow-hidden border-rose-200 dark:border-rose-900/30">
       <CardContent className="p-0 flex flex-col h-[calc(100dvh-20rem)] min-h-[400px]">
         {/* Header */}
-        <div className="shrink-0 px-4 py-3 border-b border-rose-100 dark:border-rose-900/20 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/20 dark:to-pink-950/20">
+        <div className="shrink-0 px-4 py-3 border-b border-border bg-bg-subtle">
           <div className="flex items-center gap-2.5">
-            <div className="size-9 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center shadow-sm">
+            <div className="size-9 rounded-full bg-accent flex items-center justify-center shadow-sm">
               <Heart className="size-4 text-white" strokeWidth={2.5} />
             </div>
             <div>
@@ -126,7 +126,7 @@ export function AiCompanionChat() {
           {messages.length === 1 ? (
             /* Welcome state */
             <div className="flex flex-col items-center gap-5 py-8 text-center">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-bg-muted flex items-center justify-center">
                 <Leaf
                   className="size-10 text-rose-400"
                   strokeWidth={1.5}
@@ -146,7 +146,7 @@ export function AiCompanionChat() {
                     onClick={() => send(p)}
                     className="text-left text-sm text-muted-foreground hover:text-foreground
                       bg-rose-50/50 dark:bg-rose-950/10 hover:bg-rose-100/50 dark:hover:bg-rose-950/20
-                      rounded-xl px-4 py-2.5 transition-colors border border-rose-100 dark:border-rose-900/20"
+                      rounded-xl px-4 py-2.5 transition-colors border border-border"
                   >
                     {p}
                   </button>
@@ -190,7 +190,7 @@ export function AiCompanionChat() {
         </div>
 
         {/* Composer */}
-        <div className="shrink-0 px-4 py-3 border-t border-rose-100 dark:border-rose-900/20 bg-muted/20">
+        <div className="shrink-0 px-4 py-3 border-t border-border bg-muted/20">
           <div className="flex items-end gap-2">
             <Textarea
               value={input}

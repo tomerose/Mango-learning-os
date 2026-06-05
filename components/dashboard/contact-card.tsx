@@ -16,7 +16,7 @@ export function ContactCard() {
   return (
     <div className="surface-card p-5 flex flex-col gap-4">
       <div className="flex items-center gap-2">
-        <div className="size-8 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-sm">
+        <div className="size-8 rounded-xl bg-primary flex items-center justify-center shadow-sm">
           <Sparkles className="size-4 text-white" strokeWidth={1.5} />
         </div>
         <div>

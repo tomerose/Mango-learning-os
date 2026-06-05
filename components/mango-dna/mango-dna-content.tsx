@@ -59,7 +59,7 @@ function MobileDNA() {
     <div className="flex flex-col gap-6">
 
       {/* ── Hero Banner ─────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-background rounded-2xl px-4 pt-10 pb-6 text-center">
+      <section className="relative overflow-hidden card-raised px-4 pt-10 pb-6 text-center">
         <div className="absolute inset-0 opacity-[0.03]"
           style={{ backgroundImage: "radial-gradient(circle at 50% 30%, var(--primary) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
         <span className="relative bg-primary/15 flex size-16 mx-auto items-center justify-center rounded-2xl mb-4">
@@ -136,7 +136,7 @@ function MobileDNA() {
 
         <div className="rounded-2xl border-2 border-primary/15 bg-card overflow-hidden">
           {/* Header bar */}
-          <div className="bg-gradient-to-r from-primary/10 to-purple-500/10 px-4 py-3.5 flex items-center justify-between border-b border-primary/10">
+          <div className="bg-primary-subtle px-4 py-3.5 flex items-center justify-between border-b border-primary/10">
             <div className="flex items-center gap-2.5">
               <span className="bg-primary/15 flex size-9 items-center justify-center rounded-full">
                 <Bot className="text-primary size-4" />
@@ -223,7 +223,7 @@ function MobileDNA() {
 
       {/* ── Bottom CTA ───────────────────────────────────── */}
       <section className="px-4 pt-6 pb-4">
-        <div className="rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/15 px-5 py-6 text-center flex flex-col items-center gap-3">
+        <div className="rounded-2xl card-raised px-5 py-6 text-center flex flex-col items-center gap-3">
           <Dna className="text-primary size-9" />
           <p className="text-sm font-bold">Mango DNA v2.0 即将上线</p>
           <p className="text-muted-foreground text-[12px] leading-relaxed">当前为 UI 预览。加入等待列表第一时间体验正式版。</p>
@@ -322,7 +322,7 @@ function DesktopDNA() {
       <section className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card className="overflow-hidden border-primary/20">
-            <div className="bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 px-6 py-5 border-b">
+            <div className="bg-bg-muted px-6 py-5 border-b">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="bg-primary/10 flex size-10 items-center justify-center rounded-full"><Bot className="text-primary size-5" /></span>

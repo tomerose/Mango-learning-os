@@ -59,7 +59,7 @@ export function TreeHoleChat() {
       <div ref={scrollRef} className="flex-1 overflow-y-auto rounded-2xl bg-muted/20 px-4 py-4">
         {messages.length === 1 ? (
           <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400/20 to-teal-500/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-bg-muted flex items-center justify-center">
               <Leaf className="size-8 text-emerald-500" strokeWidth={1.5} />
             </div>
             <div>

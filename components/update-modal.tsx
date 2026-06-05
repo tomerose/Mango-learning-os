@@ -44,14 +44,14 @@ export function UpdateModal() {
         style={{ opacity: exiting ? 0 : 1, transition: "opacity 300ms ease" }} />
 
       {/* Sheet */}
-      <div className="relative bg-background w-full sm:max-w-sm rounded-t-[24px] sm:rounded-[24px] overflow-hidden shadow-2xl"
+      <div className="relative bg-background w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl"
         style={{
           transform: exiting ? "translateY(100%)" : "translateY(0)",
           transition: "transform 350ms cubic-bezier(0.32, 0.72, 0, 1)",
         }}>
 
         {/* Gradient header */}
-        <div className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-background pt-8 pb-2 px-5">
+        <div className="relative overflow-hidden bg-bg-subtle pt-8 pb-2 px-5">
           {/* Dots pattern */}
           <div className="absolute inset-0 opacity-[0.03]"
             style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
@@ -64,7 +64,7 @@ export function UpdateModal() {
 
           {/* Icon */}
           <div className="relative flex flex-col items-center text-center gap-2 mb-4">
-            <div className="size-16 rounded-[20px] bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20 mb-1">
+            <div className="size-16 rounded-xl bg-primary flex items-center justify-center shadow-md mb-1">
               <Sparkles className="size-8 text-white" strokeWidth={1.5} />
             </div>
             <div>
