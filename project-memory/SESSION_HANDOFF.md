@@ -11,7 +11,7 @@ npm run dev -- -p 3030
 ```
 
 ## Current State
-- **Version:** v6 Warm Paper Wellness | **Commit:** `401368a` on `main`
+- **Version:** v7 Knowledge OS | **Commit:** `c7b0be2` on `main`
 - **Stack:** Next.js 15.5 + React 19 + Tailwind 4 + shadcn/ui + Supabase + DeepSeek
 - **Design System:** oklch warm paper palette, 6-level surface, Cormorant Garamond + Inter
 - **TypeScript:** zero errors | **Build:** passing
@@ -51,6 +51,13 @@ npm run dev -- -p 3030
 - **Memory Loop:** Agent route reads `summarizeContext()` before each call
 - **Auth:** Guest `tokentome111`, Login `tokentome222`, CAPTCHA on signup
 - **Data:** Cloud auto-seed demo data, Guest 50 actions
+
+## v7 Knowledge OS Architecture
+- **Knowledge Engine:** `lib/ai/knowledge-engine.ts` — AI auto-extraction from notes
+- **KnowledgeNetwork v2:** 4-layer (Subjects→Concepts→Notes→Resources)
+- **Mango Plan:** 3 tabs (Tasks / AI Plan / Flashcards)
+- **Exam functions moved to Plan:** Flashcards, SM-2, Exam prep tools
+- **Resource Intelligence:** auto resource recommendations per concept
 
 ## Known Gaps (next session)
 - [ ] GSAP ScrollTrigger not fully utilized (useGsapScroll hook exists)
