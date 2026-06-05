@@ -16,6 +16,7 @@ import {
 import { useStore } from "@/lib/store";
 import { useSubjects } from "@/lib/subjects";
 import { BentoGrid, BentoCell } from "@/components/ui/bento-grid";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -58,14 +59,9 @@ export default function HubPage() {
 
       {/* ═══ Bento Dashboard ═══ */}
       <BentoGrid columns={4}>
-        {/* ── Cell 1: Learning Goals (large, 2col × 2row) ── */}
-        <BentoCell
-          colSpan={2}
-          rowSpan={2}
-          variant="card"
-          hover="lift"
-          className="p-4 sm:p-6"
-        >
+        {/* ── Cell 1: Learning Goals ── */}
+        <ScrollReveal direction="up" delay={0} className="contents">
+          <BentoCell colSpan={2} rowSpan={2} variant="card" hover="lift" className="p-4 sm:p-6">
           <SectionHeader
             icon={Target}
             title="学习目标"
@@ -75,8 +71,10 @@ export default function HubPage() {
             <LearningGoalsContent />
           </div>
         </BentoCell>
+        </ScrollReveal>
 
-        {/* ── Cell 2: Upcoming Exams (tall, 1col × 2row) ── */}
+        {/* ── Cell 2: Upcoming Exams ── */}
+        <ScrollReveal direction="up" delay={0.08} className="contents">
         <BentoCell
           colSpan={1}
           rowSpan={2}
@@ -93,8 +91,10 @@ export default function HubPage() {
             <UpcomingExamsContent />
           </div>
         </BentoCell>
+        </ScrollReveal>
 
-        {/* ── Cell 3: Quick Actions (1col × 2row) ── */}
+        {/* ── Cell 3: Quick Actions ── */}
+        <ScrollReveal direction="up" delay={0.16} className="contents">
         <BentoCell
           colSpan={1}
           rowSpan={2}
@@ -111,8 +111,10 @@ export default function HubPage() {
             <QuickActions />
           </div>
         </BentoCell>
+        </ScrollReveal>
 
-        {/* ── Cell 4: Weekly Chart (wide, 2col) ── */}
+        {/* ── Cell 4: Weekly Chart ── */}
+        <ScrollReveal direction="up" delay={0.12} className="contents">
         <BentoCell
           colSpan={2}
           variant="card"
@@ -121,8 +123,10 @@ export default function HubPage() {
         >
           <WeeklyOverviewChart embedded />
         </BentoCell>
+        </ScrollReveal>
 
         {/* ── Cell 5: Active Courses ── */}
+        <ScrollReveal direction="up" delay={0.16} className="contents">
         <BentoCell
           colSpan={1}
           variant="card"
@@ -131,8 +135,10 @@ export default function HubPage() {
         >
           <ActiveCoursesList embedded />
         </BentoCell>
+        </ScrollReveal>
 
         {/* ── Cell 6: AI Recommendations ── */}
+        <ScrollReveal direction="up" delay={0.2} className="contents">
         <BentoCell
           colSpan={1}
           variant="card"
@@ -141,6 +147,7 @@ export default function HubPage() {
         >
           <AiRecommendations embedded />
         </BentoCell>
+        </ScrollReveal>
       </BentoGrid>
 
       {/* ═══ Planner CTA — gradient banner ═══ */}
