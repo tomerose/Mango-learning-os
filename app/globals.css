@@ -222,6 +222,13 @@ body {
   .text-title { font-size: 1.375rem !important; }
 
   .grid { grid-template-columns: 1fr !important; }
+  .sm\:grid-cols-2, .sm\:grid-cols-3, .sm\:grid-cols-4 { grid-template-columns: 1fr !important; }
+
+  /* Thumb-friendly: larger tap targets */
+  button, a[role="button"], [data-slot="tabs-trigger"] { min-height: 44px; }
+
+  /* Card breathing room on mobile */
+  .card-card, .card-floating, .card-hero, .card-paper { padding: 1rem !important; }
 
   [data-slot="dialog-content"], [data-slot="sheet-content"] {
     max-width: 94vw !important; width: 94vw !important; border-radius: var(--radius-3xl) !important;

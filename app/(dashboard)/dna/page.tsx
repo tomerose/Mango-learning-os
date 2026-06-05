@@ -1,11 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Dna, Heart, Sparkles } from "lucide-react";
+import { Dna, Heart, Sparkles, Sprout } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MangoDNAContent } from "@/components/mango-dna/mango-dna-content";
 import { VoiceSoulContent } from "@/components/mango-dna/voice-soul/VoiceSoulContent";
+import { JournalEditor } from "@/components/mind/journal-editor";
+import { MoodTracker } from "@/components/mind/mood-tracker";
+import { AiCompanionChat } from "@/components/mind/ai-companion-chat";
 import { SkillTree } from "@/components/ui/skill-tree";
 import { useRouter } from "next/navigation";
 
@@ -30,14 +33,21 @@ export default function DnaPage() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="dna"><Dna className="size-4 mr-1.5" />学习身份</TabsTrigger>
-          <TabsTrigger value="voice-soul"><Heart className="size-4 mr-1.5" />声魂蒸馏</TabsTrigger>
+          <TabsTrigger value="skills"><Sprout className="size-4 mr-1.5" />技能树</TabsTrigger>
+          <TabsTrigger value="garden"><Heart className="size-4 mr-1.5" />心灵花园</TabsTrigger>
+          <TabsTrigger value="voice-soul"><Sparkles className="size-4 mr-1.5" />声魂蒸馏</TabsTrigger>
         </TabsList>
-        <TabsContent value="dna" className="mt-4 flex flex-col gap-6">
+        <TabsContent value="dna" className="mt-4"><MangoDNAContent /></TabsContent>
+        <TabsContent value="skills" className="mt-4">
           <div className="card-card p-5">
-            <p className="text-small font-medium mb-4">技能树</p>
+            <p className="text-small font-medium mb-4">技能树 · 点击跳转学习</p>
             <SkillTree skills={DEMO_SKILLS} onSelect={(skill) => router.push(`/agent?subject=${skill.label === "深度学习" ? "ai" : skill.label === "经济学" ? "economics" : "math"}`)} />
           </div>
-          <MangoDNAContent />
+        </TabsContent>
+        <TabsContent value="garden" className="mt-4 flex flex-col gap-6">
+          <div className="card-card p-5"><JournalEditor /></div>
+          <MoodTracker />
+          <AiCompanionChat />
         </TabsContent>
         <TabsContent value="voice-soul" className="mt-4"><VoiceSoulContent /></TabsContent>
       </Tabs>

@@ -266,6 +266,38 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // ── Knowledge Extraction trigger ──────────────────────────
+  const triggerKnowledgeExtraction = React.useCallback((n: Note) => {
+    // Fire-and-forget: AI knowledge extraction
+    import("@/lib/ai/knowledge-engine").then(({ extractFromNote }) => {
+      extractFromNote(n).then((result) => {
+        // Auto-add extracted tags to the note (if not already present)
+        if (result.autoTags.length > 0 || result.flashcards.length > 0) {
+          // Store extraction results in localStorage for the Knowledge Network
+          try {
+            const key = `mango-extraction-${n.id}`;
+            localStorage.setItem(key, JSON.stringify(result));
+          } catch {}
+        }
+        // Auto-add generated flashcards
+        if (result.flashcards.length > 0) {
+          const newCards = result.flashcards.map((f, i) => ({
+            id: `fc-${n.id}-${i}`,
+            deck: n.subject,
+            subject: n.subject,
+            front: f.front,
+            back: f.back,
+            ease: 2.5,
+            intervalDays: 0,
+            repetitions: 0,
+            dueOn: new Date().toISOString().slice(0, 10),
+          }));
+          setState((p) => ({ ...p, flashcards: [...newCards, ...p.flashcards] }));
+        }
+      }).catch(() => {/* extraction is best-effort */});
+    }).catch(() => {/* module may not be available */});
+  }, []);
+
   // ── Storage preference ───────────────────────────────────
   const [storagePreference, setStoragePreferenceState] = React.useState<"local" | "cloud">(() => {
     try { return (localStorage.getItem("mango-storage-pref") as "local" | "cloud") || "local"; }
@@ -361,27 +393,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     (note: Omit<Note, "id" | "updatedLabel">) => {
       const prev = stateRef.current;
       if (!incrementGuestAction()) return; // guest limit reached
+
+      const newId = `n-${prev.notes.length}-${Date.now()}`;
+      const savedNote = { ...note, id: newId, updatedLabel: "刚刚" } as Note;
+
       if (prev.mode === "cloud" && prev.userId && storagePreference === "cloud") {
         insertNote(prev.userId, note)
-          .then((saved) =>
-            setState((p) => ({ ...p, notes: [saved, ...p.notes] }))
-          )
+          .then((saved) => {
+            setState((p) => ({ ...p, notes: [saved, ...p.notes] }));
+            // Auto-extract knowledge from new note
+            triggerKnowledgeExtraction(saved ?? savedNote);
+          })
           .catch((e) => console.error("[store] insertNote:", e));
       } else {
-        setState((p) => ({
-          ...p,
-          notes: [
-            {
-              ...note,
-              id: `n-${p.notes.length}-${Date.now()}`,
-              updatedLabel: "鍒氬垰",
-            },
-            ...p.notes,
-          ],
-        }));
+        setState((p) => ({ ...p, notes: [savedNote, ...p.notes] }));
+        // Auto-extract knowledge from new note
+        triggerKnowledgeExtraction(savedNote);
       }
     },
-    []
+    [incrementGuestAction, storagePreference]
   );
 
   const deleteNote = React.useCallback((id: string) => {
