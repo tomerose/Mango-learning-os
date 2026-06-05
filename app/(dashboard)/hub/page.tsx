@@ -128,8 +128,8 @@ export default function HubPage() {
             <span className="text-fg-muted">被优雅地组织起来。</span>
           </h1>
           <p className="text-body text-fg-muted max-w-lg leading-relaxed">
-            Mango 是你的个人学习操作系统。AI 辅导、间隔重复、知识图谱、项目实践
-            —— 帮助你深度学习，而不仅仅是收集信息。
+            Mango 是你的个人学习操作系统——智能辅导、间隔重复、知识图谱、项目实践
+            帮助你深度学习，而不仅仅是收集信息。
           </p>
           <div className="flex items-center gap-3 pt-1">
             <motion.button
@@ -162,7 +162,7 @@ export default function HubPage() {
 
       {/* ═══ 3. AI WORKSPACE ═══ */}
       <Section delay={0.05}>
-        <SectionHeader label="AI 工作区" title="你的智能导师" description="结构化讲解、针对性练习、即时反馈——由 DeepSeek 驱动。" href="/agent" cta="打开导师" />
+        <SectionHeader label="学习工作区" title="你的智能导师" description="结构化讲解、针对性练习、即时反馈。" href="/agent" cta="打开导师" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <ModuleCard icon={Brain} label="概念讲解" desc="将任何主题拆解为清晰、结构化的讲解，附带示例和练习。" href="/agent" accent="bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400" />
           <ModuleCard icon={BookOpen} label="针对性练习" desc="根据你的薄弱环节生成专项练习。即时评分和反馈。" href="/agent" accent="bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400" />
@@ -196,17 +196,17 @@ export default function HubPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <ModuleCard icon={Heart} label="情绪追踪" desc="追踪你的情绪模式与学习进度的关联，了解什么影响你的专注力。" href="/grow" accent="bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400" />
           <ModuleCard icon={Brain} label="CBT 认知重构" desc="重新框定你对学习的负面想法，建立韧性和成长心态。" href="/grow" accent="bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400" />
-          <ModuleCard icon={Sparkles} label="AI 陪伴" desc="一个温暖、不评判的倾听者。聊聊学习焦虑，或者只是反思今天。" href="/grow" accent="bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400" />
+          <ModuleCard icon={Sparkles} label="暖心陪伴" desc="一个温暖、不评判的倾听者。聊聊学习焦虑，或者只是反思今天。" href="/grow" accent="bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400" />
         </div>
       </Section>
 
       {/* ═══ 6. EXAM CENTER ═══ */}
       <Section delay={0.2}>
-        <SectionHeader label="考试中心" title="从容备考" description="上传你的资料，AI 自动生成复习指南、模拟考试，并追踪你的备考进度。" href="/exam" cta="开始备考" />
+        <SectionHeader label="考试中心" title="从容备考" description="上传你的资料，自动生成复习指南、模拟考试，并追踪你的备考进度。" href="/exam" cta="开始备考" />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <ModuleCard icon={BookOpen} label="学习指南" desc="上传 PDF、Word 或粘贴笔记。AI 自动生成结构化复习手册。" href="/exam" accent="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400" />
+          <ModuleCard icon={BookOpen} label="学习指南" desc="上传 PDF、Word 或粘贴笔记。自动生成结构化复习手册。" href="/exam" accent="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400" />
           <ModuleCard icon={BarChart3} label="模拟考试" desc="计时的模拟考试，附带评分、解析和薄弱项分析。追踪你的进步。" href="/exam" accent="bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400" />
-          <ModuleCard icon={Clock} label="倒计时" desc="查看即将到来的考试，追踪备考进度，获取 AI 推荐的学习计划。" href="/exam" accent="bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400" />
+          <ModuleCard icon={Clock} label="倒计时" desc="查看即将到来的考试，追踪备考进度，获取智能推荐的学习计划。" href="/exam" accent="bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400" />
         </div>
       </Section>
 

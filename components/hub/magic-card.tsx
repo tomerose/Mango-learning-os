@@ -165,7 +165,7 @@ export function MagicCard({
               你现在最需要什么？
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              选择学习场景，Mango Magic 为你生成
+              选择学习场景，Mango Magic 为你准备
             </p>
           </div>
           <button

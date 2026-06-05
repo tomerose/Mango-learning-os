@@ -17,7 +17,7 @@ export default function ExamPage() {
   return (
     <div className="relative">
       <ExamBackground />
-      <PageShell title="Mangoing" description="联网搜索 · AI 讲义生成 · 刷题训练 · 知识库管理">
+      <PageShell title="Mangoing" description="联网搜索 · 讲义生成 · 刷题训练 · 知识库管理">
         <div className="relative z-10">
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList>

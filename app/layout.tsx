@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Mango Learning OS",
   description:
-    "Your primary learning platform — AI tutor, study planning, knowledge management, and growth tracking, all in one. 第三自习室出品 · 把焦虑变成准备。",
+    "Your primary learning platform — Intelligent tutor, study planning, knowledge management, and growth tracking. 第三自习室出品 · 把焦虑变成准备。",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

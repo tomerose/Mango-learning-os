@@ -40,7 +40,7 @@ export function MindTabs() {
         </div>
       </TabsContent>
 
-      {/* Companion Tab: AI Chat */}
+      {/* Companion Tab: Chat */}
       <TabsContent value="companion" className="mt-4">
         <AiCompanionChat />
       </TabsContent>

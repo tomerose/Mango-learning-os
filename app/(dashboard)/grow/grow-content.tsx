@@ -16,7 +16,7 @@ import type { Project } from "@/components/projects/project-card";
 import { Button } from "@/components/ui/button";
 
 // ─────────────────────────────────────────────────────────────
-// 成长花园 — 心灵花园 + 项目实践 + AI 心灵陪伴
+// 成长花园 — 心灵花园 + 项目实践 + 心灵陪伴
 // ─────────────────────────────────────────────────────────────
 
 const SEED_PROJECTS: Project[] = [

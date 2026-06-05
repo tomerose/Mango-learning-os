@@ -10,9 +10,9 @@ import {
 const STORAGE_KEY = "mango-onboarding-v2";
 
 const FEATURES = [
-  { icon: Brain, title: "AI 导师", desc: "结构化讲解任何概念，即时反馈和练习" },
-  { icon: BookOpen, title: "考试备战", desc: "上传资料，AI 生成复习手册和模拟题" },
-  { icon: CalendarCheck, title: "学习计划", desc: "AI 分析目标，自动生成每日学习计划" },
+  { icon: Brain, title: "智能导师", desc: "结构化讲解任何概念，即时反馈和练习" },
+  { icon: BookOpen, title: "考试备战", desc: "上传资料，自动生成复习手册和模拟题" },
+  { icon: CalendarCheck, title: "学习计划", desc: "分析目标，自动生成每日学习计划" },
   { icon: Layers, title: "知识图谱", desc: "笔记、闪卡、测验自动连接成知识网络" },
   { icon: TrendingUp, title: "学习分析", desc: "追踪时长、专注度、掌握度变化" },
   { icon: Heart, title: "心灵花园", desc: "情绪追踪、CBT 重构、AI 陪伴" },
@@ -113,7 +113,7 @@ export function MangoOnboarding({ onComplete }: Props) {
                   className="flex flex-col gap-1"
                 >
                   <h2 className="text-title">你的学习，<span className="text-fg-muted">被优雅地组织起来</span></h2>
-                  <p className="text-small text-fg-muted">AI 辅导 · 间隔重复 · 知识图谱 · 项目实践</p>
+                  <p className="text-small text-fg-muted">智能辅导 · 间隔重复 · 知识图谱 · 项目实践</p>
                 </motion.div>
                 <div className="grid grid-cols-2 gap-2.5 w-full max-w-sm">
                   {FEATURES.map((f, i) => (

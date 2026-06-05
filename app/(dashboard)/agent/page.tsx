@@ -23,7 +23,7 @@ import type { SubjectId } from "@/lib/types";
 type AgentTab = "chat" | "explain" | "practice" | "knowledge";
 
 const TABS: { id: AgentTab; label: string; icon: React.ElementType }[] = [
-  { id: "chat", label: "AI 对话", icon: MessageSquare },
+  { id: "chat", label: "智能对话", icon: MessageSquare },
   { id: "explain", label: "概念讲解", icon: Lightbulb },
   { id: "practice", label: "智能练习", icon: Dumbbell },
   { id: "knowledge", label: "知识导入", icon: Upload },
@@ -58,7 +58,7 @@ function AgentPageInner() {
   return (
     <div className="relative">
       <TutorBackground />
-      <PageShell title="Mango Tutor" description={`${subjectMeta.label} · AI 对话 · 概念讲解 · 智能练习 · 知识导入`}
+      <PageShell title="Mango Tutor" description={`${subjectMeta.label} · 智能对话 · 概念讲解 · 练习 · 知识导入`}
         rightPanel={<AgentContextPanel subject={subject} memoryCount={0} />}>
         <div className="flex flex-col gap-4 relative z-10">
           <div className="flex flex-wrap items-center gap-2">
