@@ -2,11 +2,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/* ─────────────────────────────────────────────────────────────
-   PageShell v4 — consistent wrapper for all routes
-   Supports: loading skeleton, right panel, constrained width
-   ───────────────────────────────────────────────────────────── */
-
 interface Props {
   title: string;
   description?: string;
@@ -22,24 +17,16 @@ interface Props {
 const maxWidthClasses: Record<NonNullable<Props["maxWidth"]>, string> = {
   md: "max-w-3xl",
   lg: "max-w-5xl",
-  xl: "max-w-7xl",
+  xl: "max-w-6xl",
   full: "",
 };
 
 export function PageShell({
-  title,
-  description,
-  actions,
-  rightPanel,
-  children,
-  maxWidth = "xl",
-  loading = false,
-  loadingRows = 4,
-  className,
+  title, description, actions, rightPanel, children,
+  maxWidth = "xl", loading = false, loadingRows = 4, className,
 }: Props) {
   return (
     <div className="flex flex-col gap-6">
-      {/* Header */}
       <header className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
           {loading ? (
@@ -49,34 +36,19 @@ export function PageShell({
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-              {description && (
-                <p className="text-muted-foreground text-sm">{description}</p>
-              )}
+              <h1 className="text-title">{title}</h1>
+              {description && <p className="text-body text-fg-muted">{description}</p>}
             </>
           )}
         </div>
-        {actions && (
-          <div className="flex items-center gap-2 shrink-0">{actions}</div>
-        )}
+        {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
       </header>
-
-      {/* Body */}
       <div className="flex gap-6">
-        <main
-          className={cn(
-            "flex-1 min-w-0",
-            maxWidthClasses[maxWidth],
-            className,
-          )}
-        >
+        <main className={cn("flex-1 min-w-0", maxWidthClasses[maxWidth], className)}>
           {loading ? (
             <div className="flex flex-col gap-3">
               {Array.from({ length: loadingRows }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 rounded-xl border border-border/50 p-4"
-                >
+                <div key={i} className="flex items-center gap-3 rounded-xl border border-border p-4">
                   <Skeleton variant="circular" className="size-10" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-3.5 w-2/3" />
@@ -85,13 +57,9 @@ export function PageShell({
                 </div>
               ))}
             </div>
-          ) : (
-            children
-          )}
+          ) : (children)}
         </main>
-        {rightPanel && (
-          <aside className="hidden xl:block w-80 shrink-0">{rightPanel}</aside>
-        )}
+        {rightPanel && <aside className="hidden xl:block w-80 shrink-0">{rightPanel}</aside>}
       </div>
     </div>
   );
