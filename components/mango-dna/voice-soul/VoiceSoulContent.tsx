@@ -354,7 +354,7 @@ MBTI：${result.personalityCard.mbtiGuess}
                   <Card key={item.label} className="rounded-2xl">
                     <CardContent className="py-3">
                       <p className="text-[10px] text-muted-foreground">{item.icon} {item.label}</p>
-                      <p className="text-sm mt-1">"{item.value}"</p>
+                      <p className="text-sm mt-1">&ldquo;{item.value}&rdquo;</p>
                     </CardContent>
                   </Card>
                 ))}

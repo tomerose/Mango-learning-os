@@ -68,7 +68,7 @@ const LAYERS = [
 
 function splitLayers(raw: string): Record<string, string> {
   const result: Record<string, string> = {};
-  let remaining = raw;
+  const remaining = raw;
   for (let i = 0; i < LAYERS.length; i++) {
     const layer = LAYERS[i];
     const nextLayer = LAYERS[i + 1];
