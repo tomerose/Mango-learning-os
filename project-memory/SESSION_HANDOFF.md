@@ -1,6 +1,6 @@
 # MangoLearningOS — Session Handoff
 
-> **Last session:** 2026-06-06 | **Next session starts here**
+> **Last session:** 2026-06-06 (ended with production deploy) | **Next session starts here**
 
 ## Quick Start
 ```bash
