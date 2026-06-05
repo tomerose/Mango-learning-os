@@ -148,8 +148,8 @@
   --radius-sm:calc(var(--radius-2xl) - 4px);--radius-md:calc(var(--radius-2xl) - 2px);
   --radius-lg:var(--radius-2xl);--radius-xl:calc(var(--radius-2xl) + 4px);
   /* ═══ Typography ═══ */
-  --font-sans:"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,"Helvetica Neue","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
-  --font-mono:"SF Mono","JetBrains Mono",ui-monospace,"Cascadia Code","Courier New",monospace;
+  --font-sans:"Fira Sans","SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,"Helvetica Neue","Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+  --font-mono:"Fira Code","SF Mono","JetBrains Mono",ui-monospace,"Cascadia Code","Courier New",monospace;
   --animate-accordion-down:accordion-down 0.2s ease-out;
   --animate-accordion-up:accordion-up 0.2s ease-out;
 }
