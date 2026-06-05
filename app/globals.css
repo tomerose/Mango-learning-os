@@ -217,31 +217,57 @@ body {
    MOBILE — Premium App-Like Experience
    ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
-  main { padding: 0 var(--space-4) calc(6.5rem + env(safe-area-inset-bottom, 0px)) var(--space-4) !important; }
+  /* ── Layout ── */
+  main { padding: 0 var(--space-4) calc(7rem + env(safe-area-inset-bottom, 0px)) var(--space-4) !important; }
   .text-display { font-size: 1.75rem !important; }
   .text-title { font-size: 1.375rem !important; }
 
+  /* Section spacing — generous breathing room */
+  section, [class*="gap-"] { --tw-space-y-reverse: 0; }
+  .flex-col.gap-6 { gap: 1.5rem !important; }
+  .flex-col.gap-10 { gap: 2rem !important; }
+  .flex-col.gap-14 { gap: 2.5rem !important; }
+  .flex-col.gap-16 { gap: 3rem !important; }
+
+  /* Prevent horizontal overflow */
+  body, main, [class*="max-w-"] { max-width: 100vw !important; overflow-x: hidden !important; }
+  pre, code, .whitespace-pre-wrap { max-width: 100%; overflow-x: auto; word-break: break-word; }
+
+  /* Single-column grids */
   .grid { grid-template-columns: 1fr !important; }
   .sm\:grid-cols-2, .sm\:grid-cols-3, .sm\:grid-cols-4 { grid-template-columns: 1fr !important; }
 
-  /* Thumb-friendly: larger tap targets */
-  button, a[role="button"], [data-slot="tabs-trigger"] { min-height: 44px; }
+  /* ── Touch & Tap ── */
+  button, a[role="button"], [data-slot="tabs-trigger"], a { min-height: 44px; }
+  a, button { touch-action: manipulation; }
 
-  /* Card breathing room on mobile */
-  .card-card, .card-floating, .card-hero, .card-paper { padding: 1rem !important; }
+  /* ── Cards — generous padding ── */
+  .card-card, .card-floating, .card-hero, .card-paper { padding: 1.125rem !important; }
 
+  /* ── Tabs — horizontal scroll ── */
+  [data-slot="tabs-list"] {
+    overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important;
+    scroll-snap-type: x mandatory; gap: 0.5rem !important;
+    padding: 0.25rem 0;
+  }
+  [data-slot="tabs-trigger"] { flex-shrink: 0; scroll-snap-align: start; font-size: 0.8125rem !important; padding: 0.5rem 0.875rem !important; white-space: nowrap; }
+
+  /* ── Dialogs/Sheets ── */
   [data-slot="dialog-content"], [data-slot="sheet-content"] {
     max-width: 94vw !important; width: 94vw !important; border-radius: var(--radius-3xl) !important;
   }
   [data-slot="sheet-content"][data-side="bottom"] {
     max-width: 100vw !important; width: 100vw !important; border-radius: var(--radius-3xl) var(--radius-3xl) 0 0 !important;
   }
-  [data-slot="tabs-list"] {
-    overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important;
-    scroll-snap-type: x mandatory; gap: 0.5rem !important;
-  }
-  [data-slot="tabs-trigger"] { flex-shrink: 0; scroll-snap-align: start; font-size: 0.8125rem !important; padding: 0.5rem 0.75rem !important; }
+
+  /* ── Scrolling ── */
   * { -webkit-overflow-scrolling: touch; }
+
+  /* ── 3D sphere scale down ── */
+  .aspect-square { max-width: 340px !important; margin: 0 auto; }
+
+  /* ── Sidebar/Desktop hide ── */
+  .hidden.md\\:flex { display: none !important; }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
