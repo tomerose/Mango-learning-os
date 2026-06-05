@@ -13,6 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Badge } from "@/components/ui/badge";
 import type { SubjectId } from "@/lib/types";
 import { useSubjects } from "@/lib/subjects";
+import { LearningCards } from "@/components/ui/learning-cards";
 
 // ─────────────────────────────────────────────────────────────
 // Structured Learning Explainer

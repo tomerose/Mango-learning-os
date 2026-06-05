@@ -11,6 +11,7 @@ import { ResourcesTab } from "@/components/knowledge-hub/resources-tab";
 import { GraphTab } from "@/components/knowledge-hub/graph-tab";
 import { PageTransition } from "@/components/layout/page-transition";
 import { ExamBackground } from "@/components/ui/module-backgrounds";
+import { StepWizard } from "@/components/ui/step-wizard";
 
 export default function ExamPage() {
   const [tab, setTab] = React.useState("exam");

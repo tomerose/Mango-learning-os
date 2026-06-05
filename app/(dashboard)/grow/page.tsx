@@ -8,11 +8,13 @@ import { JournalEditor } from "@/components/mind/journal-editor";
 import { MoodTracker } from "@/components/mind/mood-tracker";
 import { CbtReframer } from "@/components/mind/cbt-reframer";
 import { AiCompanionChat } from "@/components/mind/ai-companion-chat";
+import { PageTransition } from "@/components/layout/page-transition";
 
 export default function GrowPage() {
   const [tab, setTab] = React.useState("journal");
 
   return (
+    <PageTransition>
     <div className="relative">
       {/* Ambient watercolor blobs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -46,5 +48,6 @@ export default function GrowPage() {
         </PageShell>
       </div>
     </div>
+    </PageTransition>
   );
 }

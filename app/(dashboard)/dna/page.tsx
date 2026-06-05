@@ -6,6 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MangoDNAContent } from "@/components/mango-dna/mango-dna-content";
 import { VoiceSoulContent } from "@/components/mango-dna/voice-soul/VoiceSoulContent";
+import { SkillTree } from "@/components/ui/skill-tree";
 
 export default function DnaPage() {
   const [tab, setTab] = React.useState("dna");
