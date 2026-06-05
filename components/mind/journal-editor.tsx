@@ -98,7 +98,7 @@ export function JournalEditor() {
       <CardContent className="flex flex-col gap-4 pt-5">
         {/* Mood selector */}
         <div>
-          <p className="text-xs font-medium text-muted-foreground mb-2">
+          <p className="text-xs font-medium text-fg-muted mb-2">
             How are you feeling?
           </p>
           <div className="flex gap-2">
@@ -110,12 +110,12 @@ export function JournalEditor() {
                 className={cn(
                   "flex flex-col items-center gap-0.5 p-2.5 rounded-xl transition-all text-2xl",
                   mood === opt.emoji
-                    ? "bg-primary/10 scale-110 ring-2 ring-primary/30"
+                    ? "bg-primary-subtle scale-110 ring-2 ring-primary/30"
                     : "hover:bg-muted/50 opacity-70 hover:opacity-100"
                 )}
               >
                 {opt.emoji}
-                <span className="text-[10px] text-muted-foreground font-medium">
+                <span className="text-[10px] text-fg-muted font-medium">
                   {opt.label}
                 </span>
               </button>
@@ -127,7 +127,7 @@ export function JournalEditor() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-muted-foreground">
+              <label className="text-xs font-medium text-fg-muted">
                 Stress Level
               </label>
               <span className="text-xs font-semibold tabular-nums">
@@ -146,7 +146,7 @@ export function JournalEditor() {
                 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer
                 [&::-webkit-slider-thumb]:shadow-sm"
             />
-            <div className="flex justify-between text-[10px] text-muted-foreground/50">
+            <div className="flex justify-between text-[10px] text-fg-muted/50">
               <span>Calm</span>
               <span>Max</span>
             </div>
@@ -154,7 +154,7 @@ export function JournalEditor() {
 
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-muted-foreground">
+              <label className="text-xs font-medium text-fg-muted">
                 Motivation
               </label>
               <span className="text-xs font-semibold tabular-nums">
@@ -173,7 +173,7 @@ export function JournalEditor() {
                 [&::-webkit-slider-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:cursor-pointer
                 [&::-webkit-slider-thumb]:shadow-sm"
             />
-            <div className="flex justify-between text-[10px] text-muted-foreground/50">
+            <div className="flex justify-between text-[10px] text-fg-muted/50">
               <span>Low</span>
               <span>High</span>
             </div>
@@ -182,7 +182,7 @@ export function JournalEditor() {
 
         {/* Journal body */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+          <label className="text-xs font-medium text-fg-muted mb-1.5 block">
             Journal Entry
           </label>
           <Textarea
@@ -195,7 +195,7 @@ export function JournalEditor() {
 
         {/* Tags */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+          <label className="text-xs font-medium text-fg-muted mb-1.5 block">
             Tags (optional)
           </label>
           <div className="flex items-center gap-2">

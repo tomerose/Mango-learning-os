@@ -182,16 +182,16 @@ export function AgentChat({ subject, onConversationUpdate, className }: AgentCha
       {/* Messages area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto rounded-xl border bg-card p-4 md:p-5"
+        className="flex-1 overflow-y-auto rounded-2xl card-card p-4 md:p-5"
       >
         {messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center px-4">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10">
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-primary-subtle">
               <Bot className="size-6 text-primary" />
             </span>
             <div>
               <p className="font-medium">{placeholder.title}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-fg-muted">
                 {placeholder.desc}
               </p>
             </div>
@@ -223,7 +223,7 @@ export function AgentChat({ subject, onConversationUpdate, className }: AgentCha
                       }}
                     />
                   ) : streaming && i === messages.length - 1 ? (
-                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                    <span className="flex items-center gap-1.5 text-fg-muted">
                       <Loader2 className="size-3.5 animate-spin" />
                       <span className="text-xs">思考中...</span>
                     </span>

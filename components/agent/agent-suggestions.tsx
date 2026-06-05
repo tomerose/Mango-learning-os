@@ -85,7 +85,7 @@ export function AgentSuggestions({
             onClick={() => onSelect(prompt)}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-              "text-muted-foreground hover:bg-accent hover:text-accent-foreground active:scale-[0.97]",
+              "text-fg-muted hover:bg-accent hover:text-accent-foreground active:scale-[0.97]",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
             )}
           >

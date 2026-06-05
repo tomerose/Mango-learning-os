@@ -180,8 +180,8 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
           <div className="flex flex-wrap items-center gap-4">
             {/* Difficulty selector */}
             <div className="flex items-center gap-2">
-              <SlidersHorizontal className="size-3.5 text-muted-foreground" />
-              <Label className="text-xs text-muted-foreground">难度</Label>
+              <SlidersHorizontal className="size-3.5 text-fg-muted" />
+              <Label className="text-xs text-fg-muted">难度</Label>
               <div className="flex rounded-lg border p-0.5 gap-0.5">
                 {(Object.entries(DIFFICULTY_CONFIG) as [Difficulty, typeof DIFFICULTY_CONFIG["easy"]][]).map(
                   ([key, config]) => (
@@ -192,7 +192,7 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
                         "px-2.5 py-1 rounded-md text-xs font-medium transition-colors",
                         difficulty === key
                           ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted"
+                          : "text-fg-muted hover:bg-muted"
                       )}
                     >
                       {config.label}
@@ -204,8 +204,8 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
 
             {/* Count selector */}
             <div className="flex items-center gap-2">
-              <Hash className="size-3.5 text-muted-foreground" />
-              <Label className="text-xs text-muted-foreground">题数</Label>
+              <Hash className="size-3.5 text-fg-muted" />
+              <Label className="text-xs text-fg-muted">题数</Label>
               <div className="flex rounded-lg border p-0.5 gap-0.5">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
@@ -215,7 +215,7 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
                       "px-2 py-1 rounded-md text-xs font-medium transition-colors",
                       count === n
                         ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-muted"
+                        : "text-fg-muted hover:bg-muted"
                     )}
                   >
                     {n}
@@ -236,7 +236,7 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
 
       {/* Loading skeleton */}
       {loading && (
-        <div className="rounded-xl border bg-card p-4 space-y-3">
+        <div className="rounded-xl card-card p-4 space-y-3">
           {Array.from({ length: count }).map((_, i) => (
             <div key={i} className="space-y-2">
               <div className="h-4 w-3/4 rounded bg-muted animate-pulse" />
@@ -258,7 +258,7 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
         <div className="flex flex-col gap-3">
           {/* Summary bar */}
           {allChecked && (
-            <div className="flex items-center gap-2 rounded-xl border bg-card px-4 py-3">
+            <div className="flex items-center gap-2 rounded-xl card-card px-4 py-3">
               <Dumbbell className="size-4 text-primary" />
               <span className="text-sm font-medium">
                 结果：{correctCount}/{questions.length} 正确
@@ -282,7 +282,7 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
             <Card key={qIdx}>
               <CardHeader className="pb-2">
                 <CardTitle className="flex items-start gap-2 text-sm">
-                  <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-semibold text-primary">
+                  <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-primary-subtle text-xs font-semibold text-primary">
                     {qIdx + 1}
                   </span>
                   <span>{q.question}</span>
@@ -299,7 +299,7 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
                     let optionClassName = cn(
                       "inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all",
                       "hover:bg-accent cursor-pointer",
-                      isSelected && !showResult && "border-primary bg-primary/10 text-primary"
+                      isSelected && !showResult && "border-primary bg-primary-subtle text-primary"
                     );
 
                     if (showResult) {
@@ -353,7 +353,7 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
                     </Button>
                   )}
                   {q.checked && (
-                    <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                    <div className="flex items-start gap-1.5 text-xs text-fg-muted">
                       <Lightbulb className="size-3.5 shrink-0 mt-0.5 text-yellow-500" />
                       <span>{q.explanation}</span>
                     </div>
@@ -379,12 +379,12 @@ export function ExerciseGenerator({ subject, className }: ExerciseGeneratorProps
       {/* Empty state */}
       {!loading && questions.length === 0 && !error && (
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-card/50 py-12 text-center">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10">
+          <span className="flex size-10 items-center justify-center rounded-xl bg-primary-subtle">
             <Dumbbell className="size-5 text-primary" />
           </span>
           <div>
             <p className="text-sm font-medium">生成针对性练习</p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-fg-muted">
               输入主题，选择难度和题数，AI 会为你生成高质量的选择题
             </p>
           </div>

@@ -158,7 +158,7 @@ export function ConceptExplainer({ subject, className }: ConceptExplainerProps) 
       {error && <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{error}</div>}
 
       {loading && (
-        <div className="rounded-2xl border bg-card p-6 space-y-3">
+        <div className="rounded-2xl card-card p-6 space-y-3">
           {[1, 2, 3].map((i) => (<div key={i} className="flex gap-3"><div className="size-5 rounded bg-muted animate-pulse" /><div className="flex-1 space-y-1.5"><div className="h-4 w-24 rounded bg-muted animate-pulse" /><div className="h-3 w-full rounded bg-muted/50 animate-pulse" /></div></div>))}
         </div>
       )}
@@ -186,7 +186,7 @@ export function ConceptExplainer({ subject, className }: ConceptExplainerProps) 
                       </span>
                     </AccordionTrigger>
                     <AccordionContent className="px-4 pb-4">
-                      <div className="text-sm text-muted-foreground leading-relaxed [&_strong]:text-foreground [&_pre]:my-2 [&_code]:text-xs"
+                      <div className="text-sm text-fg-muted leading-relaxed [&_strong]:text-foreground [&_pre]:my-2 [&_code]:text-xs"
                         dangerouslySetInnerHTML={{ __html: formatMarkdown(content) }} />
                     </AccordionContent>
                   </AccordionItem>
@@ -198,10 +198,10 @@ export function ConceptExplainer({ subject, className }: ConceptExplainerProps) 
           {/* 🗺️ 知识图谱 */}
           <TabsContent value="graph" className="mt-4">
             {!knowledgeGraph ? (
-              <div className="text-center py-12 text-muted-foreground text-sm">AI 未生成知识图谱，尝试重新输入更具体的概念</div>
+              <div className="text-center py-12 text-fg-muted text-sm">AI 未生成知识图谱，尝试重新输入更具体的概念</div>
             ) : (
               <div className="space-y-4">
-                <div className="rounded-2xl border bg-card p-4">
+                <div className="rounded-2xl card-card p-4">
                   <div className="flex flex-wrap gap-2 mb-3">
                     {knowledgeGraph.nodes.map((n) => (
                       <Badge key={n.id} variant={n.type === "核心" ? "default" : "secondary"} className="text-xs">
@@ -211,7 +211,7 @@ export function ConceptExplainer({ subject, className }: ConceptExplainerProps) 
                   </div>
                   <div className="space-y-1.5">
                     {knowledgeGraph.edges.map((e, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <div key={i} className="flex items-center gap-2 text-xs text-fg-muted">
                         <span className="font-medium">{e.from}</span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted">{e.relation}</span>
                         <span className="text-primary">→</span>
@@ -221,7 +221,7 @@ export function ConceptExplainer({ subject, className }: ConceptExplainerProps) 
                   </div>
                 </div>
                 {/* Mini graph visualization */}
-                <div className="rounded-2xl border bg-card p-4 min-h-[200px] relative overflow-hidden">
+                <div className="rounded-2xl card-card p-4 min-h-[200px] relative overflow-hidden">
                   {knowledgeGraph.nodes.map((n, i) => {
                     const row = Math.floor(i / 3);
                     const col = i % 3;
@@ -246,21 +246,21 @@ export function ConceptExplainer({ subject, className }: ConceptExplainerProps) 
           {/* 🧭 学习路径 */}
           <TabsContent value="path" className="mt-4">
             {learningPath.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground text-sm">AI 未生成学习路径</div>
+              <div className="text-center py-12 text-fg-muted text-sm">AI 未生成学习路径</div>
             ) : (
               <div className="space-y-0">
                 {learningPath.map((step, i) => (
                   <div key={i} className="flex gap-3">
                     <div className="flex flex-col items-center">
                       <div className={cn("size-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
-                        step.step === 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                        step.step === 1 ? "bg-primary text-primary-foreground" : "bg-muted text-fg-muted")}>
                         {step.step}
                       </div>
                       {i < learningPath.length - 1 && <div className="w-px flex-1 bg-border my-1" />}
                     </div>
                     <div className="pb-4">
                       <p className="text-sm font-medium">{step.text}</p>
-                      {step.duration && <p className="text-xs text-muted-foreground mt-0.5">{step.duration}</p>}
+                      {step.duration && <p className="text-xs text-fg-muted mt-0.5">{step.duration}</p>}
                     </div>
                   </div>
                 ))}
