@@ -48,7 +48,7 @@ function SectionHeader({ label, title, href, cta }: {
   label?: string; title: string; href?: string; cta?: string;
 }) {
   return (
-    <div className="flex items-end justify-between mb-5">
+    <div className="flex items-end justify-between mb-6">
       <div>
         {label && <p className="text-label">{label}</p>}
         <h2 className="text-title">{title}</h2>
@@ -85,7 +85,7 @@ export default function HubPage() {
 
   return (
     <PageTransition>
-    <div className="flex flex-col gap-10 pb-20">
+    <div className="flex flex-col gap-14 pb-24">
       {/* ═══ 1. HERO — Warm editorial greeting with watercolor blob ═══ */}
       <section className="relative pt-4 md:pt-10">
         <motion.div
@@ -94,7 +94,7 @@ export default function HubPage() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
           {/* Hero Card */}
-          <div className="relative overflow-hidden card-hero p-6 sm:p-8 md:p-10">
+          <div className="relative overflow-hidden card-hero p-7 sm:p-10 md:p-12">
             {/* Premium SVG gradient orbs + floating particles */}
             <AmbientOrbs className="opacity-80" />
             <FloatingParticles count={15} className="opacity-50" />
