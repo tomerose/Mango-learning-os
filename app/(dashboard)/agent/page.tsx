@@ -80,6 +80,8 @@ function AgentPageInner() {
     return () => window.removeEventListener("agent:knowledge-capture", handler as EventListener);
   }, []);
 
+  const [planGenerating, setPlanGenerating] = React.useState(false);
+
   function handleCapture() {
     if (!captureData) return;
     store.addNote({
@@ -89,6 +91,26 @@ function AgentPageInner() {
       tags: ["对话捕获", captureData.subject],
     });
     setCaptured(true);
+  }
+
+  async function handleGeneratePlan() {
+    if (!captureData) return;
+    setPlanGenerating(true);
+    try {
+      const res = await fetch("/api/ai/generate", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "plan", input: `基于以下学习对话生成每日任务：\nQ: ${captureData.question}\nA: ${captureData.answer.slice(0, 500)}` }),
+      });
+      const data = await res.json();
+      if (data.content) {
+        // Parse plan into tasks
+        const tasks = (typeof data.content === "string" ? data.content : data.content?.plan ?? "")
+          .split("\n").filter((l: string) => l.match(/^[-*•\d]+[.)]\s/) || l.includes("任务")).slice(0, 5);
+        tasks.forEach((t: string) => {
+          store.addTask({ title: t.replace(/^[-*•\d]+[.)]\s*/, "").slice(0, 80), subject: captureData.subject, done: false, priority: "medium", dueLabel: "今天", estimatedMin: 25 });
+        });
+      }
+    } catch {} finally { setPlanGenerating(false); }
   }
 
   // Demo skills for identity skill tree
@@ -142,7 +164,7 @@ function AgentPageInner() {
                 <AgentSuggestions subject={subject} onSelect={handleSuggestion} />
                 {/* Knowledge Capture */}
                 {captureData && (
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
                     {captured ? (
                       <span className="text-xs text-emerald-500">已保存到知识库 ✓</span>
                     ) : (
@@ -151,6 +173,10 @@ function AgentPageInner() {
                         <Brain className="size-3" /> 保存到知识库
                       </button>
                     )}
+                    <button onClick={handleGeneratePlan} disabled={planGenerating}
+                      className="inline-flex items-center gap-1.5 text-xs rounded-full border border-border px-3 py-1.5 hover:bg-primary-subtle hover:border-primary/30 transition-colors">
+                      {planGenerating ? "生成中..." : "📋 生成学习任务"}
+                    </button>
                   </div>
                 )}
                 <div className="mt-3"><MistakeAnalyzer subject={subject} /></div>

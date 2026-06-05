@@ -21,8 +21,27 @@ const WAVE_BARS = 24;
 export function VoiceOS({ onClose, subject }: VoiceOSProps) {
   const [isListening, setIsListening] = React.useState(false);
   const [isSpeaking, setIsSpeaking] = React.useState(false);
+  const [transcript, setTranscript] = React.useState("");
   const synthRef = React.useRef<SpeechSynthesis | null>(null);
-  React.useEffect(() => { if(typeof window!=="undefined") synthRef.current = window.speechSynthesis; }, []);
+  const recogRef = React.useRef<any>(null);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    synthRef.current = window.speechSynthesis;
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognitionAPI) {
+      const r = new SpeechRecognitionAPI();
+      r.continuous = true;
+      r.interimResults = true;
+      r.lang = "zh-CN";
+      r.onresult = (e: any) => {
+        let t = "";
+        for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+        setTranscript(t);
+      };
+      r.onerror = () => setIsListening(false);
+      recogRef.current = r;
+    }
+  }, []);
   const [activePersona, setActivePersona] = React.useState<VoicePersona>(BUILTIN_PERSONAS[2]);
   const [showPersonas, setShowPersonas] = React.useState(false);
   const [waveHeights, setWaveHeights] = React.useState<number[]>(
@@ -110,7 +129,7 @@ export function VoiceOS({ onClose, subject }: VoiceOSProps) {
 
         {/* Core orb */}
         <motion.button
-          onClick={() => { if(isListening){setIsListening(false);synthRef.current?.cancel();}else{setIsListening(true);if(synthRef.current){synthRef.current.cancel();const u=new SpeechSynthesisUtterance("你好，我是"+activePersona.name+"。"+activePersona.teachingStyle);u.lang="zh-CN";u.rate=0.9;u.onstart=()=>setIsSpeaking(true);u.onend=()=>setIsSpeaking(false);synthRef.current.speak(u);}} }}
+          onClick={() => { if(isListening){setIsListening(false);synthRef.current?.cancel();recogRef.current?.stop();}else{setIsListening(true);setTranscript("");recogRef.current?.start();if(synthRef.current){synthRef.current.cancel();const u=new SpeechSynthesisUtterance("你好，我是"+activePersona.name+"。"+activePersona.teachingStyle);u.lang="zh-CN";u.rate=0.9;u.onstart=()=>setIsSpeaking(true);u.onend=()=>setIsSpeaking(false);synthRef.current.speak(u);}} }}
           className="absolute size-24 rounded-full flex items-center justify-center"
           style={{ background: "radial-gradient(circle at 40% 35%, rgba(197,139,116,0.8) 0%, rgba(180,120,100,0.6) 50%, rgba(160,100,80,0.4) 100%)" }}
           whileHover={{ scale: 1.05 }}
@@ -134,13 +153,18 @@ export function VoiceOS({ onClose, subject }: VoiceOSProps) {
         </div>
 
         {/* Status text */}
-        <div className="text-center">
+        <div className="text-center max-w-xs">
           <p className="text-lg font-medium text-white/90">
             {isListening ? "正在聆听..." : "点击开始对话"}
           </p>
           <p className="text-sm text-white/40 mt-1">
             {activePersona.name} · {activePersona.role}
           </p>
+          {transcript && (
+            <motion.p initial={{opacity:0}} animate={{opacity:1}} className="text-sm text-white/60 mt-3 bg-white/5 rounded-xl p-3 leading-relaxed">
+              {transcript}
+            </motion.p>
+          )}
         </div>
       </div>
 

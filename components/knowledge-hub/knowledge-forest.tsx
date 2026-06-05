@@ -169,14 +169,29 @@ export function KnowledgeForest() {
           </Button>
         </div>
         {officials.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-caption">官方森林：</span>
-            {officials.map(f => (
-              <button key={f.key} onClick={() => loadOfficial(f.key)}
-                className="inline-flex items-center gap-1 text-xs rounded-full border border-border px-3 py-1 hover:bg-primary-subtle hover:border-primary/30 transition-colors">
-                <Trees className="size-3" /> {f.title}
-              </button>
-            ))}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-caption">官方森林：</span>
+              {officials.map(f => (
+                <button key={f.key} onClick={() => loadOfficial(f.key)}
+                  className="inline-flex items-center gap-1 text-xs rounded-full border border-border px-3 py-1 hover:bg-primary-subtle hover:border-primary/30 transition-colors">
+                  <Trees className="size-3" /> {f.title}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-caption">社区森林：</span>
+              {[
+                { key: "community-1", title: "考研数学" },
+                { key: "community-2", title: "Python入门" },
+                { key: "community-3", title: "日语N2" },
+              ].map(f => (
+                <button key={f.key} onClick={() => { setGenPrompt(f.title); handleGenerate(); }}
+                  className="inline-flex items-center gap-1 text-xs rounded-full border border-border px-3 py-1 hover:bg-primary-subtle hover:border-primary/30 transition-colors text-fg-muted">
+                  {f.title}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
