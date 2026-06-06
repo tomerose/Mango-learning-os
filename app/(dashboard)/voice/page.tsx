@@ -3,9 +3,10 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Mic, MicOff, ChevronLeft, Loader2 } from "lucide-react";
+import { Mic, MicOff, ChevronLeft, Loader2, Brain, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageTransition } from "@/components/layout/page-transition";
+import { useStore } from "@/lib/store";
 import { BUILTIN_PERSONAS, DEFAULT_IDENTITIES, type VoicePersona } from "@/lib/ai/identity-engine";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -33,9 +34,11 @@ function VoicePageInner() {
   const [activePersona, setActivePersona] = React.useState<VoicePersona>(BUILTIN_PERSONAS[0]);
   const [isListening, setIsListening] = React.useState(false);
   const [isSpeaking, setIsSpeaking] = React.useState(false);
+  const { addNote } = useStore();
   const [isThinking, setIsThinking] = React.useState(false);
   const [transcript, setTranscript] = React.useState("");
   const [conversation, setConversation] = React.useState<Turn[]>([]);
+  const [saved, setSaved] = React.useState(false);
   const [waveHeights, setWaveHeights] = React.useState<number[]>(Array.from({ length: WAVE_BARS }, () => 8));
   const [greeted, setGreeted] = React.useState(false);
   const [status, setStatus] = React.useState("");
@@ -160,6 +163,20 @@ function VoicePageInner() {
     }
   }
 
+  function handleSaveConversation() {
+    if (conversation.length < 2 || saved) return;
+    const lastTurn = conversation[conversation.length - 1];
+    const userTurn = conversation[conversation.length - 2];
+    addNote({
+      subject: "ai",
+      title: (userTurn?.text ?? "语音对话").slice(0, 60),
+      body: `## 提问\n${userTurn?.text ?? ""}\n\n## ${activePersona.name}的回答\n${lastTurn?.text ?? ""}\n\n---\n*芒宝语音捕获 · ${new Date().toLocaleDateString("zh-CN")}*`,
+      tags: ["语音对话", activePersona.id],
+    });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  }
+
   function toggleListening() {
     if (isListening) {
       setIsListening(false);
@@ -235,6 +252,17 @@ function VoicePageInner() {
               {turn.text}
             </motion.div>
           ))}
+          {conversation.length >= 2 && !isThinking && (
+            <div className="flex justify-center mt-2">
+              {saved ? (
+                <span className="text-xs text-emerald-400/70 flex items-center gap-1"><Check className="size-3" /> 已保存到知识库</span>
+              ) : (
+                <button onClick={handleSaveConversation} className="text-xs text-white/40 hover:text-white/70 flex items-center gap-1 transition-colors">
+                  <Brain className="size-3" /> 保存对话到知识库
+                </button>
+              )}
+            </div>
+          )}
           {isThinking && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="self-start bg-white/5 rounded-2xl px-4 py-3 text-sm text-white/50 border border-white/10 flex items-center gap-2">
