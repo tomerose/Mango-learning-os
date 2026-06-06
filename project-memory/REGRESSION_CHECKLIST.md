@@ -61,5 +61,10 @@ done
 - Mind Garden PHQ-9-style self-check not yet wired to UI form
 - PDF export uses browser print dialog (not server-side PDF generation)
 
+## Auth Invite Codes (v7.3)
+- [x] Guest entry → sillyfind2025 works, tokentome222 rejected
+- [x] Login/Register → tokentome222 works, sillyfind2025 rejected
+- [x] No tokentome111 references in source
+
 ## Last Checked
-2026-06-06 — v7 Research Pipeline deployment
+2026-06-06 — v7.3 内测版 deployment

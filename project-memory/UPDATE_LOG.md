@@ -1,5 +1,15 @@
 # MangoLearningOS — Update Log
 
+## 2026-06-06 — v7.3 内测版
+- **Branding:** 版本号改为"内测版"，update modal 重新触发
+- **Auth 邀请码重构:**
+  - 游客/首次进入: `sillyfind2025` (原 tokentome111)
+  - 登录/注册: `tokentome222` (不变)
+  - verifyCode 改为模式强制匹配：登录只能用登录码，游客只能用游客码
+- **YouTube → Bilibili + 抖音:** 免费中文视频搜索，无需 API Key
+- **Mind Garden v2 UI:** `/grow` 新增「心灵花园 Pro」标签页，10 模式选择器 + 危机检测卡片 + 隐私切换
+- **Research Orchestrator:** 新增 Open Library + Free Dictionary + Gutendex 3 个免费 provider（共 9 个）
+
 ## 2026-06-06 — v7 Research Pipeline
 - **Research Orchestrator:** Multi-source pipeline (query expansion → 5 providers → dedup/rank/score → AI synthesis)
 - **Content Quality Engine v2:** 7-gate validation (relevance/grounding/structure/completeness/anti-generic/formatting/actionability)
