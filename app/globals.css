@@ -222,51 +222,21 @@ body {
   .text-display { font-size: 1.75rem !important; }
   .text-title { font-size: 1.375rem !important; }
 
-  /* Section spacing — generous breathing room */
-  section, [class*="gap-"] { --tw-space-y-reverse: 0; }
-  .flex-col.gap-6 { gap: 1.5rem !important; }
-  .flex-col.gap-10 { gap: 2rem !important; }
-  .flex-col.gap-14 { gap: 2.5rem !important; }
-  .flex-col.gap-16 { gap: 3rem !important; }
-
-  /* Prevent horizontal overflow */
-  body, main, [class*="max-w-"] { max-width: 100vw !important; overflow-x: hidden !important; }
-  pre, code, .whitespace-pre-wrap { max-width: 100%; overflow-x: auto; word-break: break-word; }
-
-  /* Responsive grids — allow Tailwind responsive overrides */
-  .sm\:grid-cols-2, .sm\:grid-cols-3, .sm\:grid-cols-4 { grid-template-columns: 1fr; }
-
   /* ── Touch & Tap ── */
-  button, a[role="button"], [data-slot="tabs-trigger"], a { min-height: 44px; }
-  a, button { touch-action: manipulation; }
+  button, a[role="button"], [data-slot="tabs-trigger"], a { min-height: 44px; touch-action: manipulation; }
 
-  /* ── Cards — generous padding ── */
-  .card-card, .card-floating, .card-hero, .card-paper { padding: 1.125rem !important; }
+  /* ── Cards ── */
+  .card-card, .card-floating, .card-hero, .card-paper { padding: 1rem; }
 
-  /* ── Tabs — horizontal scroll ── */
-  [data-slot="tabs-list"] {
-    overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important;
-    scroll-snap-type: x mandatory; gap: 0.5rem !important;
-    padding: 0.25rem 0;
-  }
-  [data-slot="tabs-trigger"] { flex-shrink: 0; scroll-snap-align: start; font-size: 0.8125rem !important; padding: 0.5rem 0.875rem !important; white-space: nowrap; }
+  /* ── Tabs — horizontal scroll with snap ── */
+  [data-slot="tabs-list"] { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; scroll-snap-type: x mandatory; gap: 0.5rem; padding: 0.25rem 0; }
+  [data-slot="tabs-trigger"] { flex-shrink: 0; scroll-snap-align: start; font-size: 0.8125rem; padding: 0.5rem 0.875rem; white-space: nowrap; }
 
-  /* ── Dialogs/Sheets ── */
-  [data-slot="dialog-content"], [data-slot="sheet-content"] {
-    max-width: 94vw !important; width: 94vw !important; border-radius: var(--radius-3xl) !important;
-  }
-  [data-slot="sheet-content"][data-side="bottom"] {
-    max-width: 100vw !important; width: 100vw !important; border-radius: var(--radius-3xl) var(--radius-3xl) 0 0 !important;
-  }
+  /* ── 3D sphere ── */
+  .aspect-square { max-width: 340px; margin: 0 auto; }
 
-  /* ── Scrolling ── */
-  * { -webkit-overflow-scrolling: touch; }
-
-  /* ── 3D sphere scale down ── */
-  .aspect-square { max-width: 340px !important; margin: 0 auto; }
-
-  /* ── Sidebar/Desktop hide ── */
-  .hidden.md\\:flex { display: none !important; }
+  /* ── Horizontal overflow ── */
+  body, main { max-width: 100vw; overflow-x: hidden; }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
