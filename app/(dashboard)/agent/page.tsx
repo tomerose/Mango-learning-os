@@ -212,25 +212,51 @@ export default function AgentPage() {
           {view === "running" && (
             <motion.div key="running" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
               className="card-card p-6 sm:p-8 flex flex-col gap-5">
-              <div className="flex items-center gap-3">
-                <Loader2 className="size-6 text-primary animate-spin" />
+              {/* Animated Agent indicator */}
+              <div className="flex items-center gap-4">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="size-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-400/20"
+                >
+                  <span className="text-2xl">🥭</span>
+                </motion.div>
                 <div>
-                  <p className="text-base font-semibold font-serif">执行中…</p>
+                  <p className="text-base font-semibold font-serif">
+                    {timeline.length <= 2 ? "Agent 分析任务中…" :
+                     timeline.some(e => e.status === "error") ? "部分完成…" :
+                     "正在执行…"}
+                  </p>
                   <p className="text-xs text-fg-muted">{composeInput.slice(0, 60)}</p>
                 </div>
               </div>
+
+              {/* Step descriptions — show what Agent is actually doing */}
+              <div className="text-xs text-fg-muted/60 bg-bg-subtle rounded-xl p-3 mb-1">
+                {timeline.length <= 2 && "🧠 正在理解你的需求，规划最佳执行方案…"}
+                {timeline.length > 2 && timeline.length < 5 && "🔧 正在调用工具处理任务…"}
+                {timeline.length >= 5 && "📝 正在整理结果，生成结构化输出…"}
+              </div>
+
+              {/* Timeline */}
               <div className="flex flex-col gap-1.5">
                 {timeline.map((ev, i) => (
-                  <motion.div key={ev.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
-                    className={cn("flex items-center gap-3 py-2 px-3 rounded-lg text-sm",
+                  <motion.div key={ev.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }}
+                    className={cn("flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm",
                       ev.status === "error" ? "bg-red-50 text-red-600" :
                       ev.type === "output" ? "bg-emerald-50 text-emerald-700 font-medium" :
                       "text-fg-muted")}>
                     {ev.status === "done" ? <CheckCircle2 className="size-4 text-emerald-500 shrink-0" /> :
                      ev.status === "error" ? <AlertTriangle className="size-4 shrink-0" /> :
-                     <Loader2 className="size-4 animate-spin shrink-0" />}
+                     <motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+                       <Loader2 className="size-4 text-primary shrink-0" />
+                     </motion.span>}
                     <span>{ev.message}</span>
-                    {ev.toolName && <Badge variant="secondary" className="text-[9px] ml-auto">{getToolInfo(ev.toolName)?.label ?? ev.toolName}</Badge>}
+                    {ev.toolName && (
+                      <Badge variant="secondary" className="text-[9px] ml-auto">
+                        {getToolInfo(ev.toolName)?.label ?? ev.toolName}
+                      </Badge>
+                    )}
                   </motion.div>
                 ))}
               </div>

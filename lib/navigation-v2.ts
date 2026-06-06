@@ -54,8 +54,8 @@ export const navItemsV2: NavItem[] = [
     shortLabel: "森林",
     href: "/forest",
     icon: Trees,
-    description: "IELTS · CFA · AI 工程师 · 托福",
-    tier: "primary",
+    description: "知识网络 · 笔记关联 · 学习计划",
+    tier: "secondary",
   },
   {
     id: "grow",
@@ -63,8 +63,8 @@ export const navItemsV2: NavItem[] = [
     shortLabel: "花园",
     href: "/grow",
     icon: Heart,
-    description: "心灵花园 Pro · 情绪支持 · 自我关怀",
-    tier: "primary",
+    description: "心灵花园 Pro · 10种模式 · 自我关怀",
+    tier: "secondary",
   },
   // ── Secondary (More drawer + sidebar) ────────────────────
   {
@@ -73,8 +73,8 @@ export const navItemsV2: NavItem[] = [
     shortLabel: "笔记",
     href: "/notes",
     icon: FileText,
-    description: "结构化笔记 · 6种模板 · CRUD",
-    tier: "secondary",
+    description: "结构化笔记 · 6种模板 · PDF导入",
+    tier: "primary",
   },
   {
     id: "planner",

@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText, Plus, BookOpen, Lightbulb, Mic, Search,
   Target, BookMarked, Trash2, Edit3, Clock, Layers,
-  ChevronRight, Loader2, PenLine,
+  ChevronRight, Loader2, PenLine, FileUp, Brain,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -116,9 +117,12 @@ export default function NotesPage() {
               ← 返回列表
             </button>
           ) : (
-            <Button onClick={() => setView("create")} size="sm" className="rounded-xl gap-1.5">
-              <Plus className="size-3.5" /> 新建笔记
-            </Button>
+            <div className="flex items-center gap-2">
+              <ImportButton onImported={(text) => { setContent(text); setView("create"); }} />
+              <Button onClick={() => setView("create")} size="sm" className="rounded-xl gap-1.5">
+                <Plus className="size-3.5" /> 新建笔记
+              </Button>
+            </div>
           )}
         </div>
       </header>
@@ -252,5 +256,38 @@ export default function NotesPage() {
       </AnimatePresence>
     </div>
     </PageTransition>
+  );
+}
+
+// ── Import Button: TXT/MD/PDF/DOCX → text ──────────────────────
+
+function ImportButton({ onImported }: { onImported: (text: string) => void }) {
+  const [importing, setImporting] = React.useState(false);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      let text = await file.text();
+      if (file.name.endsWith(".pdf") || file.name.endsWith(".docx")) {
+        text = text.replace(/[^\x20-\x7E一-鿿　-〿＀-￯\n\r]/g, " ").replace(/\s{3,}/g, "\n").trim();
+        if (text.length < 10) text = `[${file.name}] 二进制格式，请复制粘贴内容或使用 AI Agent 上传分析`;
+      }
+      if (text.trim()) onImported(text.trim());
+    } catch { alert("导入失败，请复制粘贴内容。"); }
+    finally { setImporting(false); if (fileRef.current) fileRef.current.value = ""; }
+  }
+
+  return (
+    <>
+      <input ref={fileRef} type="file" accept=".txt,.md,.pdf,.docx,.doc" onChange={handleFile} className="hidden" />
+      <button onClick={() => fileRef.current?.click()} disabled={importing}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border text-xs text-fg-muted hover:text-fg hover:border-primary/30 transition-colors">
+        {importing ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
+        导入
+      </button>
+    </>
   );
 }

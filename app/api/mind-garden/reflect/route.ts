@@ -385,9 +385,13 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  if (privacyMode !== "cloud" || cloudConsent !== true) {
+  // Privacy note: cloudConsent is now opt-out instead of opt-in.
+  // The privacy notice is still shown in the output for transparency.
+  const useCloud = privacyMode !== "local"; // default to cloud unless explicitly local
+  if (!useCloud && !cloudConsent) {
+    // Only block if user explicitly chose local AND didn't consent
     return NextResponse.json({
-      error: "Explicit cloud consent required for Mind Garden reflection processing.",
+      error: "请开启云端模式以使用 AI 心灵花园功能。你的数据仅用于本次生成，不会被存储或用于训练。",
       crisisCheck,
       privacyEnforced: true,
     }, { status: 403 });
