@@ -193,47 +193,68 @@ class AcademicProvider implements SearchProvider {
   }
 }
 
-// ── YouTube Search (free public search, no API key needed) ─────
-class YouTubeProvider implements SearchProvider {
+// ── Bilibili Search (free, no API key needed) ─────────────────
+class BilibiliProvider implements SearchProvider {
   type: ProviderType = "youtube";
-  name = "YouTube";
+  name = "Bilibili (哔哩哔哩)";
 
   async search(query: string, _opts: { timeoutMs: number }): Promise<RawSearchResult[]> {
     const results: RawSearchResult[] = [];
-    const apiKey = process.env.YOUTUBE_API_KEY;
-
-    if (!apiKey) {
-      // Fallback: construct search URL (user can open in browser)
-      const encoded = encodeURIComponent(query + " tutorial lecture");
-      results.push({
-        title: `YouTube 搜索: ${query}`,
-        url: `https://www.youtube.com/results?search_query=${encoded}`,
-        snippet: "需要配置 YOUTUBE_API_KEY 以显示视频详情。点击链接手动搜索。",
-        platform: "youtube",
-      });
-      return results;
-    }
-
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), _opts.timeoutMs);
       const res = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query + " tutorial")}&maxResults=5&type=video&key=${apiKey}`,
-        { signal: controller.signal }
+        `https://api.bilibili.com/x/web-interface/search/all/v2?keyword=${encodeURIComponent(query)}&search_type=video&page=1`,
+        {
+          headers: {
+            "User-Agent": "MangoOS-ResearchOrchestrator/1.0",
+            "Referer": "https://www.bilibili.com",
+          },
+          signal: controller.signal,
+        }
       );
       clearTimeout(timeout);
       if (res.ok) {
         const data = await res.json();
-        for (const item of (data.items ?? [])) {
+        const videos = data?.data?.result?.find((r: any) => r.result_type === "video")?.data ?? [];
+        for (const video of (videos as any[]).slice(0, 5)) {
           results.push({
-            title: item.snippet?.title ?? "",
-            url: `https://www.youtube.com/watch?v=${item.id?.videoId}`,
-            snippet: item.snippet?.description?.slice(0, 200) ?? "",
+            title: video.title?.replace(/<[^>]+>/g, "") ?? "",
+            url: `https://www.bilibili.com/video/${video.bvid ?? video.aid}`,
+            snippet: `${video.author ?? ""} | ▶${(video.play ?? 0).toLocaleString()} | 💬${(video.danmaku ?? 0).toLocaleString()} | ⏱${video.duration ?? ""}`,
             platform: "youtube",
           });
         }
       }
     } catch { /* graceful */ }
+
+    // Fallback: construct search URL
+    if (results.length === 0) {
+      results.push({
+        title: `B站搜索: ${query}`,
+        url: `https://search.bilibili.com/all?keyword=${encodeURIComponent(query)}`,
+        snippet: "在哔哩哔哩上搜索相关学习视频",
+        platform: "youtube",
+      });
+    }
+    return results;
+  }
+}
+
+// ── Douyin Search (free, search URL fallback) ──────────────────
+class DouyinProvider implements SearchProvider {
+  type: ProviderType = "youtube";
+  name = "抖音";
+
+  async search(query: string, _opts: { timeoutMs: number }): Promise<RawSearchResult[]> {
+    const results: RawSearchResult[] = [];
+    // Douyin doesn't have a stable public API. Use search URL.
+    results.push({
+      title: `抖音搜索: ${query}`,
+      url: `https://www.douyin.com/search/${encodeURIComponent(query + " 学习 教程")}`,
+      snippet: "在抖音上搜索相关学习短视频",
+      platform: "youtube",
+    });
     return results;
   }
 }
@@ -390,7 +411,8 @@ const providers: SearchProvider[] = [
   new WebSearchProvider(),
   new GitHubProvider(),
   new AcademicProvider(),
-  new YouTubeProvider(),
+  new BilibiliProvider(),
+  new DouyinProvider(),
   new OpenLibraryProvider(),
   new DictionaryProvider(),
   new GutendexProvider(),
@@ -689,8 +711,8 @@ export function getProviderStatus(): Record<ProviderType, { available: boolean; 
       message: process.env.GITHUB_TOKEN ? "已配置 GITHUB_TOKEN" : "未配置 GITHUB_TOKEN，请求频率受限(60 req/h)。设置后 5000 req/h。",
     },
     youtube: {
-      available: !!process.env.YOUTUBE_API_KEY,
-      message: process.env.YOUTUBE_API_KEY ? "已配置 YOUTUBE_API_KEY" : "未配置 YOUTUBE_API_KEY，使用搜索链接回退。",
+      available: true,
+      message: "Bilibili API + 抖音搜索 — 免费中文学习视频，无需 API Key",
     },
     official: {
       available: true,

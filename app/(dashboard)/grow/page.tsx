@@ -1,17 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { Heart, MessageCircle, Sprout, Feather } from "lucide-react";
+import { Heart, MessageCircle, Sprout, Feather, Flower } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { JournalEditor } from "@/components/mind/journal-editor";
 import { MoodTracker } from "@/components/mind/mood-tracker";
 import { CbtReframer } from "@/components/mind/cbt-reframer";
 import { AiCompanionChat } from "@/components/mind/ai-companion-chat";
+import { MindGardenV2 } from "@/components/mind/mind-garden-v2";
 import { PageTransition } from "@/components/layout/page-transition";
 
 export default function GrowPage() {
-  const [tab, setTab] = React.useState("journal");
+  const [tab, setTab] = React.useState("mind-garden");
 
   return (
     <PageTransition>
@@ -25,12 +26,16 @@ export default function GrowPage() {
       <div className="relative z-10">
         <PageShell title="心灵花园" description="反思 · 情绪 · 成长 · 陪伴">
           <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="w-full max-w-md">
+            <TabsList className="w-full max-w-xl">
+              <TabsTrigger value="mind-garden"><Flower className="size-3.5 mr-1" />心灵花园 Pro</TabsTrigger>
               <TabsTrigger value="journal"><Feather className="size-3.5 mr-1" />日记</TabsTrigger>
               <TabsTrigger value="mood"><Heart className="size-3.5 mr-1" />情绪</TabsTrigger>
               <TabsTrigger value="cbt"><Sprout className="size-3.5 mr-1" />重构</TabsTrigger>
               <TabsTrigger value="companion"><MessageCircle className="size-3.5 mr-1" />陪伴</TabsTrigger>
             </TabsList>
+            <TabsContent value="mind-garden" className="mt-4">
+              <MindGardenV2 />
+            </TabsContent>
             <TabsContent value="journal" className="mt-4">
               <JournalEditor />
               <div className="mt-6"><MoodTracker /></div>
