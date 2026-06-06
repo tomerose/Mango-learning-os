@@ -98,15 +98,22 @@ export async function resolveSession(req: NextRequest): Promise<SessionContext> 
 /**
  * Get plan from localStorage for client-side checks.
  * This is COSMETIC only — real enforcement is server-side.
+ * Priority: localStorage > cookie session > guest
  */
 export function getClientPlan(): PlanTier {
   try {
+    // 1. Check localStorage (set by store.tsx after login)
     const stored = localStorage.getItem("mango-user-plan");
     if (stored) return stored as PlanTier;
 
-    // Fallback: check Supabase session existence
-    const hasSession = localStorage.getItem("sb-gwhlkumqkcyclvlahkkp-auth-token");
-    return hasSession ? "standard" : "guest";
+    // 2. Check Supabase cookie-based session (@supabase/ssr stores in cookies)
+    const cookies = document.cookie.split("; ");
+    const hasSession = cookies.some(c =>
+      c.startsWith("sb-") && c.includes("-auth-token")
+    );
+    if (hasSession) return "standard"; // Logged in but plan not yet synced
+
+    return "guest";
   } catch {
     return "guest";
   }

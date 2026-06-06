@@ -18,21 +18,23 @@ type Tab = "overview" | "billing" | "privacy";
 
 export function ProfileContent() {
   const { stats, tasks, mode, notes } = useStore();
-  const [plan, setPlan] = React.useState<PlanTier>("guest");
-  const [planExpiresAt, setPlanExpiresAt] = React.useState<string | null>(null);
+
+  // Initialize plan from localStorage immediately (not "guest" as hard default)
+  const [plan, setPlan] = React.useState<PlanTier>(() => getClientPlan());
+  const [planExpiresAt, setPlanExpiresAt] = React.useState<string | null>(() => {
+    try { return localStorage.getItem("mango-plan-expires"); } catch { return null; }
+  });
   const [activeTab, setActiveTab] = React.useState<Tab>("overview");
   const [quota, setQuota] = React.useState({ agentTasks: { current: 0, max: 0 }, studyPacks: { current: 0, max: 0 } });
 
-  // Load plan from localStorage + fetch from API
+  // Fetch latest from API to refine plan (e.g. admin/pro detection)
   React.useEffect(() => {
-    const clientPlan = getClientPlan();
-    setPlan(clientPlan);
-    try {
-      const exp = localStorage.getItem("mango-plan-expires");
-      if (exp) setPlanExpiresAt(exp);
-    } catch {}
+    // If store mode is cloud, we're definitely authenticated (minimum "standard")
+    if (mode === "cloud" && plan === "guest") {
+      setPlan("standard");
+      setClientPlan("standard");
+    }
 
-    // Fetch latest from API
     fetch("/api/auth/plan")
       .then(r => r.json())
       .then(data => {

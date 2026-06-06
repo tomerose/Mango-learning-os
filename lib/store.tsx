@@ -24,6 +24,8 @@ import {
   addProfileXp,
   migrateGuestToCloud,
 } from "@/lib/supabase/queries";
+import { setClientPlan } from "@/lib/auth/session";
+import type { PlanTier } from "@/lib/plan/types";
 import {
   seedTasks,
   seedNotes,
@@ -222,6 +224,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           fetchQuizAttempts(),
         ]);
       const profile = await fetchProfile(user.id);
+
+      // ── Read plan from profiles table → persist to client localStorage ──
+      // This is THE single place that bridges server plan → client UI.
+      // Without this, the frontend always shows "游客" regardless of DB state.
+      const userPlan: PlanTier = profile?.is_admin
+        ? "admin"
+        : (profile?.plan as PlanTier) === "pro"
+          ? (profile?.plan_expires_at && new Date(profile.plan_expires_at) < new Date() ? "standard" : "pro")
+          : (profile?.plan as PlanTier) ?? "standard";
+      setClientPlan(userPlan, profile?.plan_expires_at ?? null);
 
       // First login — if cloud data is empty, auto-seed demo data
       // so users see value immediately instead of empty states

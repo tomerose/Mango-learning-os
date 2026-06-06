@@ -162,6 +162,10 @@ export interface ProfileRow {
   total_xp: number;
   streak_days: number;
   last_active: string | null;
+  plan?: string | null;
+  plan_expires_at?: string | null;
+  is_admin?: boolean | null;
+  avatar_url?: string | null;
 }
 
 // Derive level + level boundaries from raw XP so stats stay consistent
