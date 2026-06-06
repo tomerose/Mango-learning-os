@@ -8,7 +8,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +28,7 @@ import { SUBJECT_META } from "@/lib/mock-data";
 import { useStore } from "@/lib/store";
 import { useSubjects } from "@/lib/subjects";
 import { ImportNoteDialog } from "@/components/knowledge-hub/import-note-dialog";
+import { RichEditor } from "@/components/knowledge-hub/rich-editor";
 import type { SubjectId } from "@/lib/types";
 
 export function NotesTab() {
@@ -224,28 +224,19 @@ h1{font-size:22px;border-bottom:2px solid #e0e0e0;padding-bottom:8px;}
                 placeholder="标题"
                 autoFocus
               />
-              <div className="relative">
-                <Textarea
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder="内容…（可点击下方「AI 充实」自动从百科和知乎补全知识）"
-                  className="min-h-28"
+              <div className="flex flex-col gap-1 border rounded-lg overflow-hidden">
+                <RichEditor
+                  title={title}
+                  onTitleChange={setTitle}
+                  body={body}
+                  onBodyChange={setBody}
+                  tags={tags}
+                  onTagsChange={setTags}
+                  onEnrich={enrichContent}
+                  enriching={enriching}
+                  className="min-h-48"
                 />
-                <button
-                  type="button"
-                  onClick={enrichContent}
-                  disabled={enriching || !title.trim()}
-                  className="absolute bottom-2 right-2 inline-flex items-center gap-1 text-xs rounded-lg bg-amber-100 text-amber-700 px-2 py-1 hover:bg-amber-200 transition-colors disabled:opacity-50"
-                >
-                  {enriching ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
-                  AI 充实内容
-                </button>
               </div>
-              <Input
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="标签，用逗号或空格分隔"
-              />
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => { setOpen(false); reset(); }}>
