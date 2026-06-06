@@ -1,18 +1,30 @@
 {
+  "id": "com.mango.learningos",
   "name": "Mango Learning OS",
   "short_name": "Mango",
-  "description": "你的个人学习操作系统",
+  "description": "AI原生学习操作系统 — 把焦虑变成准备",
   "start_url": "/hub",
+  "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen", "minimal-ui"],
   "background_color": "#F7F4EF",
   "theme_color": "#C58B74",
   "orientation": "portrait-primary",
-  "categories": ["education", "productivity"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["education", "productivity", "lifestyle"],
+  "iarc_rating_id": "e44e8a0b-82a0-4c32-b1b3-7d20c1d68e8f",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
   ],
   "screenshots": [],
+  "shortcuts": [
+    { "name": "今日", "short_name": "今日", "url": "/hub", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "学习包", "short_name": "学习包", "url": "/pack", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "AI导师", "short_name": "导师", "url": "/agent", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "我的", "short_name": "我的", "url": "/profile", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ],
   "prefer_related_applications": false
 }
