@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { PageTransition } from "@/components/layout/page-transition";
 import { useStore } from "@/lib/store";
 import { BUILTIN_PERSONAS, DEFAULT_IDENTITIES, type VoicePersona } from "@/lib/ai/identity-engine";
+import { useDeepgramSTT } from "@/lib/deepgram/use-deepgram-stt";
 
 /* ═══════════════════════════════════════════════════════════════
    Mango Voice v2 — Full Conversation Loop
