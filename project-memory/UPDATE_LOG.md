@@ -1,6 +1,16 @@
 # MangoLearningOS — Update Log
 
-## 2026-06-07 — V13.5: Notes重塑 + MindGarden修复 + 导航重构 (Current)
+## 2026-06-07 — V14: AgentArtifact重构 (Current)
+- **Build:** 94 pages, 0 TS errors
+- **AgentArtifact:** 每次执行返回完整结构化产出(id/taskType/artifactMarkdown/qualityCheck/sources/toolTraces)
+- **10专用生成器:** examReview/studyPack/documentReading/notesOrganize/mistakeTraining/englishSpeaking/presentation/conceptExplanation/knowledgeForest/general
+- **ArtifactRenderer:** 可复用组件(标题/摘要/内容/来源/编辑/复制/导出/重新生成)
+- **质量检查:** checkArtifactQuality() — 必须含内容+结构+例子+行动建议才通过
+- **Agent工作台:** 模板/执行进度/产出渲染三区联动
+- **历史记录:** localStorage持久化ArtifactHistory(搜索/删除/重新打开)
+- **失败处理:** API fail → 清晰错误+重试建议+保留输入(不再假模拟)
+
+## 2026-06-07 — V13.5: Notes重塑 + MindGarden修复 + 导航重构
 - **Build:** 92 pages, 0 TS errors
 - **Notes V2:** 模板点击填充结构化内容(6套完整Markdown模板) + AI分析按钮 + 笔记详情页 + 导入增强
 - **Mind Garden:** `/api/mind-garden` 隐私阻断已移除，陪伴聊天恢复；`/api/mind-garden/reflect` 10模式全部连通AI
