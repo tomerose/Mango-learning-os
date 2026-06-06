@@ -4,15 +4,15 @@ import * as React from "react";
 import { X, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const VERSION = "v1.3.0";
-const STORAGE_KEY = "mango-update-seen-v2";
+const VERSION = "内测版";
+const STORAGE_KEY = "mango-update-seen-v3";
 
 const UPDATES = [
-  { emoji: "🎨", title: "全新设计系统", desc: "Apple 级简洁，浮动毛玻璃，统一卡片阴影" },
-  { emoji: "💚", title: "Mind Garden 上线", desc: "心灵树洞 · AI 陪伴 · 情绪追踪 · CBT 重构" },
-  { emoji: "📚", title: "Final Exam Master", desc: "上传资料 AI 生成复习包，考点+例题+速查表" },
-  { emoji: "🧬", title: "Mango DNA 预览", desc: "AI 人格画像 · 思维风格提取 · Agent 画廊" },
-  { emoji: "⚡", title: "AI 智能题库", desc: "DeepSeek 批量出题 · 一键导入 · 自动评分" },
+  { emoji: "🔬", title: "AI 研究引擎上线", desc: "9 源实时搜索 · 来源评分 · 引用提取 · 智能合成" },
+  { emoji: "📚", title: "期末备考 Pro", desc: "输入课程 → 自动搜资料 → 生成完整讲义 → 导出 Word/PDF" },
+  { emoji: "💚", title: "心灵花园 Pro", desc: "10 种心理模式 · 危机检测 · 隐私优先 · CBT 模板" },
+  { emoji: "🌳", title: "知识森林 v4", desc: "Notion 风格 · 富文本编辑 · 社区上传 · 多源导入" },
+  { emoji: "🎬", title: "B站 + 抖音搜索", desc: "中文学习视频搜索 · GitHub · 学术论文 · 公开书籍" },
 ];
 
 export function UpdateModal() {

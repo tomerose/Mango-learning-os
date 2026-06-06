@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SimpleCaptcha } from "@/components/auth/captcha";
 
-const LOGIN_CODE = "tokentome222";   // 登录/注册邀请码
-const GUEST_CODE = "tokentome111";  // 游客入口邀请码
+const LOGIN_CODE = "tokentome222";    // 登录/注册邀请码
+const GUEST_CODE = "sillyfind2025";  // 游客入口 + 首次进入邀请码
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -39,11 +39,12 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   function verifyCode(code: string) {
     setInviteCode(code);
-    const validCode = isLogin ? LOGIN_CODE : GUEST_CODE;
-    if (code.trim() === LOGIN_CODE || code.trim() === GUEST_CODE) {
+    // 登录/注册只能用 LOGIN_CODE，游客只能用 GUEST_CODE
+    const requiredCode = isLogin ? LOGIN_CODE : GUEST_CODE;
+    if (code.trim() === requiredCode) {
       setCodeVerified(true);
       setCodeError(null);
-    } else if (code.trim().length >= LOGIN_CODE.length) {
+    } else if (code.trim().length >= requiredCode.length) {
       setCodeError("邀请码不正确，请检查后重试");
       setCodeVerified(false);
     } else {
