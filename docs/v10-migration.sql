@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS cognitive_units (
   type TEXT CHECK (type IN ('card', 'chain', 'tree')),
   key_concept TEXT,
   structured_data JSONB NOT NULL DEFAULT '{}',
-  embedding vector(768),
+  -- embedding vector(768), -- requires: CREATE EXTENSION vector;
   source_ref UUID REFERENCES content_raw(id),
   source_url TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
