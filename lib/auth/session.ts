@@ -44,10 +44,11 @@ export async function resolveSession(req: NextRequest): Promise<SessionContext> 
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Explicit guest cookie → guest mode
-    const isGuest = req.cookies.get(GUEST_COOKIE)?.value === "1";
+    // Guest cookie only applies when NOT authenticated.
+    // If the user has a valid session, plan comes from profiles — not the cookie.
+    const isGuest = !user && req.cookies.get(GUEST_COOKIE)?.value === "1";
 
-    if (!user || isGuest) {
+    if (!user) {
       return {
         userId: null, email: null, plan: "guest", planExpiresAt: null,
         isAuthenticated: false, isGuest: true,
