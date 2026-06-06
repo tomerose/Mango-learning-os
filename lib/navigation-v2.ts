@@ -97,12 +97,12 @@ export const navItemsV2: NavItem[] = [
   },
   {
     id: "dna",
-    label: "Mango DNA",
-    shortLabel: "DNA",
+    label: "学习身份",
+    shortLabel: "身份",
     href: "/dna",
     icon: GraduationCap,
-    description: "AI 人格画像 · 即将上线",
-    tier: "beta",
+    description: "学习轨迹 · 优势弱项 · 成长进度",
+    tier: "secondary",
   },
 ];
 
