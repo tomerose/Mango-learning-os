@@ -233,9 +233,8 @@ body {
   body, main, [class*="max-w-"] { max-width: 100vw !important; overflow-x: hidden !important; }
   pre, code, .whitespace-pre-wrap { max-width: 100%; overflow-x: auto; word-break: break-word; }
 
-  /* Single-column grids */
-  .grid { grid-template-columns: 1fr !important; }
-  .sm\:grid-cols-2, .sm\:grid-cols-3, .sm\:grid-cols-4 { grid-template-columns: 1fr !important; }
+  /* Responsive grids — allow Tailwind responsive overrides */
+  .sm\:grid-cols-2, .sm\:grid-cols-3, .sm\:grid-cols-4 { grid-template-columns: 1fr; }
 
   /* ── Touch & Tap ── */
   button, a[role="button"], [data-slot="tabs-trigger"], a { min-height: 44px; }

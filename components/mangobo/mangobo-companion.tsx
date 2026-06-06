@@ -105,12 +105,12 @@ export function MangoboCompanion() {
 
   return (
     <>
-      {/* Floating Mangobo */}
+      {/* Floating Mangobo — positioned above mobile nav */}
       <motion.div
         className="fixed z-[150] select-none"
         style={{
-          right: position.x ? "auto" : 20,
-          bottom: position.y ? "auto" : 100,
+          right: position.x ? "auto" : "max(16px, env(safe-area-inset-right, 16px))",
+          bottom: position.y ? "auto" : "max(120px, calc(6rem + env(safe-area-inset-bottom, 0px)))",
           left: position.x || "auto",
           top: position.y || "auto",
           transform: position.x ? `translate(${position.x}px, ${position.y}px)` : undefined,
@@ -141,16 +141,21 @@ export function MangoboCompanion() {
         <motion.button
           onClick={() => { setOpen(!open); setShowBubble(false); }}
           className="relative size-[56px] sm:size-[72px] rounded-full overflow-hidden shadow-xl border-2 border-primary/20 cursor-pointer"
+          style={{ background: "radial-gradient(circle at 40% 35%, #fde68a 0%, #fb923c 40%, #ea580c 100%)" }}
           whileHover={{ scale: 1.08, boxShadow: "0 0 30px rgba(197,139,116,0.3)" }}
           whileTap={{ scale: 0.95 }}
         >
+          {/* Static icon — always visible */}
+          <span className="absolute inset-0 flex items-center justify-center text-2xl">🥭</span>
+          {/* Video overlay — plays when supported */}
           <video
             ref={videoRef}
             src="/mangobo.mp4"
             autoPlay loop muted playsInline
-            preload="auto"
+            preload="none"
             poster="/favicon-32.png"
-            className="absolute inset-0 w-full h-full object-cover rounded-full"
+            className="absolute inset-0 w-full h-full object-cover rounded-full opacity-0"
+            onPlay={e => { (e.target as HTMLVideoElement).style.opacity = "1"; }}
           />
           {/* Glass overlay */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-b from-transparent via-transparent to-black/10" />
