@@ -268,6 +268,122 @@ class LocalFileProvider implements SearchProvider {
   }
 }
 
+// ── Open Library Provider (free, no API key) ──────────────────
+class OpenLibraryProvider implements SearchProvider {
+  type: ProviderType = "official";
+  name = "Open Library";
+
+  async search(query: string, _opts: { timeoutMs: number }): Promise<RawSearchResult[]> {
+    const results: RawSearchResult[] = [];
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), _opts.timeoutMs);
+      const res = await fetch(
+        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=5`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        for (const doc of (data.docs ?? []).slice(0, 5)) {
+          const title = doc.title ?? "";
+          const author = doc.author_name?.join(", ") ?? "";
+          const year = doc.first_publish_year ?? "";
+          const subjects = doc.subject?.slice(0, 3).join(", ") ?? "";
+          results.push({
+            title: `${title}${author ? ` — ${author}` : ""}${year ? ` (${year})` : ""}`,
+            url: doc.key ? `https://openlibrary.org${doc.key}` : "",
+            snippet: `${subjects ? `主题: ${subjects}. ` : ""}${doc.edition_count ?? 0} 个版本`,
+            platform: "official",
+          });
+        }
+      }
+    } catch { /* graceful */ }
+    return results;
+  }
+}
+
+// ── Free Dictionary Provider (free, no API key) ───────────────
+class DictionaryProvider implements SearchProvider {
+  type: ProviderType = "web";
+  name = "Free Dictionary";
+
+  async search(query: string, _opts: { timeoutMs: number }): Promise<RawSearchResult[]> {
+    const results: RawSearchResult[] = [];
+    // Extract the first English word from query
+    const wordMatch = query.match(/[a-zA-Z]+/);
+    const word = wordMatch ? wordMatch[0] : query.split(/\s+/)[0];
+    if (!word || word.length < 2) return results;
+
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), _opts.timeoutMs);
+      const res = await fetch(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        for (const entry of (data as any[]).slice(0, 2)) {
+          const wordStr = entry.word ?? word;
+          const phonetic = entry.phonetic ?? "";
+          for (const meaning of (entry.meanings ?? []).slice(0, 2)) {
+            const pos = meaning.partOfSpeech ?? "";
+            const defs = (meaning.definitions ?? []).slice(0, 3)
+              .map((d: any) => d.definition)
+              .join("; ");
+            const synonyms = (meaning.synonyms ?? []).slice(0, 5).join(", ");
+            results.push({
+              title: `${wordStr}${phonetic ? ` /${phonetic}/` : ""} (${pos})`,
+              url: `https://en.wiktionary.org/wiki/${encodeURIComponent(wordStr)}`,
+              snippet: `${defs}${synonyms ? ` [同: ${synonyms}]` : ""}`,
+              platform: "web",
+            });
+          }
+        }
+      }
+    } catch { /* graceful */ }
+    return results;
+  }
+}
+
+// ── Gutendex (Project Gutenberg) Provider (free, no API key) ──
+class GutendexProvider implements SearchProvider {
+  type: ProviderType = "official";
+  name = "Project Gutenberg";
+
+  async search(query: string, _opts: { timeoutMs: number }): Promise<RawSearchResult[]> {
+    const results: RawSearchResult[] = [];
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), _opts.timeoutMs);
+      const res = await fetch(
+        `https://gutendex.com/books?search=${encodeURIComponent(query)}`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        for (const book of (data.results ?? []).slice(0, 5)) {
+          const title = book.title ?? "";
+          const author = book.authors?.map((a: any) => a.name).join(", ") ?? "";
+          const lang = book.languages?.join(", ") ?? "";
+          const downloads = book.download_count ?? 0;
+          const formats = Object.keys(book.formats ?? {}).slice(0, 3).join(", ");
+          results.push({
+            title: `${title}${author ? ` by ${author}` : ""}`,
+            url: book.formats?.["text/html"] ?? `https://www.gutenberg.org/ebooks/${book.id}`,
+            snippet: `📚 ${lang} | ⬇${downloads}次下载 | 格式: ${formats || "多种"}`,
+            platform: "official",
+          });
+        }
+      }
+    } catch { /* graceful */ }
+    return results;
+  }
+}
+
 // ── Provider Registry ───────────────────────────────────────────
 
 const providers: SearchProvider[] = [
@@ -275,6 +391,9 @@ const providers: SearchProvider[] = [
   new GitHubProvider(),
   new AcademicProvider(),
   new YouTubeProvider(),
+  new OpenLibraryProvider(),
+  new DictionaryProvider(),
+  new GutendexProvider(),
 ];
 
 function getLocalProvider(files?: Array<{ name: string; text: string }>): LocalFileProvider | null {
@@ -573,7 +692,10 @@ export function getProviderStatus(): Record<ProviderType, { available: boolean; 
       available: !!process.env.YOUTUBE_API_KEY,
       message: process.env.YOUTUBE_API_KEY ? "已配置 YOUTUBE_API_KEY" : "未配置 YOUTUBE_API_KEY，使用搜索链接回退。",
     },
-    official: { available: true, message: "官方网站搜索 — 通过网页搜索实现" },
+    official: {
+      available: true,
+      message: "Open Library + Project Gutenberg — 免费书籍/教材搜索，无需 API Key",
+    },
     local: { available: true, message: "本地文件搜索 — 需用户上传文件" },
   };
 }
