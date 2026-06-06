@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 import {
   Sun, Package, Bot, Trees, Heart,
-  CalendarCheck, GraduationCap, Mic, User, MoreHorizontal,
+  CalendarCheck, GraduationCap, Mic, User, MoreHorizontal, FileText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -67,6 +67,15 @@ export const navItemsV2: NavItem[] = [
     tier: "primary",
   },
   // ── Secondary (More drawer + sidebar) ────────────────────
+  {
+    id: "notes",
+    label: "笔记",
+    shortLabel: "笔记",
+    href: "/notes",
+    icon: FileText,
+    description: "结构化笔记 · 6种模板 · CRUD",
+    tier: "secondary",
+  },
   {
     id: "planner",
     label: "学习计划",

@@ -120,36 +120,7 @@ export function BillingSection({ currentPlan, planExpiresAt, onUpgrade }: Props)
         </div>
       </div>
 
-      {/* Payment methods — coming soon */}
-      <div className="card-card p-5 sm:p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="size-4 text-fg-muted" />
-          <h2 className="text-[15px] font-semibold">支付方式</h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-bg-subtle opacity-50">
-            <span className="text-lg">💚</span>
-            <div>
-              <p className="text-[13px] font-medium">微信支付</p>
-              <p className="text-[10px] text-fg-muted/60">即将推出</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-bg-subtle opacity-50">
-            <span className="text-lg">💙</span>
-            <div>
-              <p className="text-[13px] font-medium">支付宝</p>
-              <p className="text-[10px] text-fg-muted/60">即将推出</p>
-            </div>
-          </div>
-        </div>
-
-        <p className="text-[11px] text-fg-muted/40 mt-3 text-center">
-          目前通过 Mango Code 兑换码进行计划升级。微信/支付宝支付正在筹备中。
-        </p>
-      </div>
-
-      {/* Mango Code redemption */}
+      {/* Mango Code redemption — the ONLY upgrade channel */}
       <MangoCodeRedeem onUpgrade={onUpgrade} currentPlan={currentPlan} />
 
       {/* Upgrade FAQ */}
@@ -159,7 +130,7 @@ export function BillingSection({ currentPlan, planExpiresAt, onUpgrade }: Props)
           {[
             { q: "如何升级到 Pro 版？", a: "使用 Mango Code 兑换码即可升级。兑换码由管理员生成，请联系第三自习室获取。" },
             { q: "Pro 版有效期是多久？", a: "取决于兑换码设置的有效期。标准版永久免费。" },
-            { q: "微信支付什么时候上线？", a: "需要完成企业商户资质审核。预计在未来版本中推出。" },
+            { q: "如何获取 Mango Code？", a: "联系第三自习室管理员获取。商业版本推出后将提供更多获取渠道。" },
             { q: "游客模式可以做什么？", a: "游客可以浏览学习内容和演示数据。完整功能需要注册登录。" },
           ].map((faq, i) => (
             <details key={i} className="group">

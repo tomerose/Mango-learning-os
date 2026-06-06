@@ -18,6 +18,73 @@ import type { LearningIdentity } from "@/lib/agent/types";
 import { loadStudyPacksSync } from "@/lib/study-pack-store";
 import Link from "next/link";
 
+/* ── Learning Preset Component ───────────────────────────────────── */
+
+const PRESETS = [
+  { id: "exam_sprint", name: "期末冲刺", icon: "⚡", desc: "高强度备考 · 重点突破", style: "concise" as const, examFocus: true },
+  { id: "deep_learner", name: "深度学习者", icon: "🧠", desc: "概念优先 · 跨学科连接", style: "detailed" as const, examFocus: false },
+  { id: "english_ielts", name: "英语/IELTS", icon: "🗣️", desc: "词汇积累 · 口语写作", style: "example-heavy" as const, examFocus: true },
+  { id: "ai_builder", name: "AI 构建者", icon: "🤖", desc: "项目驱动 · 源码阅读", style: "visual" as const, examFocus: false },
+];
+
+function PresetSelector() {
+  const [presetId, setPresetId] = React.useState(() => {
+    try { return localStorage.getItem("mango-identity-preset") || "deep_learner"; }
+    catch { return "deep_learner"; }
+  });
+  const [saved, setSaved] = React.useState(false);
+
+  function select(id: string) {
+    setPresetId(id);
+    localStorage.setItem("mango-identity-preset", id);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
+  }
+
+  const preset = PRESETS.find(p => p.id === presetId);
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+      className="card-card p-5 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-title font-serif flex items-center gap-2">
+          <GraduationCap className="size-4 text-primary" />
+          学习风格
+        </h2>
+        {saved && <span className="text-[10px] text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full">已保存</span>}
+      </div>
+      <p className="text-xs text-fg-muted/60">
+        选择预设影响 Mango Agent 讲解风格、Study Pack 结构深度和推荐内容。
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {PRESETS.map(p => (
+          <button key={p.id} onClick={() => select(p.id)}
+            className={`flex flex-col gap-1.5 p-3 rounded-xl border text-left transition-all text-xs ${
+              presetId === p.id ? "border-primary bg-primary-subtle ring-1 ring-primary/20" : "border-border hover:border-primary/20"
+            }`}>
+            <span className="text-lg">{p.icon}</span>
+            <p className="font-semibold">{p.name}</p>
+            <p className="text-[10px] text-fg-muted/60">{p.desc}</p>
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-[10px] bg-bg-subtle rounded-xl p-3">
+        {[
+          { label: "Agent 风格", val: preset?.style === "concise" ? "精简直接" : preset?.style === "detailed" ? "深度讲解" : preset?.style === "example-heavy" ? "案例驱动" : "可视化" },
+          { label: "Study Pack", val: preset?.examFocus ? "考试冲刺型" : "深度理解型" },
+          { label: "笔记推荐", val: preset?.examFocus ? "复习/错题模板" : "概念/阅读模板" },
+          { label: "讲解重点", val: preset?.examFocus ? "考点+技巧" : "概念+推导" },
+        ].map((item, i) => (
+          <div key={i} className="flex flex-col gap-0.5">
+            <span className="text-fg-muted/40">{item.label}</span>
+            <span className="font-medium">{item.val}</span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
 export default function LearningIdentityPage() {
   const [identity, setIdentity] = React.useState<LearningIdentity | null>(null);
   const [mistakeStats, setMistakeStatsState] = React.useState({ total: 0, mastered: 0, due: 0, bySubject: {} as Record<string, number> });
@@ -188,6 +255,9 @@ export default function LearningIdentityPage() {
           ))}
         </div>
       </motion.div>
+
+      {/* ── Learning Preset (affects Agent + Study Pack output) ── */}
+      <PresetSelector />
 
       {/* Quick Actions */}
       <div className="flex gap-2">

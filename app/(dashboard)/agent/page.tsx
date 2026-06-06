@@ -44,7 +44,10 @@ export default function AgentPage() {
   const [composeInput, setComposeInput] = React.useState("");
   const [composeFiles, setComposeFiles] = React.useState<AgentTaskInput[]>([]);
   const [timeline, setTimeline] = React.useState<TimelineEvent[]>([]);
-  const [plan] = React.useState("standard"); // TODO: resolve from actual plan
+  const [plan] = React.useState(() => {
+    try { return localStorage.getItem("mango-user-plan") || "standard"; } catch { return "standard"; }
+  });
+  const [expandedOutputId, setExpandedOutputId] = React.useState<string | null>(null);
   const availableTools = getAvailableTools(plan);
 
   React.useEffect(() => { setTasks(loadTasks().slice(0, 20)); }, []);
@@ -270,28 +273,80 @@ export default function AgentPage() {
                 {/* Outputs */}
                 {activeTask.outputs.length > 0 && (
                   <div className="border-t border-border/30 pt-4 flex flex-col gap-2">
-                    <span className="text-xs font-medium text-fg-muted">任务产出</span>
+                    <span className="text-xs font-medium text-fg-muted">任务产出（点击查看详情）</span>
                     <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
-                      {activeTask.outputs.map(out => (
-                        <div key={out.id} className={cn(
-                          "rounded-xl border border-border/40 p-3 flex items-center gap-3",
-                          out.type === "study_pack" && "hover:border-primary/30 cursor-pointer",
-                        )}>
-                          {out.type === "study_pack" && <GraduationCap className="size-5 text-primary" />}
-                          {out.type === "flashcards" && <Layers className="size-5 text-accent" />}
-                          {out.type === "notes" && <FileText className="size-5 text-fg-muted" />}
-                          {out.type === "summary" && <Sparkles className="size-5 text-amber-500" />}
-                          <div className="flex flex-col gap-0.5 flex-1">
-                            <span className="text-xs font-medium">{out.title}</span>
-                            <span className="text-[10px] text-fg-muted">
-                              {out.type === "study_pack" ? "可查看/导出" :
-                               out.type === "flashcards" ? "可开始练习" :
-                               out.type === "notes" ? "已保存到笔记" : "可编辑"}
-                            </span>
+                      {activeTask.outputs.map(out => {
+                        const contentPreview = out.type === "study_pack"
+                          ? (out.content as { handout?: string; courseName?: string })?.handout?.slice(0, 200) || ""
+                          : out.type === "notes" || out.type === "summary"
+                          ? String(
+                              (out.content as { explanation?: string; structuredNote?: string; summary?: string; analysis?: string })
+                                ?.explanation ??
+                              (out.content as { structuredNote?: string })?.structuredNote ??
+                              (out.content as { summary?: string })?.summary ??
+                              (out.content as { analysis?: string })?.analysis ?? ""
+                            ).slice(0, 200)
+                          : out.type === "quiz"
+                          ? JSON.stringify((out.content as { quiz?: string })?.quiz ?? "", null, 2).slice(0, 200)
+                          : out.type === "flashcards"
+                          ? JSON.stringify((out.content as { cards?: string })?.cards ?? "", null, 2).slice(0, 200)
+                          : out.type === "plan"
+                          ? (out.content as { reviewPlan?: string })?.reviewPlan?.slice(0, 200) || ""
+                          : "";
+
+                        return (
+                        <div key={out.id} className="rounded-xl border border-border/40 p-3 flex flex-col gap-2 group hover:border-primary/30 hover:shadow-sm transition-all">
+                          <div className="flex items-center gap-3">
+                            {out.type === "study_pack" && <GraduationCap className="size-5 text-primary shrink-0" />}
+                            {out.type === "flashcards" && <Layers className="size-5 text-accent shrink-0" />}
+                            {out.type === "notes" && <FileText className="size-5 text-fg-muted shrink-0" />}
+                            {out.type === "quiz" && <Target className="size-5 text-amber-500 shrink-0" />}
+                            {out.type === "summary" && <Sparkles className="size-5 text-amber-500 shrink-0" />}
+                            {out.type === "plan" && <Target className="size-5 text-blue-500 shrink-0" />}
+                            {out.type === "mistake" && <AlertTriangle className="size-5 text-red-400 shrink-0" />}
+                            {out.type === "export" && <Download className="size-5 text-green-500 shrink-0" />}
+                            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                              <span className="text-xs font-medium truncate">{out.title}</span>
+                              <span className="text-[10px] text-fg-muted">
+                                {out.type === "study_pack" ? "点击查看完整讲义" :
+                                 out.type === "flashcards" ? "点击开始闪卡练习" :
+                                 out.type === "quiz" ? "点击查看练习题" :
+                                 out.type === "notes" ? "点击展开完整笔记" :
+                                 out.type === "plan" ? "点击查看完整计划" :
+                                 out.type === "summary" ? "点击展开摘要" : "查看详情"}
+                              </span>
+                            </div>
+                            <ArrowRight className="size-3.5 text-fg-muted/30 group-hover:text-primary transition-colors" />
                           </div>
-                          <ArrowRight className="size-3.5 text-fg-muted/30" />
+                          {/* Content preview */}
+                          {contentPreview && (
+                            <div className="text-[10px] text-fg-muted/60 leading-relaxed line-clamp-3 pl-8 border-t border-border/20 pt-2 whitespace-pre-wrap">
+                              {contentPreview.slice(0, 200)}…
+                            </div>
+                          )}
+                          {/* Action buttons */}
+                          <div className="flex gap-1.5 pl-8">
+                            <button onClick={() => {
+                              setExpandedOutputId(out.id === expandedOutputId ? null : out.id);
+                            }} className="text-[10px] text-primary font-medium hover:underline">
+                              {expandedOutputId === out.id ? "收起" : "展开全文"}
+                            </button>
+                            {out.type === "study_pack" && (
+                              <button onClick={() => window.open("/pack", "_blank")}
+                                className="text-[10px] text-fg-muted hover:text-primary font-medium transition-colors">
+                                导出
+                              </button>
+                            )}
+                          </div>
+                          {/* Expanded full content */}
+                          {expandedOutputId === out.id && (
+                            <motion.div initial={{ opacity:0, height:0 }} animate={{ opacity:1, height:"auto" }}
+                              className="text-xs leading-relaxed max-h-[400px] overflow-y-auto bg-bg-subtle rounded-lg p-3 whitespace-pre-wrap mt-1">
+                              {contentPreview || "（内容已生成，请查看关联资源）"}
+                            </motion.div>
+                          )}
                         </div>
-                      ))}
+                      )})}
                     </div>
                   </div>
                 )}
@@ -362,5 +417,3 @@ export default function AgentPage() {
     </PageTransition>
   );
 }
-
-function delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
