@@ -114,37 +114,67 @@ function VoicePageInner() {
   function greetUser() {
     const greeting = "Hello，我是芒宝，有什么我可以帮到你的吗？";
     setConversation([{ role: "assistant", text: greeting }]);
-    speak(greeting);
+    // DO NOT auto-speak — iOS Safari blocks audio without user gesture
     setGreeted(true);
   }
 
-  // ═══ TTS — always works ═══
+  // ═══ TTS — gated by user gesture, chunked for Android Chrome ═══
+  const speakState = React.useRef({ cancelled: false });
+
   function speak(text: string) {
     if (typeof window === "undefined") return;
     const synth = window.speechSynthesis;
     if (!synth) return;
 
     synth.cancel();
+    speakState.current.cancelled = true; // cancel previous chunk sequence
+    speakState.current = { cancelled: false };
+    const state = speakState.current;
 
-    // Wait a tick for voices to load
-    const utter = () => {
+    // iOS warmup: empty utterance unblocks audio session
+    const warmup = new SpeechSynthesisUtterance("");
+    warmup.volume = 0;
+    synth.speak(warmup);
+
+    // Wait for voices to be available
+    const doSpeak = () => {
       const cfg = VOICE_CONFIGS[activePersona.id] ?? { pitch: 1.0, rate: 0.95, lang: "zh-CN" };
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = cfg.lang;
-      u.rate = cfg.rate;
-      u.pitch = cfg.pitch;
-      u.volume = 1;
-      u.onstart = () => setIsSpeaking(true);
-      u.onend = () => setIsSpeaking(false);
-      u.onerror = () => setIsSpeaking(false);
-      synth.speak(u);
+
+      // Chunk text for Android Chrome (cuts off after ~200 chars)
+      const MAX_CHUNK = 150;
+      const chunks = text.match(new RegExp(`.{1,${MAX_CHUNK}}`, "g")) ?? [text];
+
+      setIsSpeaking(true);
+      let idx = 0;
+
+      function speakChunk() {
+        if (state.cancelled || idx >= chunks.length) {
+          if (idx >= chunks.length) setIsSpeaking(false);
+          return;
+        }
+        const u = new SpeechSynthesisUtterance(chunks[idx]);
+        u.lang = cfg.lang;
+        u.rate = cfg.rate;
+        u.pitch = cfg.pitch;
+        u.volume = 1;
+        u.onend = () => { idx++; speakChunk(); };
+        u.onerror = () => { idx++; speakChunk(); };
+        synth.speak(u);
+      }
+      speakChunk();
     };
 
     if (synth.getVoices().length === 0) {
-      synth.onvoiceschanged = () => { utter(); };
+      synth.onvoiceschanged = () => { doSpeak(); };
     } else {
-      utter();
+      doSpeak();
     }
+  }
+
+  function stopSpeaking() {
+    window.speechSynthesis?.cancel();
+    speakState.current.cancelled = true;
+    setIsSpeaking(false);
   }
 
   // ═══ Handle user input ═══
@@ -180,9 +210,7 @@ function VoicePageInner() {
       const aiText = responseText.trim() || "抱歉，我没有理解你的意思，可以再说一遍吗？";
       setConversation([...newConv, { role: "assistant", text: aiText }]);
       setStatus("");
-
-      // ALWAYS speak the response
-      speak(aiText);
+      // DO NOT auto-speak — user taps play button on each message
     } catch (err) {
       setStatus("网络出错了，请重试");
     } finally {
@@ -277,11 +305,27 @@ function VoicePageInner() {
         {/* Conversation */}
         <div className="absolute top-32 bottom-52 left-0 right-0 overflow-y-auto px-6 flex flex-col gap-3">
           {conversation.map((turn, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              className={cn("max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
-                turn.role === "user" ? "self-end bg-white/10 text-white/90" : "self-start bg-white/5 text-white/80 border border-white/10")}>
-              {turn.text}
-            </motion.div>
+            <div key={i} className={cn("flex flex-col gap-1.5", turn.role === "user" ? "items-end" : "items-start")}>
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                className={cn("max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
+                  turn.role === "user" ? "bg-white/10 text-white/90" : "bg-white/5 text-white/80 border border-white/10")}>
+                {turn.text}
+              </motion.div>
+              {turn.role === "assistant" && (
+                <button
+                  onClick={() => {
+                    if (isSpeaking) { stopSpeaking(); }
+                    else { speak(turn.text); }
+                  }}
+                  className="flex items-center gap-1 text-xs text-white/40 hover:text-white/70 transition-colors ml-1"
+                >
+                  {isSpeaking
+                    ? <><div className="size-2 rounded-sm bg-amber-400/60" /> 停止</>
+                    : <><div className="size-2 rounded-full border border-white/30" /> 播放</>
+                  }
+                </button>
+              )}
+            </div>
           ))}
           {isThinking && (
             <div className="self-start bg-white/5 rounded-2xl px-4 py-3 text-sm text-white/50 border border-white/10 flex items-center gap-2">

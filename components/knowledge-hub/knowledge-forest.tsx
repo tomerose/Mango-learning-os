@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   Brain, FileText, Sparkles, X, ArrowRight, Loader2, Trees,
   Download, Check, BookOpen, GraduationCap, Layers, Target,
+  Upload, Globe, Expand,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
@@ -41,7 +42,18 @@ export function KnowledgeForest() {
   const [mouseOver, setMouseOver] = React.useState(false);
   const [selectedSubject, setSelectedSubject] = React.useState<string | null>(null);
   const [selectedConcept, setSelectedConcept] = React.useState<string | null>(null);
+  const [expandedNote, setExpandedNote] = React.useState<{title:string; body:string; tags:string[]} | null>(null);
+  const [communityUpload, setCommunityUpload] = React.useState("");
+  const [communityForests, setCommunityForests] = React.useState<Array<{key:string; title:string; description:string}>>([]);
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Load community forests from localStorage
+  React.useEffect(() => {
+    try {
+      const stored = localStorage.getItem("mango-community-forests");
+      if (stored) setCommunityForests(JSON.parse(stored));
+    } catch {}
+  }, []);
 
   // Auto-rotation
   React.useEffect(() => {
@@ -179,18 +191,60 @@ export function KnowledgeForest() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-caption">社区森林：</span>
-              {[
-                { key: "community-1", title: "考研数学" },
-                { key: "community-2", title: "Python入门" },
-                { key: "community-3", title: "日语N2" },
-              ].map(f => (
-                <button key={f.key} onClick={() => { setGenPrompt(f.title); handleGenerate(); }}
-                  className="inline-flex items-center gap-1 text-xs rounded-full border border-border px-3 py-1 hover:bg-primary-subtle hover:border-primary/30 transition-colors text-fg-muted">
-                  {f.title}
-                </button>
-              ))}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-caption">社区森林：</span>
+                {communityForests.length > 0 ? communityForests.map(f => (
+                  <button key={f.key} onClick={() => { setGenPrompt(f.title); handleGenerate(); }}
+                    className="inline-flex items-center gap-1 text-xs rounded-full border border-primary/30 bg-primary-subtle px-3 py-1 hover:bg-primary/10 transition-colors">
+                    <Globe className="size-3" /> {f.title}
+                  </button>
+                )) : (
+                  <span className="text-caption">还没有社区森林，上传一个吧 →</span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={communityUpload}
+                  onChange={e => setCommunityUpload(e.target.value)}
+                  placeholder="输入学习主题分享给社区，如：考研数学"
+                  className="text-xs"
+                  onKeyDown={e => {
+                    if (e.key === "Enter" && communityUpload.trim()) {
+                      const newForest = {
+                        key: `community-${Date.now()}`,
+                        title: communityUpload.trim(),
+                        description: "社区共享森林",
+                      };
+                      const updated = [...communityForests, newForest];
+                      setCommunityForests(updated);
+                      try { localStorage.setItem("mango-community-forests", JSON.stringify(updated)); } catch {}
+                      setGenPrompt(communityUpload.trim());
+                      setCommunityUpload("");
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!communityUpload.trim()}
+                  onClick={() => {
+                    if (!communityUpload.trim()) return;
+                    const newForest = {
+                      key: `community-${Date.now()}`,
+                      title: communityUpload.trim(),
+                      description: "社区共享森林",
+                    };
+                    const updated = [...communityForests, newForest];
+                    setCommunityForests(updated);
+                    try { localStorage.setItem("mango-community-forests", JSON.stringify(updated)); } catch {}
+                    setGenPrompt(communityUpload.trim());
+                    setCommunityUpload("");
+                  }}
+                >
+                  <Upload className="size-3 mr-1" /> 上传
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -320,6 +374,7 @@ export function KnowledgeForest() {
               <div className="flex items-center gap-2">
                 <span className="size-3 rounded-full bg-primary" />
                 <span className="text-small font-medium">{selectedConcept}</span>
+                <span className="text-caption">· {conceptNotes.length} 条笔记</span>
               </div>
               <button onClick={() => setSelectedConcept(null)} className="size-7 flex items-center justify-center rounded-lg hover:bg-bg-muted"><X className="size-3.5" /></button>
             </div>
@@ -327,14 +382,40 @@ export function KnowledgeForest() {
             {conceptNotes.length > 0 ? (
               <div className="flex flex-col gap-2">
                 {conceptNotes.map(n => (
-                  <div key={n.title} className="flex items-start gap-2 rounded-lg bg-bg-muted p-3">
+                  <button key={n.title}
+                    onClick={() => setExpandedNote({ title: n.title, body: n.body, tags: n.tags })}
+                    className="flex items-start gap-2 rounded-lg bg-bg-muted p-3 text-left hover:bg-bg-muted/80 transition-colors cursor-pointer group">
                     <FileText className="size-3.5 text-fg-muted mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-medium">{n.title}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-medium group-hover:text-primary transition-colors">{n.title}</p>
+                        <Expand className="size-3 text-fg-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
                       <p className="text-caption mt-0.5 line-clamp-3">{n.body}</p>
+                      {n.tags.length > 0 && (
+                        <div className="flex gap-1 mt-1.5">
+                          {n.tags.slice(0, 3).map(t => (
+                            <span key={t} className="text-[9px] rounded-full border border-border px-1.5 py-0.5 text-fg-muted">{t}</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  </button>
                 ))}
+                {/* Flashcards */}
+                {activeForest.flashcards && activeForest.flashcards.length > 0 && (
+                  <div className="mt-2 p-3 rounded-lg bg-amber-50/30 border border-amber-200/30">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Layers className="size-3.5 text-amber-500" />
+                      <span className="text-xs font-medium text-amber-700">闪卡复习</span>
+                      <span className="text-caption">· {activeForest.flashcards.length} 张</span>
+                    </div>
+                    <Link href={`/exam?subject=${encodeURIComponent(selectedConcept)}`}
+                      className="inline-flex items-center gap-1 text-xs text-amber-600 hover:underline font-medium">
+                      开始复习 <ArrowRight className="size-3" />
+                    </Link>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-caption">{'暂无笔记。点击上方「保存到我的笔记」导入森林内容。'}</p>
@@ -352,6 +433,44 @@ export function KnowledgeForest() {
                 </a>
               ))}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Note Detail Modal ── */}
+      <AnimatePresence>
+        {expandedNote && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-4"
+            onClick={() => setExpandedNote(null)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-surface rounded-2xl border border-border p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-serif font-semibold">{expandedNote.title}</h3>
+                <button onClick={() => setExpandedNote(null)}
+                  className="size-8 flex items-center justify-center rounded-lg hover:bg-bg-muted transition-colors">
+                  <X className="size-4" />
+                </button>
+              </div>
+              {expandedNote.tags.length > 0 && (
+                <div className="flex gap-1.5 mb-4 flex-wrap">
+                  {expandedNote.tags.map(t => (
+                    <span key={t} className="text-xs rounded-full border border-border px-2 py-0.5 text-fg-muted">{t}</span>
+                  ))}
+                </div>
+              )}
+              <div className="prose prose-sm max-w-none text-fg-secondary whitespace-pre-wrap leading-relaxed">
+                {expandedNote.body}
+              </div>
+              <div className="mt-4 flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => setExpandedNote(null)}>关闭</Button>
+                <Link href={`/agent?q=${encodeURIComponent("请讲解：" + expandedNote.title)}`}
+                  className="inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline">
+                  <Brain className="size-3" /> 向导师深入学习
+                </Link>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
