@@ -1,6 +1,40 @@
 # MangoLearningOS — Update Log
 
-## 2026-06-07 — V11 Study Pack-Centered AI Learning OS + V11.1 Practice & Cloud
+## 2026-06-07 — P1-P6 Agent + Mistake Bank + Review Engine + Learning Memory
+- **Commit:** cd4a34f | **Deploy:** https://mango-learning-gnsolg92a-mango-s-projects5.vercel.app
+- **Build:** 81/81 pages, TypeScript 0 errors, 1m build
+
+### P1: Mango Agent — Personal Learning Engine
+- **Agent Task Center:** 模板 → 执行 → 时间线 → 结果编辑器
+- **8 个任务模板:** 期末冲刺/错题集训/论文精读/笔记整理/7天复习/知识森林/口语训练/小组展示
+- **Tool Registry:** 13 个安全工具（白名单），按计划分级（游客0/标准8/Pro全部）
+- **Task Schema:** id/intent/status/timeline/tools/outputs/sources/qualityScore
+- 游客可见模板和演示，但 Agent 不执行（需登录）
+- 旧 Mango DNA/Voice Soul 标签已替换为 Agent Task Center
+
+### P3: Mistake Bank + Review Engine
+- **错题库** (`lib/agent/mistake-bank.ts`): SM-2 间隔重复，科目分类，掌握追踪
+- **复习建议:** Hub/Today 自动显示待复习错题 + 个性化推荐
+- **Learning Memory** (`lib/agent/learning-memory.ts`): 课程/目标/弱项/学习节奏追踪
+
+### P2/P5/P6 架构就位
+- 多模态输入接口 (AgentTaskInput: text/file/image/url/voice)
+- 文件上传已集成到 Agent 自由描述输入
+- 工具白名单 + 计划门控 (`getAvailableTools(plan)`)
+- 外部 API 注册表架构（已在 Research Orchestrator 中覆盖 9 个 provider）
+
+### GitHub 研究完成
+- ✅ Open-LLM-VTuber (10.2k★) — 语音交互架构参考
+- ✅ PaddleOCR (80.9k★) — OCR 客户端已在 `/lib/paddleocr`
+- ✅ knowledge-work-plugins (19.3k★) — Tool Registry 白名单模式
+- ✅ motion-canvas (18.6k★) — 教育动画钩子
+- ✅ public-apis (439.8k★) — 免费 API 目录（已集成 6 个学术 API）
+
+### 受保护模块未触碰
+- ✅ Mind Garden 隐私 | ✅ Auth 邀请码 | ✅ store storagePreference
+- ✅ Study Pack P0 | ✅ Research Orchestrator | ✅ Knowledge Forest
+
+## 2026-06-07 — V11 Study Pack-Centered AI Learning OS + V11.1 Practice & Cloud (略, 见上文)
 - **Commit:** a94abf3 | **Branch:** `claude/v10-study-pack`
 - **Deployed:** https://mango-learning-ohpgefe7o-mango-s-projects5.vercel.app (1m build, 81 pages)
 
