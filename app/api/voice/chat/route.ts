@@ -14,6 +14,7 @@ import { NextRequest } from "next/server";
 import { streamChat, type ChatMessage } from "@/lib/ai/client";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { buildEnrichedPrompt, generateSearchLinks } from "@/lib/ai/search-enrichment";
+import { enrichWithSearch } from "@/lib/data/enriched-apis";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -46,8 +47,15 @@ export async function POST(req: NextRequest) {
     // Build enriched system prompt
     const systemPrompt = buildEnrichedPrompt(personaId, text);
 
+    // Fetch real-time search context (Wikipedia + DuckDuckGo)
+    const searchContext = await enrichWithSearch(text).catch(() => "");
+
+    const fullSystemPrompt = searchContext
+      ? `${systemPrompt}\n\n【实时搜索参考】\n${searchContext}\n\n请结合以上真实搜索结果为用户提供准确回答。`
+      : systemPrompt;
+
     const messages: ChatMessage[] = [
-      { role: "system", content: systemPrompt },
+      { role: "system", content: fullSystemPrompt },
       ...history.slice(-10).map(h => ({ role: h.role as "user" | "assistant", content: h.content })),
       { role: "user", content: text },
     ];

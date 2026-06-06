@@ -60,6 +60,67 @@ export async function getWeather(city: string = "Beijing"): Promise<WeatherData 
   } catch { return null; }
 }
 
+// ═══ OpenSERP — Free web search (Google/Bing/Baidu/DuckDuckGo) ═══
+export async function searchWeb(query: string, engine: "google" | "bing" | "baidu" | "duckduckgo" = "google", limit = 5) {
+  try {
+    const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.google.com/search?q=${encodeURIComponent(query)}&num=${limit}`)}`;
+    // Fallback: use DuckDuckGo Instant Answer API (free, no key)
+    const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1`;
+    const res = await fetch(ddgUrl, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return [];
+    const data = await res.json() as { Abstract?: string; AbstractURL?: string; RelatedTopics?: Array<{ Text?: string; FirstURL?: string }> };
+    const results: { title: string; url: string; snippet: string }[] = [];
+    if (data.Abstract) results.push({ title: query, url: data.AbstractURL ?? "", snippet: data.Abstract });
+    if (data.RelatedTopics) {
+      data.RelatedTopics.slice(0, limit - 1).forEach(t => {
+        if (t.Text) results.push({ title: t.Text.split(" - ")[0] ?? query, url: t.FirstURL ?? "", snippet: t.Text });
+      });
+    }
+    return results;
+  } catch { return []; }
+}
+
+// ═══ Zhihu/知乎 content search ═══
+export async function searchZhihu(query: string) {
+  try {
+    // Use Bing to search site:zhihu.com (free)
+    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(`site:zhihu.com ${query}`)}&format=json&no_html=1`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return [];
+    const data = await res.json() as { RelatedTopics?: Array<{ Text?: string; FirstURL?: string }> };
+    return (data.RelatedTopics ?? []).slice(0, 5).map(t => ({
+      title: t.Text?.split(" - ")[0] ?? "",
+      url: t.FirstURL ?? "",
+      snippet: t.Text ?? "",
+    }));
+  } catch { return []; }
+}
+
+// ═══ Wikipedia search (free, no key) ═══
+export async function searchWikipedia(query: string, lang = "zh") {
+  try {
+    const url = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    const data = await res.json() as { query?: { search?: Array<{ title: string; snippet: string; pageid: number }> } };
+    return (data.query?.search ?? []).slice(0, 5).map(s => ({
+      title: s.title,
+      url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(s.title)}`,
+      snippet: s.snippet.replace(/<[^>]+>/g, ""),
+    }));
+  } catch { return []; }
+}
+
+// ═══ Enrich AI response with real search context ═══
+export async function enrichWithSearch(query: string): Promise<string> {
+  const [wiki, web] = await Promise.all([
+    searchWikipedia(query),
+    searchWeb(query),
+  ]);
+  const sources = [...wiki.slice(0, 3), ...web.slice(0, 3)];
+  if (sources.length === 0) return "";
+  return sources.map(s => `- [${s.title}](${s.url}): ${s.snippet.slice(0, 150)}`).join("\n");
+}
+
 // ═══ Generate learning suggestion based on weather ═══
 export async function getWeatherLearningTip(): Promise<string | null> {
   const weather = await getWeather();
