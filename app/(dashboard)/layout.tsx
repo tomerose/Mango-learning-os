@@ -32,11 +32,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* ── MOBILE ── */}
       <div className="flex md:hidden min-h-screen flex-col bg-bg">
-        <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between px-4 mx-3 mt-3 rounded-full border border-border/30 bg-bg/70 backdrop-blur-xl">
-          <span className="text-small font-medium text-fg-muted">Mango</span>
+        <header className="sticky top-0 z-30 flex h-11 shrink-0 items-center justify-between px-3 mx-2 mt-2 rounded-full border border-border/20 bg-glass backdrop-blur-xl shadow-sm">
+          <span className="text-[13px] font-serif font-medium gradient-mango-text">Mango</span>
           <div className="flex items-center gap-0"><ThemeToggle /><UserMenu /></div>
         </header>
-        <main className="flex-1 overflow-y-auto px-4 pt-4 pb-4">{children}</main>
+        <main className="flex-1 overflow-y-auto px-3 pt-3 pb-20">{children}</main>
         <MobileNavV2 />
       </div>
 

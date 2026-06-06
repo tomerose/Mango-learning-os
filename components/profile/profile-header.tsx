@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Flame, Trophy, Sparkles, Shield } from "lucide-react";
 import type { PlanTier } from "@/lib/plan/types";
+import { AnimeAvatar } from "@/components/avatar/anime-avatar";
 
 interface Props {
   plan: PlanTier;
@@ -22,11 +23,7 @@ export function ProfileHeader({ plan, planName, planBadge, mode, totalXp, level,
 
       <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
         {/* Avatar */}
-        <div className="size-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-400/20 shrink-0">
-          <span className="text-white text-2xl font-serif font-medium">
-            {mode === "cloud" ? "你" : "🥭"}
-          </span>
-        </div>
+        <AnimeAvatar userId={mode === "cloud" ? "user" : undefined} size={64} />
 
         {/* Info */}
         <div className="flex-1 min-w-0">

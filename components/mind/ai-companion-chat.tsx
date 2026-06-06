@@ -54,22 +54,9 @@ export function AiCompanionChat() {
     setMessages(next);
     setInput("");
 
-    if (storagePreference !== "cloud") {
-      setMessages([
-        ...next,
-        {
-          role: "assistant",
-          content:
-            "Local privacy mode is on. This message was not sent to cloud AI.",
-        },
-      ]);
-      return;
-    }
-
+    // Always try the API — local mode just means we don't store to cloud
     setLoading(true);
-
-    // Add a placeholder for the assistant response
-    setMessages((m) => [...m, { role: "assistant", content: "" }]);
+    setMessages((m) => [...m, { role: "assistant", content: "…" }]);
 
     try {
       const res = await fetch("/api/ai/mind-journal", {

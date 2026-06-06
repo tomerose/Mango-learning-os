@@ -4,8 +4,8 @@ import * as React from "react";
 import { X, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const VERSION = "V12";
-const STORAGE_KEY = "mango-update-seen-v5";
+const VERSION = "V0.1";
+const STORAGE_KEY = "mango-update-seen-v6";
 
 const UPDATES = [
   { emoji: "🔐", title: "全新计划系统", desc: "Guest · Standard · Pro · Admin 四级计划 · 后端强制门控 · 北京时区配额重置" },
