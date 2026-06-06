@@ -111,10 +111,10 @@ export default function HubPage() {
               </div>
 
               {/* Primary CTA: Study Pack */}
-              <Link href="/exam"
+              <Link href="/pack"
                 className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary/90 text-primary-on px-6 py-3.5 text-sm font-semibold hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 self-start pressable">
                 <BookOpen className="size-5" />
-                生成期末学习包
+                生成学习包
                 <ArrowRight className="size-4" />
               </Link>
               <p className="text-caption -mt-2">
@@ -130,11 +130,11 @@ export default function HubPage() {
         <Section delay={0.05}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-title">继续学习</h2>
-            <Link href="/exam" className="text-small text-primary hover:underline">查看全部</Link>
+            <Link href="/pack" className="text-small text-primary hover:underline">查看全部</Link>
           </div>
           <div className="flex flex-col gap-2">
             {recentPacks.slice(0, 2).map(pack => (
-              <Link key={pack.id} href="/exam"
+              <Link key={pack.id} href="/pack"
                 className="card-card hover-lift p-4 flex items-center gap-4 group">
                 <div className="size-10 rounded-xl bg-primary-subtle flex items-center justify-center shrink-0">
                   <FileText className="size-5 text-primary" />
@@ -158,7 +158,7 @@ export default function HubPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { icon: Target, label: "待办任务", value: `${doneToday}/${totalToday}`, sub: "已完成", href: "/planner" },
-            { icon: Layers, label: "闪卡复习", value: `${dueCards} 张`, sub: dueCards > 0 ? "待复习" : "全部完成", href: "/exam" },
+            { icon: Layers, label: "闪卡复习", value: `${dueCards} 张`, sub: dueCards > 0 ? "待复习" : "全部完成", href: "/pack" },
             { icon: Clock, label: "今日学习", value: `${stats?.minutesToday ?? 0} 分钟`, sub: `目标 ${stats?.minutesGoal ?? 180} 分钟`, href: "/profile" },
           ].map((s) => (
             <Link key={s.label} href={s.href} className="card-card hover-lift p-4 flex items-start justify-between group">
@@ -180,7 +180,7 @@ export default function HubPage() {
         <h2 className="text-title mb-4">快速入口</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { icon: BookOpen, label: "学习包", sub: "生成复习讲义", href: "/exam" },
+            { icon: BookOpen, label: "学习包", sub: "生成复习讲义", href: "/pack" },
             { icon: Bot, label: "导师", sub: "AI 对话学习", href: "/agent" },
             { icon: Heart, label: "花园", sub: "情绪支持", href: "/grow" },
             { icon: Sparkles, label: "Ask Mango", sub: "快速提问", onClick: () => setMagicOpen(true) },

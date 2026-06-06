@@ -83,6 +83,32 @@
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ═══ Calm Academic OS V11 — Mango Identity ═══ */
+  /* Mango-Peach Gradient */
+  --gradient-mango: linear-gradient(135deg, oklch(0.58 0.16 75), oklch(0.62 0.18 60));
+  --gradient-warm:  linear-gradient(135deg, oklch(0.96 0.03 75), oklch(0.98 0.005 60));
+
+  /* Mist-Blue accents */
+  --color-mist:        oklch(0.75 0.04 240);
+  --color-mist-subtle: oklch(0.95 0.02 240);
+
+  /* Leaf-Green accents */
+  --color-leaf:        oklch(0.65 0.08 155);
+  --color-leaf-subtle: oklch(0.95 0.03 155);
+
+  /* Warm Paper surfaces */
+  --bg-paper:      oklch(0.985 0.003 80);
+  --bg-paper-warm: oklch(0.975 0.006 75);
+
+  /* Glass surface for bottom nav */
+  --glass-bg:     rgba(252, 250, 247, 0.72);
+  --glass-border: rgba(0, 0, 0, 0.04);
+  --glass-blur:   20px;
+
+  /* Reading-optimized layout */
+  --reading-width: 720px;
+  --reading-line-height: 1.8;
 }
 
 /* ── Dark Mode: Deep warm charcoal ────────────────────────────── */
@@ -181,6 +207,19 @@ body {
 .card-glass    { background: rgba(252,250,247,0.72); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: var(--radius-3xl); border: 1px solid var(--color-border); }
 .card-focus    { background: var(--color-surface-low); border-radius: var(--radius-3xl); border: 1px solid var(--color-primary); box-shadow: var(--shadow-md), 0 0 0 3px var(--color-primary-subtle); }
 .card-hero     { background: var(--color-surface); border-radius: var(--radius-4xl); border: 1px solid var(--color-border); box-shadow: var(--shadow-2xl); }
+.card-paper-warm { background: var(--bg-paper-warm); border-radius: var(--radius-2xl); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm); }
+
+/* ═══ Calm Academic OS — Gradient & Reading Utilities ═══ */
+.gradient-mango-text {
+  background: var(--gradient-mango);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gradient-mango-bg { background: var(--gradient-mango); }
+.font-serif-leading { line-height: var(--reading-line-height); }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* ═══ Interactive ═══ */
 .hover-lift { transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out); }

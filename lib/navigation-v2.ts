@@ -1,10 +1,10 @@
 // ─────────────────────────────────────────────────────────────
-// MangoOS V10.1 Navigation
-// Home | Study Pack | Tutor | Garden | More
+// MangoOS V11 Navigation — Study Pack-Centered AI Learning OS
+// Today | Study Pack | Tutor | Forest | Garden
 // ─────────────────────────────────────────────────────────────
 import {
-  Sparkles, BookOpen, Bot, Heart, GraduationCap,
-  CalendarCheck, Mic, User, MoreHorizontal,
+  Sun, Package, Bot, Trees, Heart,
+  CalendarCheck, GraduationCap, Mic, User, MoreHorizontal,
   type LucideIcon,
 } from "lucide-react";
 
@@ -20,23 +20,23 @@ export interface NavItem {
 }
 
 export const navItemsV2: NavItem[] = [
-  // ── Primary (bottom nav + sidebar top) ──────────────────
+  // ── Primary 5 (bottom nav + sidebar top) ──────────────────
   {
     id: "hub",
-    label: "首页",
-    shortLabel: "首页",
+    label: "今日",
+    shortLabel: "今日",
     href: "/hub",
-    icon: Sparkles,
-    description: "学习驾驶舱 · 进度总览 · 快速入口",
+    icon: Sun,
+    description: "学习驾驶舱 · 继续学习 · 快速入口",
     tier: "primary",
   },
   {
-    id: "exam",
+    id: "pack",
     label: "学习包",
     shortLabel: "学习包",
-    href: "/exam",
-    icon: BookOpen,
-    description: "期末备考 · 知识森林 · 笔记 · 闪卡",
+    href: "/pack",
+    icon: Package,
+    description: "AI 生成复习讲义 · 多源搜索 · 导出",
     tier: "primary",
   },
   {
@@ -45,7 +45,16 @@ export const navItemsV2: NavItem[] = [
     shortLabel: "导师",
     href: "/agent",
     icon: Bot,
-    description: "AI 对话 · 概念讲解 · 智能练习 · 知识导入",
+    description: "AI 对话 · 概念讲解 · 智能练习",
+    tier: "primary",
+  },
+  {
+    id: "forest",
+    label: "知识森林",
+    shortLabel: "森林",
+    href: "/forest",
+    icon: Trees,
+    description: "IELTS · CFA · AI 工程师 · 托福",
     tier: "primary",
   },
   {
@@ -108,8 +117,9 @@ export const redirectMapV2: Record<string, string> = {
   "/ai-tutor": "/agent",
   "/study-planner": "/planner",
   "/knowledge-hub": "/agent",
-  "/exam-mode": "/exam",
-  "/exam-master": "/exam",
+  "/exam": "/pack",
+  "/exam-mode": "/pack",
+  "/exam-master": "/pack",
   "/mind-garden": "/grow",
   "/mango-dna": "/dna",
   "/analytics": "/hub",
