@@ -9,8 +9,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
-import { MangoCharacter } from "./mango-character";
-import { EmotionalMango, detectEmotion } from "./emotion-engine";
+import { detectEmotion } from "./emotion-engine";
 
 /* ═══════════════════════════════════════════════════════════════
    Mangobo — Global Floating AI Companion
@@ -142,16 +141,15 @@ export function MangoboCompanion() {
         {/* Mangobo button */}
         <motion.button
           onClick={() => { setOpen(!open); setShowBubble(false); }}
-          className="relative size-[56px] sm:size-[72px] rounded-full overflow-hidden shadow-xl border-2 border-primary/20 cursor-pointer"
-          style={{ background: "radial-gradient(circle at 40% 35%, #fde68a 0%, #fb923c 40%, #ea580c 100%)" }}
+          className="relative size-[56px] sm:size-[72px] rounded-full overflow-hidden shadow-xl border-2 border-primary/20 cursor-pointer bg-[#0C0C0D]"
           whileHover={{ scale: 1.08, boxShadow: "0 0 30px rgba(197,139,116,0.3)" }}
           whileTap={{ scale: 0.95 }}
         >
-          {/* CSS Animated Mango — zero deps, all platforms */}
-          <MangoCharacter />
-          {/* Hidden video — plays audio-free animation if supported */}
-          <video ref={videoRef} src="/mangobo.mp4" autoPlay loop muted playsInline preload="none"
-            className="hidden" />
+          {/* 芒宝视频动画 — 核心形象 */}
+          <video ref={videoRef} src="/mangobo.mp4" autoPlay loop muted playsInline
+            preload="auto" poster="/apple-touch-icon.png"
+            className="absolute inset-0 w-full h-full object-cover rounded-full"
+            style={{ opacity: 1 }} />
           {/* Glass overlay */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-b from-transparent via-transparent to-black/10" />
         </motion.button>
