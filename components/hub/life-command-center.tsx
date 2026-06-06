@@ -3,10 +3,10 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Zap, AlertTriangle, Clock, Target, Shield, Brain, ArrowRight, Check } from "lucide-react";
+import { Zap, AlertTriangle, Clock, Target, Shield, Brain, ArrowRight, Check, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
-import { estimateLifeState, generateDailyCommand, loadLifeState, getAutonomyLevel, type DailyCommand, type LifeState } from "@/lib/ai/life-agent";
+import { estimateLifeState, generateDailyCommand, loadLifeState, getAutonomyLevel, getEmotionalAction, getAutonomousActions, recordSignal, type DailyCommand, type LifeState } from "@/lib/ai/life-agent";
 
 /* ═══════════════════════════════════════════════════════════════
    Life Command Center — V9 Autonomous Life Agent UI
@@ -27,7 +27,14 @@ export function LifeCommandCenter() {
     // Generate daily command
     const cmd = generateDailyCommand(current, tasks, weakAreas);
     setCommand(cmd);
+    // Record behavioral signal
+    recordSignal("page_view", 0.5);
   }, [tasks, weakAreas, stats]);
+
+  // Emotional action integration
+  const emotionalAction = React.useMemo(() => getEmotionalAction(state), [state]);
+  // Autonomous actions
+  const autoActions = React.useMemo(() => getAutonomousActions(state, tasks), [state, tasks]);
 
   if (!command) return null;
 
@@ -106,6 +113,32 @@ export function LifeCommandCenter() {
             </div>
           ))}
         </motion.div>
+      )}
+
+      {/* Emotional action (Mind Garden integration) */}
+      {emotionalAction && (
+        <Link href="/grow"
+          className="flex items-center gap-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200/50 dark:border-rose-800/20 p-3 hover:bg-rose-100/50 transition-colors">
+          <Heart className="size-4 text-rose-500 shrink-0" />
+          <div className="flex-1">
+            <p className="text-xs font-medium text-rose-700 dark:text-rose-300">情绪关怀</p>
+            <p className="text-caption mt-0.5">{emotionalAction.prompt}</p>
+          </div>
+          <ArrowRight className="size-3 text-rose-400" />
+        </Link>
+      )}
+
+      {/* Autonomous tasks */}
+      {autoActions.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <p className="text-label">系统自动操作</p>
+          {autoActions.map((a, i) => (
+            <div key={i} className="flex items-center gap-2 text-xs text-fg-muted">
+              <Check className="size-3 text-emerald-500" />
+              <span>{a.title}</span>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Trust meter */}

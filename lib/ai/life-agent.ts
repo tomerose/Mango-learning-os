@@ -16,6 +16,7 @@ export interface LifeState {
   procrastinationRisk: number; // 0-100
   decisionFatigue: number;     // 0-100
   executionTrustScore: number; // 0-100
+  skill_vector?: Record<string, number>; // skill name → proficiency 0-100
   lastUpdated: string;
 }
 
@@ -175,8 +176,183 @@ export function generateDecisions(state: LifeState): DecisionOption[] {
     },
   ];
 
+  // Type B: Career execution (additional)
+  if (state.careerClarity < 60) {
+    options.push({
+      action: "花15分钟明确本周职业/学习目标",
+      type: "career",
+      expectedImpact: 55,
+      risk: 2, effortCost: 15, timeToResult: "15min", confidence: 0.85,
+      autonomyLevel: "assisted",
+    });
+  }
+  if (state.skill_vector && Object.keys(state.skill_vector).length > 0) {
+    options.push({
+      action: "检查技能差距并安排针对性学习",
+      type: "career",
+      expectedImpact: 50,
+      risk: 5, effortCost: 25, timeToResult: "1hour", confidence: 0.75,
+      autonomyLevel: "assisted",
+    });
+  }
+
+  // Type D: Emotional execution (additional)
+  if (state.emotionalStability < 40) {
+    options.push({
+      action: "触发Mind Garden正念呼吸练习",
+      type: "emotional",
+      expectedImpact: 85,
+      risk: 1, effortCost: 5, timeToResult: "15min", confidence: 0.9,
+      autonomyLevel: "autonomous",
+    });
+    options.push({
+      action: "播放5分钟舒缓音乐并调暗界面",
+      type: "emotional",
+      expectedImpact: 60,
+      risk: 1, effortCost: 3, timeToResult: "15min", confidence: 0.85,
+      autonomyLevel: "autonomous",
+    });
+  }
+  if (state.decisionFatigue > 60) {
+    options.push({
+      action: "自动精简今日任务列表（只保留Top 3）",
+      type: "emotional",
+      expectedImpact: 70,
+      risk: 5, effortCost: 8, timeToResult: "15min", confidence: 0.8,
+      autonomyLevel: state.executionTrustScore > 50 ? "autonomous" : "assisted",
+    });
+  }
+
   // Sort by score descending
   return options.sort((a, b) => scoreDecision(b) - scoreDecision(a));
+}
+
+// ═══ Behavioral signals ═══
+
+export interface BehaviorSignal {
+  timestamp: string;
+  type: "page_view" | "task_complete" | "study_session" | "login" | "voice_use" | "note_create";
+  value: number; // 0-1 intensity
+}
+
+const SIGNALS_KEY = "mango-behavior-signals";
+
+export function recordSignal(type: BehaviorSignal["type"], value: number): void {
+  try {
+    const signals = loadSignals();
+    signals.push({ timestamp: new Date().toISOString(), type, value });
+    // Keep last 100 signals
+    if (signals.length > 100) signals.splice(0, signals.length - 100);
+    localStorage.setItem(SIGNALS_KEY, JSON.stringify(signals));
+  } catch {}
+}
+
+export function loadSignals(): BehaviorSignal[] {
+  try {
+    const raw = localStorage.getItem(SIGNALS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+export function getTodaySignals(): BehaviorSignal[] {
+  const today = new Date().toISOString().slice(0, 10);
+  return loadSignals().filter(s => s.timestamp.startsWith(today));
+}
+
+// ═══ Plan integration — auto-generate tasks from decisions ═══
+
+export function decisionToTask(decision: DecisionOption): { title: string; priority: "low" | "medium" | "high"; estimatedMin: number; subject: string } {
+  const timeMap: Record<string, number> = { "15min": 15, "1hour": 45, "1day": 60, "1week": 120 };
+  return {
+    title: decision.action,
+    priority: decision.expectedImpact > 70 ? "high" : decision.expectedImpact > 40 ? "medium" : "low",
+    estimatedMin: timeMap[decision.timeToResult] ?? 25,
+    subject: decision.type === "emotional" ? "grow" : decision.type === "academic" ? "ai" : "general",
+  };
+}
+
+export function autoGenerateTasks(decisions: DecisionOption[], maxTasks: number = 3) {
+  return decisions
+    .filter(d => d.autonomyLevel !== "manual")
+    .slice(0, maxTasks)
+    .map(decisionToTask);
+}
+
+// ═══ Friend (Mind Garden) integration ═══
+
+export function getEmotionalAction(state: LifeState): { type: "journal" | "breathe" | "reframe" | "companion"; prompt: string } | null {
+  if (state.emotionalStability < 30) {
+    return { type: "companion", prompt: "我最近感到学习压力很大，想找人聊聊。" };
+  }
+  if (state.emotionalStability < 50) {
+    return { type: "breathe", prompt: "跟着芒宝做3分钟正念呼吸练习" };
+  }
+  if (state.decisionFatigue > 60) {
+    return { type: "reframe", prompt: "我觉得今天什么都没做成，但其实我已经完成了不少。" };
+  }
+  if (Math.random() < 0.3) { // 30% chance of journal suggestion
+    return { type: "journal", prompt: "今天学习中最大的收获是什么？" };
+  }
+  return null;
+}
+
+// ═══ Full autonomous schedule generation ═══
+
+export function generateAutonomousSchedule(
+  state: LifeState,
+  tasks: Task[],
+): { time: string; action: string; duration: string; autoExecute: boolean }[] {
+  const undone = tasks.filter(t => !t.done);
+  const schedule: { time: string; action: string; duration: string; autoExecute: boolean }[] = [];
+
+  // Morning block
+  schedule.push({ time: "08:00", action: "晨间学习冲刺", duration: "25分钟", autoExecute: state.executionTrustScore > 60 });
+
+  // Core study
+  if (undone.length > 0) {
+    schedule.push({ time: "10:00", action: `完成: ${undone[0].title.slice(0, 30)}`, duration: "45分钟", autoExecute: false });
+  }
+
+  // Weak area focus
+  schedule.push({ time: "14:00", action: "弱项针对性训练", duration: "30分钟", autoExecute: state.executionTrustScore > 70 });
+
+  // Review
+  schedule.push({ time: "16:00", action: "知识复习 + 闪卡", duration: "20分钟", autoExecute: state.executionTrustScore > 80 });
+
+  // Emotional check
+  if (state.emotionalStability < 60) {
+    schedule.push({ time: "17:00", action: "Mind Garden 情绪整理", duration: "10分钟", autoExecute: true });
+  }
+
+  // Reflection
+  schedule.push({ time: "20:00", action: "反思日记", duration: "10分钟", autoExecute: false });
+
+  return schedule;
+}
+
+// ═══ Execute autonomous actions (returns tasks to auto-create) ═══
+
+export function getAutonomousActions(state: LifeState, tasks: Task[]): { title: string; priority: "low" | "medium" | "high"; estimatedMin: number; subject: string }[] {
+  if (state.executionTrustScore < 50) return []; // Not enough trust
+
+  const actions: { title: string; priority: "low" | "medium" | "high"; estimatedMin: number; subject: string }[] = [];
+
+  // Auto-schedule study if procrastination risk is high
+  if (state.procrastinationRisk > 60 && tasks.filter(t => !t.done).length === 0) {
+    actions.push({ title: "系统自动安排：25分钟学习冲刺", priority: "high", estimatedMin: 25, subject: "ai" });
+  }
+
+  // Auto-suggest break if emotional stability is low
+  if (state.emotionalStability < 40) {
+    actions.push({ title: "系统建议：5分钟正念休息", priority: "medium", estimatedMin: 5, subject: "grow" });
+  }
+
+  // Auto-merge fragmented tasks if decision fatigue is high
+  if (state.decisionFatigue > 50) {
+    actions.push({ title: "系统优化：今日任务已精简为Top 3", priority: "high", estimatedMin: 10, subject: "general" });
+  }
+
+  return actions;
 }
 
 // ═══ Select optimal action ═══
