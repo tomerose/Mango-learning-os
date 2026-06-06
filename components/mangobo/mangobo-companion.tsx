@@ -145,16 +145,16 @@ export function MangoboCompanion() {
           whileHover={{ scale: 1.08, boxShadow: "0 0 30px rgba(197,139,116,0.3)" }}
           whileTap={{ scale: 0.95 }}
         >
-          {/* Static icon — always visible */}
-          <span className="absolute inset-0 flex items-center justify-center text-2xl">🥭</span>
-          {/* Video overlay — plays when supported */}
+          {/* Mango icon — always visible, always works */}
+          <img src="/favicon-32.png" alt="芒宝" className="absolute inset-0 w-full h-full object-cover rounded-full" />
+          {/* Video overlay — plays when browser supports autoplay */}
           <video
             ref={videoRef}
             src="/mangobo.mp4"
             autoPlay loop muted playsInline
             preload="none"
-            poster="/favicon-32.png"
-            className="absolute inset-0 w-full h-full object-cover rounded-full opacity-0"
+            className="absolute inset-0 w-full h-full object-cover rounded-full"
+            style={{ opacity: 0 }}
             onPlay={e => { (e.target as HTMLVideoElement).style.opacity = "1"; }}
           />
           {/* Glass overlay */}
