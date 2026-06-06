@@ -239,22 +239,15 @@ export function getCognitiveHistory(concept: string): MangoDNAEntry[] {
   return loadDNA().entries.filter(e => e.concept === concept);
 }
 
-// ═══ WeChat Fast Mode — Single combined call + 3s timeout ═══
+// ═══ WeChat Ultra-Fast Mode — 1 AI call, <200 tokens, 2.5s timeout ═══
 
-const FAST_SYSTEM = `认知重构引擎。用中文+英文术语，输出JSON：
-{"state":"novice|partial|confused|structured","reconstruction":"指出认知问题→正确结构→误解对比","example":"具体例子","test":"检验题"}
-精简、300字内、认知导向。`;
+const FAST_SYSTEM = "你是学习助手。用中文回复，100字以内。指出：1)用户问题的核心概念 2)一个关键洞见 3)下一步行动。格式：【核心】xxx 【洞见】xxx 【行动】xxx";
 
 export interface FastCognitiveResponse {
-  state: CognitiveState;
-  reconstruction: string;
-  example: string;
-  test: string;
   fullResponse: string;
 }
 
-export async function cognitiveFast(input: string, timeoutMs: number = 3000): Promise<FastCognitiveResponse> {
-  // timeoutMs = 0 means no timeout (async customer-service mode)
+export async function cognitiveFast(input: string, timeoutMs: number = 2500): Promise<FastCognitiveResponse> {
   const controller = new AbortController();
   const timeout = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
@@ -262,45 +255,17 @@ export async function cognitiveFast(input: string, timeoutMs: number = 3000): Pr
     const raw = await completeChat([
       { role: "system", content: FAST_SYSTEM },
       { role: "user", content: input.slice(0, 500) },
-    ], { temperature: 0.3, signal: controller.signal, maxTokens: 400 });
+    ], { temperature: 0, signal: controller.signal, maxTokens: 150 });
 
     if (timeout) clearTimeout(timeout);
-    const json = extractJson(raw);
-    const parsed = JSON.parse(json);
-
-    const result: FastCognitiveResponse = {
-      state: parsed.state ?? "partial",
-      reconstruction: parsed.reconstruction ?? "",
-      example: parsed.example ?? "",
-      test: parsed.test ?? "",
-      fullResponse: "",
+    return { fullResponse: raw.trim() };
+  } catch {
+    if (timeout) clearTimeout(timeout);
+    // AI timeout — return keyword-based fallback
+    const kw = input.slice(0, 100);
+    return {
+      fullResponse: `【核心】${kw}\n【洞见】这个概念的关键是理解其底层结构，而非记忆定义\n【行动】请访问 mangoleaningos.top 进行完整认知分析`,
     };
-
-    result.fullResponse = [
-      "🧠 认知分析",
-      `状态: ${result.state}`,
-      "",
-      "【认知重构】",
-      result.reconstruction,
-      "",
-      "【例子】",
-      result.example,
-      "",
-      "🧪 " + (result.test || "请用自己的话解释这个概念"),
-    ].join("\n");
-
-    return result;
-  } catch (err: unknown) {
-    if (timeout) clearTimeout(timeout);
-    const name = (err as {name?:string}).name ?? "";
-    const code = (err as {code?:string}).code ?? "";
-    if ((name === "AbortError" || name === "TimeoutError") || (code === "AbortError" || code === "ETIMEDOUT")) {
-      return {
-        state: "partial", reconstruction: "", example: "", test: "",
-        fullResponse: "芒宝正在思考中，请重新发送你的问题。\n\n（AI 分析需要更长时间，请稍后再试）",
-      };
-    }
-    throw err;
   }
 }
 

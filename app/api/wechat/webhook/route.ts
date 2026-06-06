@@ -1,67 +1,35 @@
 // ═══════════════════════════════════════════════════════════════
-// WeChat Official Account Webhook — Async Cognitive Reply
-// Flow: receive → respond "success" immediately → process AI in bg → push via 客服消息
+// WeChat Official Account Webhook — Ultra-Fast Cognitive Reply
+// Setup: https://mangoleaningos.top/api/wechat/webhook
+// Token: mango_wechat_token_2025
 // ═══════════════════════════════════════════════════════════════
 
-import { NextRequest, after } from "next/server";
+import { NextRequest } from "next/server";
 import { cognitiveFast } from "@/lib/ai/cognitive-engine";
 import { createHash } from "crypto";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 10;
 
-// ═══ Config ═══
-
-const APPID = "wxdd2dbd4a69db4102";
-const APPSECRET = "bb3e67ad594eb26dc9865f9881c09950";
-const TOKEN = process.env.WECHAT_TOKEN ?? "mango_wechat_token_2025";
-
-// ═══ Access Token Cache (token lives 7200s) ═══
-
-let cachedToken: string | null = null;
-let tokenExpiry = 0;
-
-async function getAccessToken(): Promise<string> {
-  if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
-
-  const res = await fetch(
-    `https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${APPID}&secret=${APPSECRET}`
-  );
-  const data = await res.json();
-  if (!data.access_token) throw new Error("Failed to get access_token: " + JSON.stringify(data));
-
-  cachedToken = data.access_token;
-  tokenExpiry = Date.now() + (data.expires_in - 300) * 1000; // refresh 5min early
-  return cachedToken!;
-}
-
-// ═══ Send Customer Service Message ═══
-
-async function sendCustomerMsg(openid: string, content: string): Promise<void> {
-  const token = await getAccessToken();
-  const res = await fetch(
-    `https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${token}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        touser: openid,
-        msgtype: "text",
-        text: { content: content.slice(0, 2000) },
-      }),
-    }
-  );
-  const data = await res.json();
-  if (data.errcode !== 0) console.error("Customer msg failed:", data);
-}
+const WECHAT_TOKEN = process.env.WECHAT_TOKEN ?? "mango_wechat_token_2025";
 
 // ═══ Signature Verification ═══
 
 function verifySignature(signature: string, timestamp: string, nonce: string): boolean {
-  const arr = [TOKEN, timestamp, nonce].sort();
+  const arr = [WECHAT_TOKEN, timestamp, nonce].sort();
   const str = arr.join("");
   const hash = createHash("sha1").update(str).digest("hex");
   return hash === signature;
+}
+
+function buildTextResponse(toUser: string, fromUser: string, content: string): string {
+  return `<xml>
+<ToUserName><![CDATA[${toUser}]]></ToUserName>
+<FromUserName><![CDATA[${fromUser}]]></FromUserName>
+<CreateTime>${Math.floor(Date.now() / 1000)}</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[${content}]]></Content>
+</xml>`;
 }
 
 // ═══ GET: Server verification ═══
@@ -79,7 +47,7 @@ export async function GET(req: NextRequest) {
   return new Response("Invalid signature", { status: 403 });
 }
 
-// ═══ POST: Async cognitive reply ═══
+// ═══ POST: Ultra-fast cognitive reply (<5s guaranteed) ═══
 
 export async function POST(req: NextRequest) {
   const params = req.nextUrl.searchParams;
@@ -102,29 +70,13 @@ export async function POST(req: NextRequest) {
     return new Response("success", { headers: { "Content-Type": "text/plain" } });
   }
 
-  // Schedule AI processing AFTER response is sent (Vercel keeps function alive)
-  after(async () => {
-    try { await processAndReply(fromUser, content.trim()); }
-    catch (err) { console.error("Async cognitive reply failed:", err); }
+  // Ultra-fast AI: 150 max tokens, 2.5s timeout, temp=0
+  const result = await cognitiveFast(content.trim());
+  const reply = result.fullResponse;
+
+  const xmlResponse = buildTextResponse(fromUser, toUser, reply);
+
+  return new Response(xmlResponse, {
+    headers: { "Content-Type": "application/xml; charset=utf-8" },
   });
-
-  // Respond within 100ms — WeChat is happy
-  return new Response("success", { headers: { "Content-Type": "text/plain" } });
-}
-
-// ═══ Background: Cognitive Engine → Customer Service Message ═══
-
-async function processAndReply(openid: string, question: string): Promise<void> {
-  // Step 1: AI analysis (no timeout — we have all the time now)
-  let reply: string;
-  try {
-    // No AbortController — let it run naturally
-    const result = await cognitiveFast(question, 0);
-    reply = result.fullResponse;
-  } catch {
-    reply = "芒宝正在思考，请稍后再试。\n\n或访问 https://mangoleaningos.top 获得完整体验。";
-  }
-
-  // Step 2: Send via WeChat customer service API
-  await sendCustomerMsg(openid, reply);
 }
