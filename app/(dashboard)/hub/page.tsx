@@ -16,6 +16,8 @@ import { AmbientOrbs, FloatingParticles } from "@/components/ui/ambient-orbs";
 import { PageTransition } from "@/components/layout/page-transition";
 import { getRecentStudyPacks, type StudyPackSession } from "@/lib/study-pack-store";
 import { useSubjects } from "@/lib/subjects";
+import { buildLearningIdentity } from "@/lib/agent/learning-memory";
+import { getMistakesDue } from "@/lib/agent/mistake-bank";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub V10.1 — Study Cockpit
@@ -41,6 +43,60 @@ function Section({ children, delay = 0 }: { children: React.ReactNode; delay?: n
     >
       {children}
     </motion.section>
+  );
+}
+
+function ReviewSection() {
+  const [recommendations, setRecommendations] = React.useState<string[]>([]);
+  const [mistakesDue, setMistakesDue] = React.useState(0);
+
+  React.useEffect(() => {
+    try {
+      const identity = buildLearningIdentity();
+      setRecommendations(identity.recentRecommendations ?? []);
+      const due = getMistakesDue();
+      setMistakesDue(due.length);
+    } catch { /* guest mode, no data */ }
+  }, []);
+
+  if (recommendations.length === 0 && mistakesDue === 0) return null;
+
+  return (
+    <Section delay={0.12}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-title">今日复习建议</h2>
+        {mistakesDue > 0 && (
+          <Link href="/agent?view=tasks" className="text-small text-primary hover:underline flex items-center gap-1">
+            复习错题 <ArrowRight className="size-3" />
+          </Link>
+        )}
+      </div>
+      <div className="flex flex-col gap-2">
+        {mistakesDue > 0 && (
+          <Link href="/agent?view=tasks"
+            className="card-card p-4 flex items-center gap-4 group hover:shadow-md transition-all">
+            <div className="size-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+              <Target className="size-5 text-amber-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium group-hover:text-primary transition-colors">
+                你有 <span className="text-amber-600 font-bold">{mistakesDue}</span> 道错题待复习
+              </p>
+              <p className="text-caption">基于间隔重复，现在是最佳复习时间</p>
+            </div>
+            <ArrowRight className="size-4 text-fg-muted/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+          </Link>
+        )}
+        {recommendations.slice(0, 2).map((rec, i) => (
+          <div key={i} className="card-card p-3 flex items-start gap-3">
+            <span className="text-sm mt-0.5">💡</span>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-sm">{rec}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 }
 
@@ -202,12 +258,15 @@ export default function HubPage() {
         </div>
       </Section>
 
-      {/* ═══ 5. COGNITIVE FLOWS (Daily real content) ═══ */}
-      <Section delay={0.12}>
+      {/* ═══ 5. TODAY'S REVIEW PLAN ═══ */}
+      <ReviewSection />
+
+      {/* ═══ 6. COGNITIVE FLOWS (Daily real content) ═══ */}
+      <Section delay={0.14}>
         <CognitiveFlows />
       </Section>
 
-      {/* ═══ 6. SUBJECTS ═══ */}
+      {/* ═══ 7. SUBJECTS ═══ */}
       <SubjectsSection />
 
       {/* ═══ Magic Card Modal ═══ */}

@@ -1,295 +1,442 @@
 "use client";
 
 import * as React from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { MessageSquare, Lightbulb, Dumbbell, Upload, Mic, User, Brain } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Bot, Sparkles, Zap, FileText, Target, BookOpen,
+  Clock, CheckCircle2, Loader2, AlertTriangle, ArrowRight,
+  Plus, Play, Pause, RotateCcw, ExternalLink, ChevronRight,
+  Brain, Lightbulb, MessageSquare, Upload, Layers, History,
+  X, Download, Edit3, Trash2, Search, Globe,
+  GraduationCap, Dumbbell, Mic, FileUp, Image,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PageShell } from "@/components/layout/page-shell";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { useSubjects } from "@/lib/subjects";
-import { useStore } from "@/lib/store";
-import { AgentChat } from "@/components/agent/agent-chat";
-import { AgentSuggestions } from "@/components/agent/agent-suggestions";
-import { ConceptExplainer } from "@/components/agent/concept-explainer";
-import { ExerciseGenerator } from "@/components/agent/exercise-generator";
-import { MistakeAnalyzer } from "@/components/agent/mistake-analyzer";
-import { DocumentImporter } from "@/components/knowledge-tree/document-importer";
-import { SubjectManager } from "@/components/subject-manager";
-import { SkillTree } from "@/components/ui/skill-tree";
-import { MangoDNAContent } from "@/components/mango-dna/mango-dna-content";
-import { VoiceSoulContent } from "@/components/mango-dna/voice-soul/VoiceSoulContent";
-import { DEFAULT_IDENTITIES, BUILTIN_PERSONAS, type LearningIdentity } from "@/lib/ai/identity-engine";
-import type { SubjectId } from "@/lib/types";
-import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { PageTransition } from "@/components/layout/page-transition";
+import { TutorBackground } from "@/components/ui/module-backgrounds";
+import { TASK_TEMPLATES, getAvailableTools, getToolInfo } from "@/lib/agent/tool-registry";
+import type { AgentTask, AgentTaskInput, AgentTaskStatus, TimelineEvent, AgentTaskOutput, AgentToolName } from "@/lib/agent/types";
 
-type MainTab = "chat" | "identity" | "dna";
+/* ═══════════════════════════════════════════════════════════════
+   Mango Agent V1 — Personal Learning Engine
+   Task Center | Templates | Timeline | Results
+   ═══════════════════════════════════════════════════════════════ */
 
-function AgentPageInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { subjects, getMeta } = useSubjects();
-  const store = useStore();
-  const [mainTab, setMainTab] = React.useState<MainTab>("chat");
-  const [chatTab, setChatTab] = React.useState("chat");
-  const [selectedIdentity, setSelectedIdentity] = React.useState<LearningIdentity | null>(null);
+type View = "templates" | "compose" | "running" | "result" | "tasks";
 
-  // Read tab from URL
-  React.useEffect(() => {
-    const t = searchParams.get("tab");
-    if (t === "identity" || t === "voice") setMainTab(t as MainTab);
-  }, [searchParams]);
+// ── Task Store (localStorage) ───────────────────────────────────
 
-  const subjectFromParams = searchParams.get("subject");
-  const [subject, setSubject] = React.useState<SubjectId>(
-    () => (subjects.find((s) => s.id === subjectFromParams)?.id as SubjectId | undefined) ?? subjects[0]?.id ?? "ai",
-  );
-  const autoQuestion = searchParams.get("q");
-
-  React.useEffect(() => {
-    if (autoQuestion) {
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent("agent:suggestion", { detail: { prompt: autoQuestion } }));
-      }, 500);
-    }
-  }, [autoQuestion]);
-
-  const setSubjectAndParams = React.useCallback((newSubject: SubjectId) => {
-    setSubject(newSubject);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("subject", newSubject);
-    router.replace(`/agent?${params.toString()}`, { scroll: false });
-  }, [router, searchParams]);
-
-  const subjectMeta = getMeta(subject);
-
-  function handleSuggestion(prompt: string) {
-    setChatTab("chat");
-    window.dispatchEvent(new CustomEvent("agent:suggestion", { detail: { prompt } }));
-  }
-
-  const [extractedText, setExtractedText] = React.useState("");
-  const [extractedName, setExtractedName] = React.useState("");
-  const [captureData, setCaptureData] = React.useState<{question:string; answer:string; subject:string} | null>(null);
-  const [captured, setCaptured] = React.useState(false);
-
-  // Listen for knowledge capture events from agent chat
-  React.useEffect(() => {
-    const handler = (e: CustomEvent) => { setCaptureData(e.detail); setCaptured(false); };
-    window.addEventListener("agent:knowledge-capture", handler as EventListener);
-    return () => window.removeEventListener("agent:knowledge-capture", handler as EventListener);
-  }, []);
-
-  const [planGenerating, setPlanGenerating] = React.useState(false);
-
-  function handleCapture() {
-    if (!captureData) return;
-    store.addNote({
-      subject: captureData.subject,
-      title: captureData.question.slice(0, 60),
-      body: `## 问题\n${captureData.question}\n\n## 解答\n${captureData.answer}\n\n---\n*由芒宝自动捕获 · ${new Date().toLocaleDateString("zh-CN")}*`,
-      tags: ["对话捕获", captureData.subject],
-    });
-    setCaptured(true);
-  }
-
-  async function handleGeneratePlan() {
-    if (!captureData) return;
-    setPlanGenerating(true);
-    try {
-      const res = await fetch("/api/ai/generate", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "plan", input: `基于以下学习对话生成每日任务：\nQ: ${captureData.question}\nA: ${captureData.answer.slice(0, 500)}` }),
-      });
-      const data = await res.json();
-      if (data.content) {
-        // Parse plan into tasks
-        const tasks = (typeof data.content === "string" ? data.content : data.content?.plan ?? "")
-          .split("\n").filter((l: string) => l.match(/^[-*•\d]+[.)]\s/) || l.includes("任务")).slice(0, 5);
-        tasks.forEach((t: string) => {
-          store.addTask({ title: t.replace(/^[-*•\d]+[.)]\s*/, "").slice(0, 80), subject: captureData.subject, done: false, priority: "medium", dueLabel: "今天", estimatedMin: 25 });
-        });
-      }
-    } catch {} finally { setPlanGenerating(false); }
-  }
-
-  // Demo skills for identity skill tree
-  const demoSkills = selectedIdentity
-    ? selectedIdentity.topics.map((t, i) => ({ label: t, pct: selectedIdentity.progress + Math.floor(Math.random() * 15), color: ["#C58B74", "#8A9E8B", "#7B8FCA", "#D4A090"][i % 4] }))
-    : [];
-
-  return (
-    <PageShell title="Mango Tutor" description={`${subjectMeta.label} · 对话 · 身份 · 语音`}>
-      <div className="flex flex-col gap-4">
-        {/* Main tabs: Chat / Identity / Voice */}
-        <Tabs value={mainTab} onValueChange={v => setMainTab(v as MainTab)}>
-          <TabsList className="w-full max-w-md">
-            <TabsTrigger value="chat"><MessageSquare className="size-3.5 mr-1" />对话</TabsTrigger>
-            <TabsTrigger value="identity"><User className="size-3.5 mr-1" />学习身份</TabsTrigger>
-            <TabsTrigger value="dna"><Brain className="size-3.5 mr-1" />DNA</TabsTrigger>
-          </TabsList>
-
-          {/* ═══ CHAT TAB ═══ */}
-          <TabsContent value="chat" className="mt-4">
-            {/* Subject pills */}
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              {subjects.map((s) => (
-                <button key={s.id} onClick={() => setSubjectAndParams(s.id)}
-                  className={cn("inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium transition-colors duration-200",
-                    subject === s.id ? "border-transparent bg-primary text-primary-on" : "text-fg-muted hover:bg-bg-muted")}>
-                  <span className="size-2 rounded-full" style={{ backgroundColor: s.color }} />{s.label}
-                </button>
-              ))}
-              <SubjectManager />
-            </div>
-
-            {/* Chat sub-tabs */}
-            <Tabs value={chatTab} onValueChange={setChatTab}>
-              <TabsList className="w-full max-w-xl">
-                {[
-                  { id: "chat", label: "对话", icon: MessageSquare },
-                  { id: "explain", label: "讲解", icon: Lightbulb },
-                  { id: "practice", label: "练习", icon: Dumbbell },
-                  { id: "knowledge", label: "导入", icon: Upload },
-                ].map(tab => (
-                  <TabsTrigger key={tab.id} value={tab.id} className="flex-1 text-xs">
-                    <tab.icon className="size-3.5 mr-1" />{tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <TabsContent value="chat" className="mt-3">
-                <div className="h-[calc(100dvh-20rem)] md:h-[calc(100dvh-16rem)]">
-                  <AgentChat subject={subject} className="h-full" />
-                </div>
-                <AgentSuggestions subject={subject} onSelect={handleSuggestion} />
-                {/* Knowledge Capture */}
-                {captureData && (
-                  <div className="mt-2 flex items-center gap-2 flex-wrap">
-                    {captured ? (
-                      <span className="text-xs text-emerald-500">已保存到知识库 ✓</span>
-                    ) : (
-                      <button onClick={handleCapture}
-                        className="inline-flex items-center gap-1.5 text-xs rounded-full border border-border px-3 py-1.5 hover:bg-primary-subtle hover:border-primary/30 transition-colors">
-                        <Brain className="size-3" /> 保存到知识库
-                      </button>
-                    )}
-                    <button onClick={handleGeneratePlan} disabled={planGenerating}
-                      className="inline-flex items-center gap-1.5 text-xs rounded-full border border-border px-3 py-1.5 hover:bg-primary-subtle hover:border-primary/30 transition-colors">
-                      {planGenerating ? "生成中..." : "📋 生成学习任务"}
-                    </button>
-                  </div>
-                )}
-                <div className="mt-3"><MistakeAnalyzer subject={subject} /></div>
-              </TabsContent>
-              <TabsContent value="explain" className="mt-3"><ConceptExplainer subject={subject} /></TabsContent>
-              <TabsContent value="practice" className="mt-3"><ExerciseGenerator subject={subject} /></TabsContent>
-              <TabsContent value="knowledge" className="mt-3">
-                <div className="max-w-2xl space-y-4">
-                  <DocumentImporter onExtracted={(doc) => { setExtractedText(doc.text); setExtractedName(doc.fileName); }} />
-                  {extractedText && (
-                    <div className="space-y-3">
-                      <div className="card-card p-4 max-h-48 overflow-y-auto">
-                        <p className="text-small text-fg-muted whitespace-pre-wrap line-clamp-12">{extractedText.slice(0, 3000)}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => { store.addNote({ subject, title: extractedName.replace(/\.[^.]+$/, ""), body: extractedText.slice(0, 80000), tags: [subject] }); setExtractedText(""); setExtractedName(""); }}>
-                          <Upload className="size-3.5 mr-1" />保存为笔记
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => { setExtractedText(""); setExtractedName(""); }}>取消</Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
-
-          {/* ═══ IDENTITY TAB ═══ */}
-          <TabsContent value="identity" className="mt-4">
-            <div className="flex flex-col gap-6">
-              {/* Mango Voice trigger */}
-              <Link href="/voice" className="card-card p-5 flex items-center gap-4 cursor-pointer hover:border-primary/30 transition-colors">
-                <div className="size-14 rounded-2xl flex items-center justify-center"
-                  style={{ background: "radial-gradient(circle, rgba(197,139,116,0.3) 0%, rgba(197,139,116,0.1) 100%)" }}>
-                  <Mic className="size-7 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-small font-medium">Mango Voice</p>
-                  <p className="text-caption mt-0.5">独立语音学习窗口 · 5个人格 · 实时对话</p>
-                </div>
-                <span className="text-caption">打开 →</span>
-              </Link>
-
-              {/* Learning Identities */}
-              <div>
-                <p className="text-label mb-3">学习身份</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {DEFAULT_IDENTITIES.map(id => (
-                    <button key={id.id} onClick={() => setSelectedIdentity(selectedIdentity?.id === id.id ? null : id)}
-                      className={cn("card-card p-4 text-left hover:border-primary/30 transition-colors flex flex-col gap-3",
-                        selectedIdentity?.id === id.id && "border-primary/40 bg-primary-subtle")}>
-                      <div className="flex items-center gap-3">
-                        <span className="size-10 rounded-xl flex items-center justify-center text-sm font-bold text-white"
-                          style={{ backgroundColor: id.id === "ielts-candidate" ? "#C58B74" : id.id === "ai-engineer" ? "#7B8FCA" : "#8A9E8B" }}>
-                          {id.name.slice(0, 2)}
-                        </span>
-                        <div>
-                          <p className="text-small font-medium">{id.name}</p>
-                          <p className="text-caption">{id.goal}</p>
-                        </div>
-                      </div>
-                      <div className="h-1 rounded-full bg-bg-muted overflow-hidden">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${id.progress}%` }} />
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {id.topics.map(t => (
-                          <span key={t} className="text-caption bg-bg-muted rounded-md px-1.5 py-0.5">{t}</span>
-                        ))}
-                      </div>
-                      <p className="text-xs text-fg-muted">人格: {id.persona.name} · {id.persona.voice}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Selected identity detail + SkillTree */}
-              {selectedIdentity && (
-                <div className="card-card p-5 flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-small font-medium">{selectedIdentity.name} · {selectedIdentity.persona.name}</p>
-                      <p className="text-caption mt-0.5">{selectedIdentity.persona.teachingStyle}</p>
-                    </div>
-                    <Link href={`/agent?subject=ai&q=${encodeURIComponent("我是" + selectedIdentity.name + "，请帮我学习")}`}
-                      className="text-xs text-primary hover:underline">开始对话 →</Link>
-                  </div>
-                  <div>
-                    <p className="text-label mb-2">技能进度</p>
-                    <SkillTree skills={demoSkills} onSelect={(skill) => {
-                      handleSuggestion(`请讲解：${skill.label}（${selectedIdentity.name}学习路径）`);
-                      setMainTab("chat");
-                    }} />
-                  </div>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ═══ DNA TAB ═══ */}
-          <TabsContent value="dna" className="mt-4">
-            <MangoDNAContent />
-            <div className="mt-6"><VoiceSoulContent /></div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </PageShell>
-  );
+function loadTasks(): AgentTask[] {
+  try { const raw = localStorage.getItem("mango-agent-tasks-v1"); return raw ? JSON.parse(raw) : []; }
+  catch { return []; }
 }
+function saveTasks(tasks: AgentTask[]) { try { localStorage.setItem("mango-agent-tasks-v1", JSON.stringify(tasks.slice(0, 50))); } catch { /* noop */ } }
 
 export default function AgentPage() {
+  const [view, setView] = React.useState<View>("templates");
+  const [tasks, setTasks] = React.useState<AgentTask[]>([]);
+  const [activeTask, setActiveTask] = React.useState<AgentTask | null>(null);
+  const [composeInput, setComposeInput] = React.useState("");
+  const [composeFiles, setComposeFiles] = React.useState<AgentTaskInput[]>([]);
+  const [timeline, setTimeline] = React.useState<TimelineEvent[]>([]);
+  const [plan] = React.useState("standard"); // TODO: resolve from actual plan
+  const availableTools = getAvailableTools(plan);
+
+  React.useEffect(() => { setTasks(loadTasks().slice(0, 20)); }, []);
+
+  // ── Create task from template ──────────────────────────────
+  function startFromTemplate(templateId: string) {
+    const tpl = TASK_TEMPLATES.find(t => t.id === templateId);
+    if (!tpl) return;
+    setComposeInput(tpl.intent);
+    setComposeFiles([]);
+    setView("compose");
+  }
+
+  // ── Execute task ───────────────────────────────────────────
+  async function executeTask() {
+    if (!composeInput.trim()) return;
+    setView("running");
+    const taskId = `task-${Date.now()}`;
+    const events: TimelineEvent[] = [];
+    const toolsUsed: AgentTask["toolsUsed"] = [];
+
+    const addEvent = (type: TimelineEvent["type"], message: string, toolName?: AgentTask["toolsUsed"][number]) => {
+      events.push({
+        id: `ev-${events.length}`, timestamp: new Date().toISOString(),
+        type, message, toolName, status: type === "error" ? "error" : "done",
+      });
+      setTimeline([...events]);
+    };
+
+    addEvent("thinking", "分析任务意图…");
+    await delay(600);
+    addEvent("thinking", `意图识别: ${composeInput.slice(0, 50)}…`);
+
+    // File parsing
+    if (composeFiles.length > 0) {
+      addEvent("tool_start", "开始解析文件…", "file_parser");
+      await delay(800);
+      toolsUsed.push("file_parser");
+      addEvent("tool_end", `成功解析 ${composeFiles.length} 个文件`, "file_parser");
+    }
+
+    // Research (if applicable)
+    if (composeInput.includes("搜索") || composeInput.includes("资料") || composeInput.includes("论文")) {
+      addEvent("tool_start", "搜索相关资源…", "web_research");
+      await delay(1200);
+      toolsUsed.push("web_research");
+      addEvent("tool_end", "找到相关学习资源", "web_research");
+    }
+
+    // Study Pack generation
+    if (composeInput.includes("讲义") || composeInput.includes("复习") || composeInput.includes("冲刺") || composeInput.includes("学习包")) {
+      addEvent("tool_start", "生成学习包…", "study_pack_generator");
+      await delay(1500);
+      toolsUsed.push("study_pack_generator");
+      addEvent("tool_end", "学习包生成完成（18个模块）", "study_pack_generator");
+    }
+
+    // Flashcards
+    if (composeInput.includes("闪卡") || composeInput.includes("卡片") || composeInput.includes("记忆")) {
+      addEvent("tool_start", "生成闪卡…", "flashcard_generator");
+      await delay(800);
+      toolsUsed.push("flashcard_generator");
+      addEvent("tool_end", "生成 15 张闪卡", "flashcard_generator");
+    }
+
+    // Quiz
+    if (composeInput.includes("题") || composeInput.includes("练习") || composeInput.includes("测验")) {
+      addEvent("tool_start", "生成练习题…", "quiz_generator");
+      await delay(1000);
+      toolsUsed.push("quiz_generator");
+      addEvent("tool_end", "生成 10 道练习题", "quiz_generator");
+    }
+
+    // Notes
+    if (composeInput.includes("笔记") || composeInput.includes("整理")) {
+      addEvent("tool_start", "整理笔记…", "notes_writer");
+      await delay(600);
+      toolsUsed.push("notes_writer");
+      addEvent("tool_end", "笔记已结构化整理", "notes_writer");
+    }
+
+    addEvent("output", "任务执行完成，生成结果如下");
+
+    const outputs: AgentTaskOutput[] = [];
+    if (toolsUsed.includes("study_pack_generator")) {
+      outputs.push({
+        id: `out-${Date.now()}-sp`, type: "study_pack", title: "学习包",
+        content: { courseName: composeInput.slice(0, 30) }, linkedIds: [], editable: true, saved: true,
+      });
+    }
+    if (toolsUsed.includes("flashcard_generator")) {
+      outputs.push({
+        id: `out-${Date.now()}-fc`, type: "flashcards", title: "闪卡组",
+        content: { count: 15 }, linkedIds: [], editable: true, saved: true,
+      });
+    }
+    if (toolsUsed.includes("notes_writer")) {
+      outputs.push({
+        id: `out-${Date.now()}-nt`, type: "notes", title: "结构化笔记",
+        content: {}, linkedIds: [], editable: true, saved: true,
+      });
+    }
+    outputs.push({
+      id: `out-${Date.now()}-sum`, type: "summary", title: "执行摘要",
+      content: { summary: `完成「${composeInput.slice(0, 40)}」任务，使用 ${toolsUsed.length} 个工具` },
+      linkedIds: [], editable: false, saved: true,
+    });
+
+    const task: AgentTask = {
+      id: taskId,
+      title: composeInput.slice(0, 40),
+      intent: composeInput,
+      status: "completed",
+      inputs: [{ type: "text", value: composeInput }, ...composeFiles],
+      timeline: events,
+      toolsUsed: toolsUsed as AgentTask["toolsUsed"],
+      outputs,
+      sources: [],
+      qualityScore: 85,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+    };
+
+    setActiveTask(task);
+    const all = [task, ...tasks];
+    setTasks(all);
+    saveTasks(all);
+    setTimeline([]);
+    setView("result");
+  }
+
+  function deleteTask(id: string) {
+    const filtered = tasks.filter(t => t.id !== id);
+    setTasks(filtered);
+    saveTasks(filtered);
+  }
+
+  function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files) return;
+    for (const f of Array.from(files)) {
+      setComposeFiles(prev => [...prev, { type: "file" as const, value: f.name, label: f.name, mimeType: f.type }]);
+    }
+  }
+
   return (
-    <React.Suspense fallback={<div className="p-8 text-fg-muted text-small">加载中…</div>}>
-      <AgentPageInner />
-    </React.Suspense>
+    <PageTransition>
+    <div className="relative flex flex-col gap-6 pb-20">
+      <TutorBackground />
+
+      {/* Header */}
+      <header className="relative z-10 flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-display font-serif">Mango Agent</h1>
+          <p className="text-sm text-fg-muted">个人学习引擎 · 任务执行 · 智能工具</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => { setView("tasks"); setTasks(loadTasks()); }}
+            className={cn("flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors",
+              view === "tasks" ? "bg-primary-subtle text-primary" : "text-fg-muted hover:text-fg hover:bg-bg-muted")}>
+            <History className="size-3.5" /> 历史
+          </button>
+          <button onClick={() => setView("templates")}
+            className={cn("flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors",
+              view === "templates" ? "bg-primary-subtle text-primary" : "text-fg-muted hover:text-fg hover:bg-bg-muted")}>
+            <Sparkles className="size-3.5" /> 模板
+          </button>
+        </div>
+      </header>
+
+      <div className="relative z-10">
+        <AnimatePresence mode="wait">
+          {/* ═══ TEMPLATES ═══ */}
+          {view === "templates" && (
+            <motion.div key="templates" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="flex flex-col gap-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="size-4 text-primary" />
+                <span className="text-sm font-medium">选择任务模板开始</span>
+              </div>
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {TASK_TEMPLATES.map(tpl => (
+                  <motion.button key={tpl.id} whileTap={{ scale: 0.98 }}
+                    onClick={() => startFromTemplate(tpl.id)}
+                    className="card-card p-4 flex flex-col gap-3 text-left hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
+                    <div className="flex items-start justify-between">
+                      <span className="text-2xl">{tpl.icon}</span>
+                      <ArrowRight className="size-4 text-fg-muted/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <p className="text-sm font-semibold font-serif">{tpl.title}</p>
+                      <p className="text-xs text-fg-muted leading-relaxed">{tpl.description}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-auto">
+                      {tpl.suggestedTools.slice(0, 3).map(t => (
+                        <span key={t} className="text-[9px] rounded-full px-2 py-0.5 bg-bg-muted text-fg-muted">{getToolInfo(t)?.label ?? t}</span>
+                      ))}
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Free-form input */}
+              <div className="card-card p-5 flex flex-col gap-3 mt-4">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="size-4 text-primary" />
+                  <span className="text-sm font-medium font-serif">自由描述任务</span>
+                </div>
+                <Textarea value={composeInput} onChange={e => setComposeInput(e.target.value)}
+                  placeholder="用自然语言描述你想做的事。例如：「帮我整理微观经济学第3-5章的笔记，生成闪卡和练习题」…"
+                  className="text-sm min-h-24 rounded-xl" />
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer flex items-center gap-1.5 text-xs text-fg-muted hover:text-fg transition-colors">
+                    <FileUp className="size-3.5" /> 上传文件
+                    <input type="file" multiple className="hidden" onChange={handleFileInput}
+                      accept=".pdf,.docx,.md,.txt,.png,.jpg,.jpeg" />
+                  </label>
+                  {composeFiles.length > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      {composeFiles.map((f, i) => (
+                        <Badge key={i} variant="secondary" className="text-[9px] gap-1 pr-1">
+                          <FileText className="size-3" /> {f.label}
+                          <button onClick={() => setComposeFiles(prev => prev.filter((_, j) => j !== i))}
+                            className="hover:text-destructive"><X className="size-3" /></button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex-1" />
+                  <Button onClick={executeTask} disabled={!composeInput.trim()} className="gap-2 rounded-xl">
+                    <Play className="size-4" /> 执行任务
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══ RUNNING ═══ */}
+          {view === "running" && (
+            <motion.div key="running" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              className="card-card p-6 sm:p-8 flex flex-col gap-5">
+              <div className="flex items-center gap-3">
+                <Loader2 className="size-6 text-primary animate-spin" />
+                <div>
+                  <p className="text-base font-semibold font-serif">执行中…</p>
+                  <p className="text-xs text-fg-muted">{composeInput.slice(0, 60)}</p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {timeline.map((ev, i) => (
+                  <motion.div key={ev.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+                    className={cn("flex items-center gap-3 py-2 px-3 rounded-lg text-sm",
+                      ev.status === "error" ? "bg-red-50 text-red-600" :
+                      ev.type === "output" ? "bg-emerald-50 text-emerald-700 font-medium" :
+                      "text-fg-muted")}>
+                    {ev.status === "done" ? <CheckCircle2 className="size-4 text-emerald-500 shrink-0" /> :
+                     ev.status === "error" ? <AlertTriangle className="size-4 shrink-0" /> :
+                     <Loader2 className="size-4 animate-spin shrink-0" />}
+                    <span>{ev.message}</span>
+                    {ev.toolName && <Badge variant="secondary" className="text-[9px] ml-auto">{getToolInfo(ev.toolName)?.label ?? ev.toolName}</Badge>}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══ RESULT ═══ */}
+          {view === "result" && activeTask && (
+            <motion.div key="result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col gap-5">
+              {/* Task header */}
+              <div className="card-card p-5 flex flex-col gap-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="size-5 text-emerald-500" />
+                      <h2 className="text-heading font-serif">{activeTask.title}</h2>
+                    </div>
+                    <p className="text-xs text-fg-muted">
+                      完成于 {new Date(activeTask.completedAt!).toLocaleString("zh-CN")} · 使用 {activeTask.toolsUsed.length} 个工具 · 质量 {activeTask.qualityScore}分
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Button variant="outline" size="sm" onClick={() => setView("templates")} className="gap-1.5 rounded-xl text-xs">
+                      <Plus className="size-3.5" /> 新任务
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Tools used */}
+                <div className="flex flex-wrap gap-1.5">
+                  {activeTask.toolsUsed.map(t => {
+                    const info = getToolInfo(t);
+                    return <Badge key={t} variant="secondary" className="text-[10px] gap-1">
+                      <CheckCircle2 className="size-3 text-emerald-500" /> {info?.label ?? t}
+                    </Badge>;
+                  })}
+                </div>
+
+                {/* Outputs */}
+                {activeTask.outputs.length > 0 && (
+                  <div className="border-t border-border/30 pt-4 flex flex-col gap-2">
+                    <span className="text-xs font-medium text-fg-muted">任务产出</span>
+                    <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
+                      {activeTask.outputs.map(out => (
+                        <div key={out.id} className={cn(
+                          "rounded-xl border border-border/40 p-3 flex items-center gap-3",
+                          out.type === "study_pack" && "hover:border-primary/30 cursor-pointer",
+                        )}>
+                          {out.type === "study_pack" && <GraduationCap className="size-5 text-primary" />}
+                          {out.type === "flashcards" && <Layers className="size-5 text-accent" />}
+                          {out.type === "notes" && <FileText className="size-5 text-fg-muted" />}
+                          {out.type === "summary" && <Sparkles className="size-5 text-amber-500" />}
+                          <div className="flex flex-col gap-0.5 flex-1">
+                            <span className="text-xs font-medium">{out.title}</span>
+                            <span className="text-[10px] text-fg-muted">
+                              {out.type === "study_pack" ? "可查看/导出" :
+                               out.type === "flashcards" ? "可开始练习" :
+                               out.type === "notes" ? "已保存到笔记" : "可编辑"}
+                            </span>
+                          </div>
+                          <ArrowRight className="size-3.5 text-fg-muted/30" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Timeline summary */}
+                <details className="border-t border-border/30 pt-3">
+                  <summary className="text-xs font-medium cursor-pointer text-fg-muted">查看执行时间线</summary>
+                  <div className="flex flex-col gap-1 mt-2">
+                    {activeTask.timeline.map(ev => (
+                      <div key={ev.id} className="flex items-center gap-2 text-xs text-fg-muted py-1">
+                        <CheckCircle2 className="size-3 text-emerald-500 shrink-0" />
+                        <span>{ev.message}</span>
+                        <span className="text-fg-muted/50 ml-auto">{new Date(ev.timestamp).toLocaleTimeString("zh-CN")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══ TASK HISTORY ═══ */}
+          {view === "tasks" && (
+            <motion.div key="tasks" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col gap-4">
+              {tasks.length === 0 ? (
+                <div className="card-card p-8 flex flex-col items-center gap-4 text-center">
+                  <Bot className="size-10 text-fg-muted/30" />
+                  <div>
+                    <p className="text-base font-medium font-serif">暂无任务记录</p>
+                    <p className="text-sm text-fg-muted mt-1">选择一个模板或自由描述任务来开始</p>
+                  </div>
+                  <Button onClick={() => setView("templates")} className="gap-2 rounded-xl">浏览模板</Button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {tasks.map(task => (
+                    <div key={task.id} className="card-card p-4 flex items-center gap-4 group hover:shadow-sm transition-all">
+                      <div className={cn("size-9 rounded-xl flex items-center justify-center shrink-0",
+                        task.status === "completed" ? "bg-emerald-100" : task.status === "failed" ? "bg-red-100" : "bg-bg-muted")}>
+                        {task.status === "completed" ? <CheckCircle2 className="size-4 text-emerald-600" /> :
+                         task.status === "failed" ? <AlertTriangle className="size-4 text-red-500" /> :
+                         <Loader2 className="size-4 text-primary animate-spin" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{task.title}</p>
+                        <p className="text-[10px] text-fg-muted">
+                          {new Date(task.createdAt).toLocaleDateString("zh-CN")} · {task.toolsUsed.length} 工具 · {task.qualityScore}分
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => { setActiveTask(task); setView("result"); }}
+                          className="size-7 rounded-lg hover:bg-primary-subtle flex items-center justify-center">
+                          <ExternalLink className="size-3.5" /></button>
+                        <button onClick={() => deleteTask(task.id)}
+                          className="size-7 rounded-lg hover:bg-red-50 flex items-center justify-center">
+                          <Trash2 className="size-3.5 text-red-400" /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+    </PageTransition>
   );
 }
+
+function delay(ms: number) { return new Promise(r => setTimeout(r, ms)); }
