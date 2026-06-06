@@ -7,6 +7,8 @@
   "crons": [
     { "path": "/api/cron/daily-digest?flow=english", "schedule": "30 22 * * *" },
     { "path": "/api/cron/daily-digest?flow=world", "schedule": "0 4 * * *" },
-    { "path": "/api/cron/daily-digest?flow=all", "schedule": "30 13 * * *" }
+    { "path": "/api/cron/daily-digest?flow=all", "schedule": "30 13 * * *" },
+    { "path": "/api/cron/wechat-daily?flow=english", "schedule": "30 0 * * *" },
+    { "path": "/api/cron/wechat-daily?flow=econ", "schedule": "30 4 * * *" }
   ]
 }
