@@ -61,118 +61,35 @@ export default function AgentPage() {
     if (!composeInput.trim()) return;
     setView("running");
     const taskId = `task-${Date.now()}`;
+    const iso = new Date().toISOString();
     const events: TimelineEvent[] = [];
     const toolsUsed: AgentTask["toolsUsed"] = [];
-
     const addEvent = (type: TimelineEvent["type"], message: string, toolName?: AgentTask["toolsUsed"][number]) => {
-      events.push({
-        id: `ev-${events.length}`, timestamp: new Date().toISOString(),
-        type, message, toolName, status: type === "error" ? "error" : "done",
-      });
+      events.push({ id: `ev-${events.length}`, timestamp: new Date().toISOString(), type, message, toolName, status: type === "error" ? "error" : "done" });
       setTimeline([...events]);
     };
 
-    addEvent("thinking", "分析任务意图…");
-    await delay(600);
-    addEvent("thinking", `意图识别: ${composeInput.slice(0, 50)}…`);
+    // Try real Agent API first
+    addEvent("thinking","调用 AI Agent 引擎…");
+    try {
+      const res = await fetch("/api/agent/execute",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({intent:composeInput,files:composeFiles.map(f=>({name:f.label??f.value,text:""}))})});
+      if(res.ok){const data=await res.json();for(const ev of data.timeline??[])addEvent(ev.status==="done"?"tool_end":"tool_start",ev.message,ev.tool);addEvent("output",data.summary??"执行完成");
+        const apiOuts:AgentTaskOutput[]=(data.outputs??[]).map((o:AgentTaskOutput,i:number)=>({...o,id:`out-${Date.now()}-${i}`,linkedIds:[],editable:true,saved:true}));
+        const task:AgentTask={id:taskId,title:composeInput.slice(0,40),intent:composeInput,status:"completed",inputs:[{type:"text",value:composeInput},...composeFiles],timeline:events,toolsUsed:(data.toolsUsed??[]) as AgentTask["toolsUsed"],outputs:apiOuts.length>0?apiOuts:[{id:`out-${Date.now()}-sum`,type:"summary",title:"执行摘要",content:{summary:data.summary??"完成"},linkedIds:[],editable:false,saved:true}],sources:[],qualityScore:data.qualityScore??80,createdAt:iso,updatedAt:iso,completedAt:iso};
+        setActiveTask(task);const all=[task,...tasks];setTasks(all);saveTasks(all);setView("result");return;}}catch{/*fall through*/}
 
-    // File parsing
-    if (composeFiles.length > 0) {
-      addEvent("tool_start", "开始解析文件…", "file_parser");
-      await delay(800);
-      toolsUsed.push("file_parser");
-      addEvent("tool_end", `成功解析 ${composeFiles.length} 个文件`, "file_parser");
-    }
+    // Simulation fallback
+    addEvent("thinking","API 不可用，本地模拟执行…");
+    if(composeFiles.length>0){addEvent("tool_end",`解析${composeFiles.length}个文件`,"file_parser");toolsUsed.push("file_parser")}
+    if(composeInput.includes("讲义")||composeInput.includes("复习")||composeInput.includes("冲刺")){addEvent("tool_end","学习包生成完成","study_pack_generator");toolsUsed.push("study_pack_generator")}
+    if(composeInput.includes("闪卡")||composeInput.includes("记忆")){addEvent("tool_end","闪卡生成完成","flashcard_generator");toolsUsed.push("flashcard_generator")}
+    if(composeInput.includes("题")||composeInput.includes("练习")){addEvent("tool_end","练习题生成完成","quiz_generator");toolsUsed.push("quiz_generator")}
+    if(composeInput.includes("笔记")){addEvent("tool_end","笔记整理完成","notes_writer");toolsUsed.push("notes_writer")}
+    addEvent("output","任务执行完成（模拟模式）");
+    const simOuts:AgentTaskOutput[]=[{id:`out-${Date.now()}-sim`,type:"summary",title:"执行摘要",content:{summary:`完成「${composeInput.slice(0,40)}」（模拟模式）`},linkedIds:[],editable:false,saved:true}];
 
-    // Research (if applicable)
-    if (composeInput.includes("搜索") || composeInput.includes("资料") || composeInput.includes("论文")) {
-      addEvent("tool_start", "搜索相关资源…", "web_research");
-      await delay(1200);
-      toolsUsed.push("web_research");
-      addEvent("tool_end", "找到相关学习资源", "web_research");
-    }
-
-    // Study Pack generation
-    if (composeInput.includes("讲义") || composeInput.includes("复习") || composeInput.includes("冲刺") || composeInput.includes("学习包")) {
-      addEvent("tool_start", "生成学习包…", "study_pack_generator");
-      await delay(1500);
-      toolsUsed.push("study_pack_generator");
-      addEvent("tool_end", "学习包生成完成（18个模块）", "study_pack_generator");
-    }
-
-    // Flashcards
-    if (composeInput.includes("闪卡") || composeInput.includes("卡片") || composeInput.includes("记忆")) {
-      addEvent("tool_start", "生成闪卡…", "flashcard_generator");
-      await delay(800);
-      toolsUsed.push("flashcard_generator");
-      addEvent("tool_end", "生成 15 张闪卡", "flashcard_generator");
-    }
-
-    // Quiz
-    if (composeInput.includes("题") || composeInput.includes("练习") || composeInput.includes("测验")) {
-      addEvent("tool_start", "生成练习题…", "quiz_generator");
-      await delay(1000);
-      toolsUsed.push("quiz_generator");
-      addEvent("tool_end", "生成 10 道练习题", "quiz_generator");
-    }
-
-    // Notes
-    if (composeInput.includes("笔记") || composeInput.includes("整理")) {
-      addEvent("tool_start", "整理笔记…", "notes_writer");
-      await delay(600);
-      toolsUsed.push("notes_writer");
-      addEvent("tool_end", "笔记已结构化整理", "notes_writer");
-    }
-
-    addEvent("output", "任务执行完成，生成结果如下");
-
-    const outputs: AgentTaskOutput[] = [];
-    if (toolsUsed.includes("study_pack_generator")) {
-      outputs.push({
-        id: `out-${Date.now()}-sp`, type: "study_pack", title: "学习包",
-        content: { courseName: composeInput.slice(0, 30) }, linkedIds: [], editable: true, saved: true,
-      });
-    }
-    if (toolsUsed.includes("flashcard_generator")) {
-      outputs.push({
-        id: `out-${Date.now()}-fc`, type: "flashcards", title: "闪卡组",
-        content: { count: 15 }, linkedIds: [], editable: true, saved: true,
-      });
-    }
-    if (toolsUsed.includes("notes_writer")) {
-      outputs.push({
-        id: `out-${Date.now()}-nt`, type: "notes", title: "结构化笔记",
-        content: {}, linkedIds: [], editable: true, saved: true,
-      });
-    }
-    outputs.push({
-      id: `out-${Date.now()}-sum`, type: "summary", title: "执行摘要",
-      content: { summary: `完成「${composeInput.slice(0, 40)}」任务，使用 ${toolsUsed.length} 个工具` },
-      linkedIds: [], editable: false, saved: true,
-    });
-
-    const task: AgentTask = {
-      id: taskId,
-      title: composeInput.slice(0, 40),
-      intent: composeInput,
-      status: "completed",
-      inputs: [{ type: "text", value: composeInput }, ...composeFiles],
-      timeline: events,
-      toolsUsed: toolsUsed as AgentTask["toolsUsed"],
-      outputs,
-      sources: [],
-      qualityScore: 85,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      completedAt: new Date().toISOString(),
-    };
-
-    setActiveTask(task);
-    const all = [task, ...tasks];
-    setTasks(all);
-    saveTasks(all);
-    setTimeline([]);
-    setView("result");
+    const task:AgentTask={id:taskId,title:composeInput.slice(0,40),intent:composeInput,status:"completed",inputs:[{type:"text",value:composeInput},...composeFiles],timeline:events,toolsUsed,outputs:simOuts,sources:[],qualityScore:70,createdAt:iso,updatedAt:iso,completedAt:iso};
+    setActiveTask(task);const all=[task,...tasks];setTasks(all);saveTasks(all);setView("result");
   }
 
   function deleteTask(id: string) {
