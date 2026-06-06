@@ -1,55 +1,60 @@
-name: Build Android APK from PWA
+name: Build Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [claude/v10-study-pack]
-    paths:
-      - 'public/manifest.webmanifest'
-      - 'public/sw.js'
-      - 'public/icon-*.png'
 
 jobs:
   build-apk:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
 
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+      - uses: actions/setup-java@v4
+        with: { java-version: '17', distribution: 'temurin' }
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with: { target: '34' }
 
-      - name: Install Bubblewrap
-        run: npm install -g @bubblewrap/cli
+      - name: Install Capacitor
+        run: npm install @capacitor/core @capacitor/cli @capacitor/android
 
-      - name: Initialize Bubblewrap project
+      - name: Init Capacitor project
         run: |
-          bubblewrap init --manifest https://mangoleaningos.top/manifest.webmanifest --directory twa-project
-        continue-on-error: true
+          mkdir -p www && echo '<html></html>' > www/index.html
+          npx cap init "Mango Learning OS" "com.mango.learningos" --web-dir=www
+
+      - name: Configure PWA mode
+        run: |
+          cat > capacitor.config.json << 'EOF'
+          {
+            "appId": "com.mango.learningos",
+            "appName": "Mango Learning OS",
+            "webDir": "www",
+            "server": {
+              "url": "https://mangoleaningos.top",
+              "cleartext": false
+            },
+            "android": {
+              "allowMixedContent": false
+            }
+          }
+          EOF
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync
+        run: npx cap sync
 
       - name: Build APK
-        run: |
-          cd twa-project
-          bubblewrap build
-        continue-on-error: true
+        run: cd android && ./gradlew assembleRelease
 
-      - name: Upload APK artifact
+      - name: Find and upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: mango-android-apk
-          path: |
-            twa-project/app/build/outputs/apk/**/*.apk
-            twa-project/*.apk
-            *.apk
-          if-no-files-found: warn
+          name: Mango-Learning-OS-APK
+          path: android/app/build/outputs/apk/**/*.apk
