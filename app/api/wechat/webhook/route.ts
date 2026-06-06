@@ -3,7 +3,7 @@
 // Flow: receive → respond "success" immediately → process AI in bg → push via 客服消息
 // ═══════════════════════════════════════════════════════════════
 
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 import { cognitiveFast } from "@/lib/ai/cognitive-engine";
 import { createHash } from "crypto";
 
@@ -102,9 +102,10 @@ export async function POST(req: NextRequest) {
     return new Response("success", { headers: { "Content-Type": "text/plain" } });
   }
 
-  // Fire-and-forget: process AI in background, respond immediately
-  processAndReply(fromUser, content.trim()).catch((err) => {
-    console.error("Async cognitive reply failed:", err);
+  // Schedule AI processing AFTER response is sent (Vercel keeps function alive)
+  after(async () => {
+    try { await processAndReply(fromUser, content.trim()); }
+    catch (err) { console.error("Async cognitive reply failed:", err); }
   });
 
   // Respond within 100ms — WeChat is happy
