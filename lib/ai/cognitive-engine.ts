@@ -239,47 +239,29 @@ export function getCognitiveHistory(concept: string): MangoDNAEntry[] {
   return loadDNA().entries.filter(e => e.concept === concept);
 }
 
-// ═══ WeChat Fast Mode — Single combined call + timeout (must complete <5s) ═══
+// ═══ WeChat Fast Mode — Single combined call + 3s timeout ═══
 
-const FAST_SYSTEM = `你是认知重构引擎。用户在微信上输入了问题，你必须在一次回复中完成完整的认知分析。
-
-输出严格JSON：
-{
-  "state": "novice|partial|confused|structured",
-  "misconception": "核心误解（一句话）",
-  "reconstruction": "认知重构：指出当前理解的问题 → 给出正确结构 → 常见误解对比",
-  "example": "一个具体可验证的例子",
-  "test": "一个检验理解的测试问题",
-  "next_step": "下一步学习建议（一句话）",
-  "path": ["概念1", "概念2", "概念3"]
-}
-
-要求：
-- 全部中文，术语带英文
-- 回复长度控制在 800 字以内
-- 认知导向，非答案导向
-- 结构化但不啰嗦`;
+const FAST_SYSTEM = `认知重构引擎。用中文+英文术语，输出JSON：
+{"state":"novice|partial|confused|structured","reconstruction":"指出认知问题→正确结构→误解对比","example":"具体例子","test":"检验题"}
+精简、300字内、认知导向。`;
 
 export interface FastCognitiveResponse {
   state: CognitiveState;
-  misconception: string;
   reconstruction: string;
   example: string;
   test: string;
-  next_step: string;
-  path: string[];
   fullResponse: string;
 }
 
-export async function cognitiveFast(input: string, timeoutMs: number = 4500): Promise<FastCognitiveResponse> {
+export async function cognitiveFast(input: string, timeoutMs: number = 3000): Promise<FastCognitiveResponse> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const raw = await completeChat([
       { role: "system", content: FAST_SYSTEM },
-      { role: "user", content: input.slice(0, 1500) },
-    ], { temperature: 0.4, signal: controller.signal as AbortSignal });
+      { role: "user", content: input.slice(0, 500) },
+    ], { temperature: 0.3, signal: controller.signal, maxTokens: 400 });
 
     clearTimeout(timeout);
     const json = extractJson(raw);
@@ -287,22 +269,15 @@ export async function cognitiveFast(input: string, timeoutMs: number = 4500): Pr
 
     const result: FastCognitiveResponse = {
       state: parsed.state ?? "partial",
-      misconception: parsed.misconception ?? "",
       reconstruction: parsed.reconstruction ?? "",
       example: parsed.example ?? "",
       test: parsed.test ?? "",
-      next_step: parsed.next_step ?? "继续探索这个概念",
-      path: parsed.path ?? [],
       fullResponse: "",
     };
 
-    // Build compact response
     result.fullResponse = [
       "🧠 认知分析",
-      "",
-      `📊 理解状态: ${result.state}`,
-      "",
-      result.misconception ? `【核心问题】\n${result.misconception}` : "",
+      `状态: ${result.state}`,
       "",
       "【认知重构】",
       result.reconstruction,
@@ -310,31 +285,17 @@ export async function cognitiveFast(input: string, timeoutMs: number = 4500): Pr
       "【例子】",
       result.example,
       "",
-      "━━━━━━━━━━",
-      "",
-      "🧪 【检验】",
-      result.test,
-      "",
-      `➡ ${result.next_step}`,
-      "",
-      result.path.length > 0 ? `📊 学习路径: ${result.path.join(" → ")}` : "",
-    ].filter(Boolean).join("\n");
+      "🧪 " + (result.test || "请用自己的话解释这个概念"),
+    ].join("\n");
 
     return result;
   } catch (err: unknown) {
     clearTimeout(timeout);
     const name = (err as {name?:string}).name ?? "";
     const code = (err as {code?:string}).code ?? "";
-    // DOMException uses .name, Node.js might use .code
     if ((name === "AbortError" || name === "TimeoutError") || (code === "AbortError" || code === "ETIMEDOUT")) {
       return {
-        state: "partial",
-        misconception: "",
-        reconstruction: "",
-        example: "",
-        test: "",
-        next_step: "",
-        path: [],
+        state: "partial", reconstruction: "", example: "", test: "",
         fullResponse: "芒宝正在思考中，请重新发送你的问题。\n\n（AI 分析需要更长时间，请稍后再试）",
       };
     }

@@ -92,7 +92,7 @@ export async function streamChat(
  */
 export async function completeChat(
   messages: ChatMessage[],
-  opts: { temperature?: number; signal?: AbortSignal } = {}
+  opts: { temperature?: number; signal?: AbortSignal; maxTokens?: number } = {}
 ): Promise<string> {
   const config = getAIConfig();
 
@@ -111,6 +111,7 @@ export async function completeChat(
       messages,
       temperature: opts.temperature ?? 0.4,
       stream: false,
+      ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
     }),
     signal: opts.signal,
   });
