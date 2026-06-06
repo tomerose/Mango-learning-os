@@ -9,7 +9,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { cognitiveOS, composeCognitiveResponse } from "@/lib/ai/cognitive-engine";
+import { cognitiveFast } from "@/lib/ai/cognitive-engine";
 import { createHash } from "crypto";
 
 export const runtime = "nodejs";
@@ -76,12 +76,9 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Process through Cognitive Engine
-    const result = await cognitiveOS(content.trim());
-    const response = composeCognitiveResponse(result);
-
-    // Truncate to WeChat's 2048 char limit for text messages
-    const truncated = response.slice(0, 1800) + (response.length > 1800 ? "\n\n...（内容过长，请访问 mangoleaningos.top 查看完整分析）" : "");
+    // WeChat requires response <5s — use fast single-call mode
+    const result = await cognitiveFast(content.trim());
+    const truncated = result.fullResponse.slice(0, 1800) + (result.fullResponse.length > 1800 ? "\n\n...（访问 mangoleaningos.top 查看完整分析）" : "");
 
     const xmlResponse = buildTextResponse(fromUser, toUser, truncated);
 

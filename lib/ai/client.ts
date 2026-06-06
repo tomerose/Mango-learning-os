@@ -92,7 +92,7 @@ export async function streamChat(
  */
 export async function completeChat(
   messages: ChatMessage[],
-  opts: { temperature?: number } = {}
+  opts: { temperature?: number; signal?: AbortSignal } = {}
 ): Promise<string> {
   const config = getAIConfig();
 
@@ -112,6 +112,7 @@ export async function completeChat(
       temperature: opts.temperature ?? 0.4,
       stream: false,
     }),
+    signal: opts.signal,
   });
 
   if (!res.ok) {
