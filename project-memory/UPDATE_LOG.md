@@ -1,5 +1,17 @@
 # MangoLearningOS — Update Log
 
+## 2026-06-06 — v7 Research Pipeline
+- **Research Orchestrator:** Multi-source pipeline (query expansion → 5 providers → dedup/rank/score → AI synthesis)
+- **Content Quality Engine v2:** 7-gate validation (relevance/grounding/structure/completeness/anti-generic/formatting/actionability)
+- **Feature Output Contracts:** Standardized output specs for exam-review, tutor, mind-garden, knowledge-capture, career, research
+- **Exam Review Module:** Full pipeline — course input → online research → 18-section handout → Word/PDF/MD export
+- **Mind Garden v2:** 10 safe modes (journal/vent/structured/CBT/grounding/breathing/sleep/self-compassion/stress/mood-report), crisis detection, privacy-first
+- **Knowledge Forest v4:** Notion-style redesign with sidebar + 5 content tabs + multi-source community import (file/URL/manual)
+- **Rich Text Editor:** Notion-like with formatting toolbar, edit/preview toggle, properties panel, cover image, tag management
+- **Official Forests:** Massively enriched — IELTS (12 topics/10 notes/14 flashcards), AI Engineer (12/6/8), CFA L1 (10/5/6), TOEFL (7/2/3)
+- **New API routes:** `/api/exam-review/generate`, `/api/exam-review/export`, `/api/mind-garden/reflect`, `/api/forest/enrich`
+- **New libs:** `research-orchestrator.ts`, `content-quality-v2.ts`, `feature-contracts.ts`, `rich-editor.tsx`
+
 ## 2026-06-06 — v6 Warm Paper Wellness (complete redesign)
 - **Commit:** 401368a | **Deployed:** https://mangoleaningos.top
 - **Design System:** oklch warm paper palette, Cormorant Garamond + Inter, 6-level surface

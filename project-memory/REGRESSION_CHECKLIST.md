@@ -4,7 +4,6 @@
 
 ## Quick Smoke Test
 ```bash
-# 7 windows return 200
 for url in /hub /agent /exam /grow /planner /dna /profile; do
   curl -s -o /dev/null -w "%{http_code}" http://localhost:3030$url
 done
@@ -12,73 +11,55 @@ done
 
 ## Feature Integrity
 
-### Mangosum (/hub)
-- [ ] Onboarding: 5-stage flow on first visit (logo→welcome→features→hub→enter)
-- [ ] Onboarding: skipped on return visits (7-day persistence)
-- [ ] Onboarding: enter button → hub dashboard, fade transition
-- [ ] HubWelcome renders with greeting + streak
-- [ ] Mango Magic button visible, opens card on click
-- [ ] LearningGoals — empty state in cloud, demo in guest
-- [ ] UpcomingExams — empty state in cloud, 3 exams in guest
-- [ ] WeeklyChart — empty in cloud, bars in guest
-- [ ] AI Recommendations — 3 cards visible
-- [ ] QuickActions — 4 buttons, links work
-- [ ] Planner CTA — links to /planner
+### v7 New Features (MUST CHECK)
+- [ ] `/exam` → 期末备考 tab visible and loads
+- [ ] Exam Review: input form renders (course name, scope, file upload)
+- [ ] Exam Review: generate button → researching state → preview
+- [ ] Exam Review: Word (.doc) export downloads
+- [ ] Exam Review: PDF export opens print dialog
+- [ ] Exam Review: Markdown export downloads
+- [ ] Exam Review: source cards visible after generation
+- [ ] Knowledge Forest: sidebar renders (official + community forests)
+- [ ] Knowledge Forest: topic cards expandable
+- [ ] Knowledge Forest: notes/resources/path/flashcards tabs work
+- [ ] Knowledge Forest: community upload modal with file/URL/manual modes
+- [ ] Notes: RichEditor toolbar visible
+- [ ] Notes: edit/preview toggle works
+- [ ] Notes: properties panel toggles
 
-### Mango Tutor (/agent)
-- [ ] 4 tabs: 对话/概念讲解/智能练习/知识导入
-- [ ] Subject selector pills + SubjectManager
-- [ ] AgentChat sends and receives messages
-- [ ] ConceptExplainer: input concept → generates explanation
-- [ ] ExerciseGenerator: generates questions, scores answers
-- [ ] DocumentImporter: upload file → preview → save note
+### API (v7)
+- [ ] `/api/exam-review/generate` returns valid JSON with sections
+- [ ] `/api/exam-review/export?format=docx` returns .doc file
+- [ ] `/api/exam-review/export?format=md` returns .md file
+- [ ] `/api/mind-garden/reflect` crisis detection works
+- [ ] `/api/mind-garden/reflect` journal mode returns structured output
+- [ ] `/api/forest/enrich` returns topics/notes/resources
 
 ### Mangoing (/exam)
-- [ ] 5 tabs: 考试备战/笔记/闪卡/资源/图谱
-- [ ] ExamWorkspace: upload materials → generate → preview
-- [ ] Web search input works
-- [ ] NotesTab: create/edit/delete notes
-- [ ] FlashcardsTab: review flow (front→flip→grade)
-- [ ] ResourcesTab: resource list by subject
-- [ ] GraphTab: nodes visible
+- [ ] 5 tabs: 期末备考/知识森林/知识网络/笔记/资源
+- [ ] NotesTab: create/edit/delete still works
+- [ ] KnowledgeForest: official forests load with rich content
 
 ### Mango Friend (/grow)
-- [ ] 3 tabs: 心灵花园/AI 陪伴/项目实践
-- [ ] JournalEditor: mood + stress + text → saves
-- [ ] MoodTracker: 7-day timeline renders (no crash)
-- [ ] CbtReframer: input → AI reframe
-- [ ] AiCompanionChat: sends/receives messages
-- [ ] ProjectBuilder: create new project
-- [ ] ProjectWorkspace: 3 tabs functional
+- [ ] Mind Garden tabs visible
+- [ ] CbtReframer + JournalEditor still work
 
-### Mango Plan (/planner)
-- [ ] AI generation: text input → generates plan
-- [ ] File upload: accepts PDF/Word/image
-- [ ] Task tabs: today/week/done
-- [ ] Add task dialog: subject + priority + due date
+### Cross-cutting
+- [ ] Guest mode: all modules show demo data
+- [ ] Cloud mode: all modules start empty
+- [ ] `npx next build --no-lint` = ✓ Compiled successfully
+- [ ] Static pages generated (77/77)
 
-### Mango DNA (/dna)
-- [ ] Page renders without crash
-- [ ] Personality profile visible
-
-### Mango (/profile)
-- [ ] Avatar + level + XP display
-- [ ] Stats cards: streak/XP/minutes/tasks
-- [ ] Achievements wall: 6 items
-- [ ] Reflections section visible
-
-## Cross-cutting
-- [ ] Guest mode (no login): all modules show demo data
-- [ ] Cloud mode (logged in): all modules start empty
-- [ ] Sidebar: 🥭 icon + "Mango OS" visible, 7 items
-- [ ] Mobile: 5-tab bottom nav + "更多" drawer
-- [ ] v1 route redirects work (e.g. /dashboard → /hub)
-- [ ] TypeScript: `npx tsc --noEmit` = zero errors
-
-## API
-- [ ] `/api/ai/magic` returns valid JSON for all 5 modes
+## API (Legacy — unchanged)
+- [ ] `/api/ai/magic` returns valid JSON
 - [ ] `/api/ai/chat` streams SSE
 - [ ] `/api/ai/quiz` returns questions array
-- [ ] `/api/ai/exam-package` generates package
-- [ ] `/api/notes/import/file` extracts text from PDF/DOCX
-- [ ] `/api/notes/import/url` fetches URL content
+
+## Known Limitations
+- YouTube provider requires YOUTUBE_API_KEY for video details
+- GitHub provider rate-limited to 60 req/h without GITHUB_TOKEN
+- Mind Garden PHQ-9-style self-check not yet wired to UI form
+- PDF export uses browser print dialog (not server-side PDF generation)
+
+## Last Checked
+2026-06-06 — v7 Research Pipeline deployment
