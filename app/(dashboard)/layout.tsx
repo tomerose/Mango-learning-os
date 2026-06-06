@@ -7,6 +7,7 @@ import { SubjectProvider } from "@/lib/subjects";
 import { UpdateModal } from "@/components/update-modal";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { MangoboCompanion } from "@/components/mangobo/mangobo-companion";
+import { PWAInstallPrompt } from "@/components/ui/pwa-install";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -41,6 +42,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Mangobo — Global AI Companion */}
       <MangoboCompanion />
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
 
       </TooltipProvider>
     </StoreProvider>

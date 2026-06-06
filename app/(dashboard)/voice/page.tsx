@@ -330,7 +330,9 @@ function VoicePageInner() {
         </div>
 
         <div className="absolute bottom-2 text-center px-8">
-          <p className="text-[10px] text-white/15">Mango Voice · {hasSpeech ? "Chrome/Edge 支持语音 · " : ""}全平台文字对话</p>
+          <p className="text-[10px] text-white/15">
+            Mango Voice · 全平台可用 · Deepgram 已激活
+          </p>
         </div>
       </motion.div>
     </PageTransition>
