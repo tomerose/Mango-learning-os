@@ -1,6 +1,41 @@
 # MangoLearningOS — Update Log
 
-## 2026-06-07 — P1-P6 Agent + Mistake Bank + Review Engine + Learning Memory
+## 2026-06-07 — P1-P6 Final Complete: Agent API + Share + Identity + Gates + Voice
+- **Commit:** 4328e84 | **Deploy:** https://mango-learning-vsutdqthc-mango-s-projects5.vercel.app
+- **Build:** 82/82 pages, TypeScript 0 errors, 58s build
+
+### 最终实现清单 (P1-P6 全覆盖)
+| 系统 | 状态 | 位置 |
+|------|:--:|------|
+| Agent Task Center (8模板+自由描述) | ✅ | `/agent` |
+| Agent 真实 API (DeepSeek 多工具调用) | ✅ | `/api/agent/execute` |
+| Tool Registry (13工具白名单) | ✅ | `lib/agent/tool-registry.ts` |
+| 学习身份 (替代 mock DNA) | ✅ | `/dna` |
+| 错题库 (SM-2+筛选+复习) | ✅ | `lib/agent/mistake-bank.ts` + `mistake-bank-view.tsx` |
+| 学习记忆 (课程/目标/弱项/节奏) | ✅ | `lib/agent/learning-memory.ts` |
+| 今日复习建议 (Hub) | ✅ | Hub ReviewSection |
+| 分享预览 | ✅ | `/share/[id]` |
+| API 门控 (plan/quota) | ✅ | `lib/plan/guard.ts` |
+| 真 .docx 导出 (OOXML) | ✅ | `lib/export/docx-builder.ts` |
+| Study Pack 闪卡练习 (SM-2) | ✅ | `pack-practice.tsx` |
+| Supabase 云同步 (3层) | ✅ | IDB+localStorage+Supabase |
+| 知识森林独立入口 | ✅ | `/forest` |
+| GitHub 研究 (5 repos) | ✅ | `P1_P6_RESEARCH_NOTES.md` |
+| Supabase SQL (plans+codes) | ⚠ | 需用户在 SQL Editor 执行 `v12_plans_and_codes.sql` |
+| Deepgram 实时语音 | ⚠ | Key 已配置, WebSocket 未接 |
+| OCR → Agent 管线 | ⚠ | PaddleOCR 客户端就位, 未集成 |
+| motion-canvas 动画 | ❌ | 架构钩子, 待后续 |
+| Live2D 伴侣 | ❌ | 太重, 不适合当前阶段 |
+
+### 已知不足（诚实声明）
+1. **Agent 工具选择**当前用关键词匹配 + AI 规划混合，非纯 function calling 循环
+2. **语音**页面有 voice→Agent CTA 但 Deepgram WebSocket 实时流未接
+3. **OCR** PaddleOCR 客户端已写，Agent 管线未调用
+4. **Supabase plans 表** SQL 已写好，需用户在 Dashboard 执行
+5. **支付**微信/支付宝为占位，Mango Code 前端未接入兑换 UI
+6. **动画** motion-canvas 研究完成，教育动画生成未实现
+
+## 2026-06-07 — P1-P6 Agent + Mistake Bank + Review Engine + Learning Memory (略)
 - **Commit:** cd4a34f | **Deploy:** https://mango-learning-gnsolg92a-mango-s-projects5.vercel.app
 - **Build:** 81/81 pages, TypeScript 0 errors, 1m build
 
