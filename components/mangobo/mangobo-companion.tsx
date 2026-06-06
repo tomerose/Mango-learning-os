@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { MangoCharacter } from "./mango-character";
+import { EmotionalMango, detectEmotion } from "./emotion-engine";
 
 /* ═══════════════════════════════════════════════════════════════
    Mangobo — Global Floating AI Companion

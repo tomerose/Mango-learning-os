@@ -1,0 +1,15 @@
+{
+  "name": "mango-learning-os",
+  "version": "1.0.0",
+  "description": "MangoOS Learning Operating System — AI-native cognitive replacement system with knowledge forest, voice OS, and life agent",
+  "author": "MangoOS Team",
+  "homepage": "https://mangoleaningos.top",
+  "skills": ["spaced-repetition", "cognitive-load", "learning-path", "exam-prep", "knowledge-structuring"],
+  "commands": ["/mango:learn", "/mango:review", "/mango:plan", "/mango:forest", "/mango:voice"],
+  "connectors": {
+    "ai": "DeepSeek",
+    "voice": "Deepgram",
+    "database": "Supabase",
+    "search": "arXiv + Public APIs + RSS"
+  }
+}
