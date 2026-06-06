@@ -102,6 +102,22 @@ Removed: LifeCommandCenter, CognitiveFlows, 核心能力 grid, 学习空间 grid
 | `npx next build --no-lint` | ✅ 77/77 pages |
 | TypeScript | ✅ 0 errors |
 
+---
+
+## V10.1.1 Regression Fix
+
+**Issue:** CognitiveFlows (real API-driven daily content from BBC/DuckDuckGo/Wikipedia/TED) and subjects section were removed during hub simplification.
+
+**Fix:** Restored CognitiveFlows and subjects section. Hub now has 6 sections:
+1. Hero + Study Pack CTA
+2. Continue Where You Left Off
+3. Today overview
+4. Quick Actions
+5. Cognitive Flows (restored)
+6. Subjects (restored)
+
+**Lesson:** Hub simplification should reduce redundancy (duplicate nav cards), not remove real content features.
+
 ## Exact Next Recommended Task
 
 Wire Supabase cloud persistence for Study Packs (currently localStorage-only). This requires:
