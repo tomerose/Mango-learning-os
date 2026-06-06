@@ -7,12 +7,21 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { action, content, journalEntries, mood } = body as {
+    const { action, content, journalEntries, mood, privacyMode, cloudConsent } = body as {
       action: "chat" | "cbt-reframe" | "weekly-summary";
       content?: string;
       journalEntries?: string[];
       mood?: string;
+      privacyMode?: "local" | "cloud";
+      cloudConsent?: boolean;
     };
+
+    if (privacyMode !== "cloud" || cloudConsent !== true) {
+      return NextResponse.json(
+        { error: "Explicit cloud consent required for Mind Garden AI processing." },
+        { status: 403 }
+      );
+    }
 
     if (!process.env.AI_API_KEY) {
       return NextResponse.json(

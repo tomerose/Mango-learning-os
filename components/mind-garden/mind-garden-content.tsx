@@ -69,15 +69,8 @@ export function MindGardenContent({ embedded }: { embedded?: boolean }) {
     const entry: JournalEntry = { id: `mg-${Date.now()}`, type: analysisType === "mood" ? "emotion" : analysisType, content: input.trim(), createdAt: new Date().toISOString() };
 
     try {
-      const res = await fetch("/api/mind-garden", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: analysisType === "cbt" ? "cbt-reframe" : analysisType === "weekly" ? "weekly-summary" : "analyze-mood", content: input.trim() }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Analysis failed");
-
-      entry.analysis = data;
-      setCurrentAnalysis(data);
+      entry.analysis = null;
+      setCurrentAnalysis(null);
       const next = [entry, ...entries];
       setEntries(next);
       await idb.put("mind_garden_entries", entry);
@@ -89,6 +82,7 @@ export function MindGardenContent({ embedded }: { embedded?: boolean }) {
         setMoods(nextMoods);
         await idb.put("mind_garden_moods", mr);
       }
+      setError("本地模式已保存记录；云端分析需要在隐私设置中明确开启。");
     } catch (err) { setError(err instanceof Error ? err.message : "Failed"); }
     finally { setLoading(false); setInput(""); setSelectedMood(0); }
   }

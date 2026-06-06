@@ -11,6 +11,17 @@ done
 
 ## Feature Integrity
 
+### P0 Mind Garden Privacy
+- [x] Local Mind Garden mode does not POST reflection text to `/api/mind-garden/reflect` in `components/mind/mind-garden-v2.tsx`
+- [x] `/api/mind-garden/reflect` returns 403 when cloud consent is missing, except emergency/crisis resource responses
+- [x] `/api/mind-garden` and `/api/ai/mind-journal` return 403 without `privacyMode: "cloud"` and `cloudConsent: true`
+- [x] CBT reframer, weekly summary, and AI companion do not send sensitive text while `storagePreference` is local
+- [x] Mood logs, journal/reflection content, and self-check content stay local unless cloud storage is explicitly selected
+- [x] Supabase reflection writes occur only when authenticated cloud mode and cloud storage preference are both active
+- [x] `npm.cmd run type-check` passed for P0 handoff
+- [ ] `npm.cmd run lint` passes — currently blocked by unrelated existing explicit-any errors outside P0 Mind Garden scope
+- [ ] `npm.cmd run build` passes — not run because lint failed
+
 ### v7 New Features (MUST CHECK)
 - [ ] `/exam` → 期末备考 tab visible and loads
 - [ ] Exam Review: input form renders (course name, scope, file upload)

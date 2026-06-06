@@ -44,6 +44,22 @@ interface ReflectResponse {
   };
 }
 
+const LOCAL_CRISIS_PATTERNS = [
+  /自杀|自残|不想活|结束生命|kill myself|suicide/i,
+  /伤害自己|伤害他人|harm myself|harm others/i,
+  /绝望到|活不下去|没有意义.*活|生无可恋/i,
+  /虐待|abuse|assault|rape/i,
+  /马上需要|紧急|crisis|emergency/i,
+];
+
+const LOCAL_EMERGENCY_RESOURCES = [
+  "全国24小时心理危机干预热线: 010-82951332",
+  "北京心理危机研究与干预中心: 800-810-1117",
+  "希望24热线: 400-161-9995",
+  "生命热线: 400-821-1215",
+  "紧急情况请立即拨打 120 或前往最近医院急诊科",
+];
+
 const MODES: ModeInfo[] = [
   { key: "journal", name: "情绪日记", desc: "记录和整理今天的情绪体验", icon: <Feather className="size-4" /> },
   { key: "vent", name: "安全吐槽", desc: "无评判空间释放情绪", icon: <Radio className="size-4" /> },
@@ -71,6 +87,49 @@ function mdToHtml(text: string): string {
     .replace(/\n/g, '<br/>');
 }
 
+function buildLocalReflection(params: {
+  mode: string;
+  userInput: string;
+  mood?: string;
+  moodIntensity: number;
+}): ReflectResponse {
+  const crisis = LOCAL_CRISIS_PATTERNS.some((p) => p.test(params.userInput));
+  if (crisis) {
+    return {
+      mode: params.mode,
+      crisisCheck: {
+        isCrisis: true,
+        warningLevel: "emergency",
+        message: "检测到可能的紧急心理安全信号。请优先联系专业支持或身边可信任的人。",
+        emergencyResources: LOCAL_EMERGENCY_RESOURCES,
+      },
+      output: {
+        title: "紧急支持",
+        summary: "请先确保人身安全，并立即寻求专业帮助。",
+        body: "你不需要独自面对这些感受。现在最重要的是让一个真实的人知道你的处境：联系家人、朋友、学校心理中心，或拨打紧急热线。",
+        suggestions: [],
+        nextSteps: ["联系一个可信任的人", "拨打心理援助热线", "必要时前往最近医院急诊科"],
+        privacyNote: "本地模式未把你的内容发送到云端。",
+      },
+    };
+  }
+
+  const modeName = MODES.find((m) => m.key === params.mode)?.name ?? "反思";
+  const moodLine = params.mood ? `\n- 当前心情：${params.mood}` : "";
+  return {
+    mode: params.mode,
+    crisisCheck: { isCrisis: false, warningLevel: "none" },
+    output: {
+      title: `${modeName} · 本地整理`,
+      summary: "已在本地生成一个不依赖云端的安全反思框架。",
+      body: `## 观察\n- 你刚刚记录了一段重要感受。${moodLine}\n- 情绪强度：${params.moodIntensity}/10\n\n## 本地反思\n1. 先给这段感受命名：它更接近压力、委屈、疲惫、焦虑，还是别的？\n2. 写下一个触发点：今天哪件事最可能让这种感受变强？\n3. 区分事实和解释：哪些是已经发生的事实，哪些是你对它的理解？\n\n## 温和行动\n选择一个 5 分钟内能完成的小动作：喝水、离开屏幕、整理桌面、做 6 次慢呼吸，或给可信任的人发一句“我今天状态不太好”。`,
+      suggestions: ["把下一步缩小到 5 分钟以内", "避免在情绪峰值时做重大决定"],
+      nextSteps: ["保存本地记录", "稍后再回看这段文字，标记一个可控因素"],
+      privacyNote: "本地模式：内容仅在当前设备处理，未发送到云端或 AI 服务。",
+    },
+  };
+}
+
 export function MindGardenV2() {
   const [selectedMode, setSelectedMode] = React.useState<string>("journal");
   const [userInput, setUserInput] = React.useState("");
@@ -88,6 +147,16 @@ export function MindGardenV2() {
     setResult(null);
 
     try {
+      if (privacyMode === "local") {
+        setResult(buildLocalReflection({
+          mode: selectedMode,
+          userInput: userInput.trim(),
+          mood: mood.trim() || undefined,
+          moodIntensity,
+        }));
+        return;
+      }
+
       const res = await fetch("/api/mind-garden/reflect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -97,6 +166,7 @@ export function MindGardenV2() {
           mood: mood.trim() || undefined,
           moodIntensity,
           privacyMode,
+          cloudConsent: true,
         }),
       });
 
@@ -132,7 +202,7 @@ export function MindGardenV2() {
       {/* Mode Selector */}
       {!result && (
         <>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
             {MODES.map(m => (
               <button
                 key={m.key}

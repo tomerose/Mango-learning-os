@@ -7,6 +7,7 @@ import {
   Search, Loader2, Sparkles, CheckCircle2, AlertTriangle,
   ExternalLink, ChevronRight, Clock, Target, Tag, Globe,
   Github, Youtube, FileUp, X, Layers, Shield, Eye, Edit3,
+  History, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { qualityBadge } from "@/lib/ai/content-quality-v2";
 import type { ResearchSource } from "@/lib/ai/research-orchestrator";
 import type { QualityReport } from "@/lib/ai/content-quality-v2";
+import { saveStudyPack, loadStudyPacks, getRecentStudyPacks, buildPackFromResponse, deleteStudyPack, type StudyPackSession } from "@/lib/study-pack-store";
 
 /* ═══════════════════════════════════════════════════════════════
    Exam Review Tab — Full exam preparation module
@@ -108,7 +110,10 @@ export function ExamReviewTab() {
 
   // ── Uploaded files ───────────────────────────────────────
   const [uploadedFiles, setUploadedFiles] = React.useState<Array<{ name: string; text: string }>>([]);
+  const [recentPacks, setRecentPacks] = React.useState<StudyPackSession[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => { setRecentPacks(getRecentStudyPacks(5)); }, []);
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
@@ -163,6 +168,18 @@ export function ExamReviewTab() {
       setReviewPackage(data.reviewPackage);
       setSources(data.reviewPackage.sources ?? []);
       setWarnings(data.warnings ?? []);
+
+      // Persist to localStorage
+      try {
+        const pack = buildPackFromResponse(
+          courseName.trim(), school.trim() || undefined, examScope.trim() || undefined,
+          data.reviewPackage.sources ?? [],
+          data.reviewPackage,
+          data.reviewPackage.qualityReport?.overallScore ?? 0,
+        );
+        saveStudyPack(pack);
+      } catch { /* persistence is best-effort */ }
+
       setStep("preview");
     } catch (err) {
       setError(err instanceof Error ? err.message : "未知错误");
@@ -271,7 +288,7 @@ export function ExamReviewTab() {
             输入课程信息，AI 将自动搜索在线资源 + 分析上传文件，生成完整的考试复习讲义。
           </p>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
             <div>
               <label className="text-xs font-medium mb-1 block">课程名称 *</label>
               <Input value={courseName} onChange={e => setCourseName(e.target.value)}
@@ -342,6 +359,52 @@ export function ExamReviewTab() {
           <Button onClick={handleGenerate} disabled={!courseName.trim()} size="lg" className="self-start gap-2">
             <Sparkles className="size-4" /> 生成复习讲义
           </Button>
+
+          {/* Recent Study Packs */}
+          {recentPacks.length > 0 && (
+            <div className="border-t border-border/30 pt-4 mt-2">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold flex items-center gap-1.5">
+                  <History className="size-3.5 text-fg-muted" /> 最近学习包
+                </span>
+                <button onClick={() => {
+                  const latest = recentPacks[0];
+                  if (latest?.generatedHandout) {
+                    setReviewPackage(latest.generatedHandout as unknown as ReviewPackage);
+                    setSources(latest.sources ?? []);
+                    setStep("preview");
+                  }
+                }} className="text-[10px] text-primary hover:underline font-medium">
+                  继续上次
+                </button>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {recentPacks.slice(0, 3).map(pack => (
+                  <div key={pack.id} className="flex items-center justify-between rounded-lg bg-bg-muted/50 px-3 py-2 group hover:bg-bg-muted transition-colors">
+                    <button onClick={() => {
+                      if (pack.generatedHandout) {
+                        setReviewPackage(pack.generatedHandout as unknown as ReviewPackage);
+                        setSources(pack.sources ?? []);
+                        setStep("preview");
+                      }
+                    }} className="flex-1 flex items-center gap-3 text-left min-w-0">
+                      <FileText className="size-3.5 text-primary shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium truncate">{pack.courseName}{pack.school ? ` · ${pack.school}` : ""}</p>
+                        <p className="text-[10px] text-fg-muted">{new Date(pack.createdAt).toLocaleDateString("zh-CN")} · {pack.qualityScore}分</p>
+                      </div>
+                    </button>
+                    <button onClick={() => {
+                      deleteStudyPack(pack.id);
+                      setRecentPacks(getRecentStudyPacks(5));
+                    }} className="text-fg-muted/40 hover:text-destructive opacity-0 group-hover:opacity-100 transition-all shrink-0 p-1">
+                      <Trash2 className="size-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
 
@@ -422,12 +485,12 @@ export function ExamReviewTab() {
                   </span>
                 )}
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
+              <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {sources.map(s => {
                   const rel = getReliabilityLabel(s.reliabilityScore);
                   return (
                     <a key={s.id} href={s.url || "#"} target="_blank" rel="noopener noreferrer"
-                      className="shrink-0 w-52 rounded-lg border border-border/50 p-3 hover:border-primary/30 hover:shadow-sm transition-all group">
+                      className="rounded-lg border border-border/50 p-3 hover:border-primary/30 hover:shadow-sm transition-all group">
                       <div className="flex items-center gap-1.5 mb-1.5">
                         {PLATFORM_ICONS[s.platform] ?? <Globe className="size-3" />}
                         <span className="text-[10px] font-medium text-fg-muted uppercase">{s.platform}</span>

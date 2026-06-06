@@ -1,5 +1,13 @@
 # MangoLearningOS — Update Log
 
+## 2026-06-07 — Codex P0 Mind Garden privacy hardening
+- Mind Garden local mode now keeps reflection, mood/journal, self-check-style content, and companion/CBT/weekly-summary text off cloud paths unless cloud preference and explicit consent are present.
+- `/api/mind-garden/reflect`, `/api/mind-garden`, and `/api/ai/mind-journal` now enforce explicit cloud consent before cloud AI processing.
+- Supabase reflection persistence now respects `storagePreference === "cloud"` instead of writing authenticated reflections while the user is in local storage mode.
+- P0 scope only: no Study Pack, Research Provider, export, homepage, Mango Tutor, route, or UI redesign work.
+- Handoff: type-check passed; lint remains blocked by existing unrelated explicit-any errors in Voice, Research/Forest/Notes enrich, PWA, Deepgram, and OCR paths. Build was not run because lint failed.
+- ClaudeCoda should avoid the P0 hardening files until Codex resumes or this branch is reviewed. Codex should continue later with a separate lint-blocker pass.
+
 ## 2026-06-06 — v7.3 内测版
 - **Branding:** 版本号改为"内测版"，update modal 重新触发
 - **Auth 邀请码重构:**

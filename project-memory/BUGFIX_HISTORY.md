@@ -1,5 +1,26 @@
 # MangoLearningOS — Bugfix History
 
+## 2026-06-07 — Codex P0 Mind Garden privacy hardening
+
+**Scope:** Mind Garden local privacy enforcement and P0 lint/type hygiene only.
+
+**Fix:**
+- `/api/mind-garden/reflect` now requires `privacyMode: "cloud"` plus `cloudConsent: true` before cloud AI reflection processing. Crisis detection still runs first and emergency responses return local safety resources without generation.
+- `/api/mind-garden` and `/api/ai/mind-journal` now reject Mind Garden AI analysis requests without explicit cloud consent.
+- `components/mind/mind-garden-v2.tsx` returns local-only reflection output in local mode and only calls `/api/mind-garden/reflect` after cloud mode is selected.
+- `components/mind/cbt-reframer.tsx`, `components/mind/weekly-summary-card.tsx`, and `components/mind/ai-companion-chat.tsx` now block sensitive content before fetch when storage preference is local.
+- `components/mind-garden/mind-garden-content.tsx` saves legacy journal/mood entries locally instead of posting them to cloud analysis by default.
+- `lib/store.tsx` now gates Supabase reflection writes on both authenticated cloud mode and `storagePreference === "cloud"`.
+
+**Regression risk:** Cloud AI features now require explicit cloud preference/consent payload. Local mode must not send mood logs, reflection text, PHQ/GAD/self-check content, or emotional journal content to cloud.
+
+**Handoff status:**
+- Completed: Mind Garden privacy guards are implemented in server routes, client fetch paths, local reflection fallback, and Supabase reflection persistence.
+- Verification: `npm.cmd run type-check` passed after removing an unreachable local-mode privacy branch in `/api/mind-garden/reflect`.
+- Unfinished: `npm.cmd run lint` still fails on existing unrelated `@typescript-eslint/no-explicit-any` errors outside this P0 Mind Garden scope.
+- Do not assign to ClaudeCoda: lint/type hardening in Voice, Research, OCR, PWA, Forest/Notes enrich, or storage internals unless explicitly coordinated.
+- Codex should continue later: dedicated lint-blocker pass for existing explicit-any errors, separated from UI/product work.
+
 ## 2026-06-05
 
 ### #1: 登录后游客数据与 demo 数据残留

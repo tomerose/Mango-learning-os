@@ -1,10 +1,10 @@
 // ─────────────────────────────────────────────────────────────
-// MangoLearningOS Navigation
-// Mangosum | Mango Tutor | Mangoing | Mango Friend | Mango Plan | Mango DNA | Mango
+// MangoOS V10.1 Navigation
+// Home | Study Pack | Tutor | Garden | More
 // ─────────────────────────────────────────────────────────────
 import {
-  Sparkles, Bot, GraduationCap, Heart,
-  CalendarCheck, Mic, User,
+  Sparkles, BookOpen, Bot, Heart, GraduationCap,
+  CalendarCheck, Mic, User, MoreHorizontal,
   type LucideIcon,
 } from "lucide-react";
 
@@ -15,66 +15,93 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   description: string;
+  /** "primary" = always visible | "secondary" = More drawer | "beta" = labeled */
+  tier: "primary" | "secondary" | "beta";
 }
 
 export const navItemsV2: NavItem[] = [
+  // ── Primary (bottom nav + sidebar top) ──────────────────
   {
     id: "hub",
-    label: "Mangosum",
-    shortLabel: "总览",
+    label: "首页",
+    shortLabel: "首页",
     href: "/hub",
     icon: Sparkles,
-    description: "AI 学习驾驶舱，进度总览与分析",
+    description: "学习驾驶舱 · 进度总览 · 快速入口",
+    tier: "primary",
+  },
+  {
+    id: "exam",
+    label: "学习包",
+    shortLabel: "学习包",
+    href: "/exam",
+    icon: BookOpen,
+    description: "期末备考 · 知识森林 · 笔记 · 闪卡",
+    tier: "primary",
   },
   {
     id: "agent",
-    label: "Mango Tutor",
+    label: "导师",
     shortLabel: "导师",
     href: "/agent",
     icon: Bot,
     description: "AI 对话 · 概念讲解 · 智能练习 · 知识导入",
-  },
-  {
-    id: "exam",
-    label: "Mangoing",
-    shortLabel: "备考",
-    href: "/exam",
-    icon: GraduationCap,
-    description: "考试备战 · 笔记 · 闪卡 · 资源 · 图谱",
+    tier: "primary",
   },
   {
     id: "grow",
-    label: "Mango Friend",
+    label: "花园",
     shortLabel: "花园",
     href: "/grow",
     icon: Heart,
-    description: "心灵日记 · AI 陪伴 · 项目实践",
+    description: "心灵花园 Pro · 情绪支持 · 自我关怀",
+    tier: "primary",
   },
+  // ── Secondary (More drawer + sidebar) ────────────────────
   {
     id: "planner",
-    label: "Mango Plan",
+    label: "学习计划",
     shortLabel: "计划",
     href: "/planner",
     icon: CalendarCheck,
-    description: "智能生成计划 · 任务管理 · 日/周/月/学期",
+    description: "智能生成计划 · 任务管理",
+    tier: "secondary",
   },
+  {
+    id: "profile",
+    label: "我的",
+    shortLabel: "我的",
+    href: "/profile",
+    icon: User,
+    description: "成就 · XP · 统计 · 设置",
+    tier: "secondary",
+  },
+  // ── Beta (More drawer only) ──────────────────────────────
   {
     id: "voice",
     label: "Mango Voice",
     shortLabel: "Voice",
     href: "/voice",
     icon: Mic,
-    description: "Voice OS · 学习身份 · 实时语音对话",
+    description: "语音对话 · 内测中",
+    tier: "beta",
   },
   {
-    id: "profile",
-    label: "Mango",
-    shortLabel: "我的",
-    href: "/profile",
-    icon: User,
-    description: "成就 · XP · 统计 · 设置",
+    id: "dna",
+    label: "Mango DNA",
+    shortLabel: "DNA",
+    href: "/dna",
+    icon: GraduationCap,
+    description: "AI 人格画像 · 即将上线",
+    tier: "beta",
   },
 ];
+
+/** Primary items for bottom mobile nav (first 4 + More) */
+export const mobileNavItemsV2: NavItem[] = navItemsV2.filter(n => n.tier === "primary");
+
+/** Secondary + Beta items for More drawer */
+export const moreNavItems: NavItem[] = navItemsV2.filter(n => n.tier !== "primary");
 
 export const redirectMapV2: Record<string, string> = {
   "/dashboard": "/hub",
@@ -90,11 +117,3 @@ export const redirectMapV2: Record<string, string> = {
   "/mind": "/grow",
   "/knowledge-tree": "/agent",
 };
-
-export const mobileNavItemsV2: NavItem[] = [
-  navItemsV2[0], // Mangosum
-  navItemsV2[1], // Mango Tutor
-  navItemsV2[3], // Mango Friend
-  navItemsV2[4], // Mango Plan
-  navItemsV2[5], // Mango DNA
-];

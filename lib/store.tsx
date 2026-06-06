@@ -440,7 +440,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const addReflection = React.useCallback(
     (r: Omit<Reflection, "id" | "dateLabel">) => {
       const prev = stateRef.current;
-      if (prev.mode === "cloud" && prev.userId) {
+      if (prev.mode === "cloud" && prev.userId && storagePreference === "cloud") {
         insertReflection(prev.userId, r)
           .then((saved) =>
             setState((p) => ({ ...p, reflections: [saved, ...p.reflections] }))
@@ -456,7 +456,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }));
       }
     },
-    []
+    [storagePreference]
   );
 
   const reviewCard = React.useCallback((id: string, grade: ReviewGrade) => {

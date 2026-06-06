@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useStore } from "@/lib/store";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -21,6 +22,7 @@ interface CBTResult {
 // ─── Component ─────────────────────────────────────────────────
 
 export function CbtReframer() {
+  const { storagePreference } = useStore();
   const [thought, setThought] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [result, setResult] = React.useState<CBTResult | null>(null);
@@ -28,6 +30,10 @@ export function CbtReframer() {
 
   async function handleReframe() {
     if (!thought.trim() || loading) return;
+    if (storagePreference !== "cloud") {
+      setError("Local privacy mode is on. This thought was not sent to cloud AI.");
+      return;
+    }
     setLoading(true);
     setError("");
     setResult(null);
@@ -39,6 +45,8 @@ export function CbtReframer() {
         body: JSON.stringify({
           action: "cbt-reframe",
           content: thought.trim(),
+          privacyMode: "cloud",
+          cloudConsent: true,
         }),
       });
 

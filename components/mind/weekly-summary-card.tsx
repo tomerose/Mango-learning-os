@@ -34,7 +34,7 @@ const PLACEHOLDER: WeeklySummaryData = {
 // ─── Component ─────────────────────────────────────────────────
 
 export function WeeklySummaryCard() {
-  const { reflections } = useStore();
+  const { reflections, storagePreference } = useStore();
   const [summary, setSummary] = React.useState<WeeklySummaryData | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState("");
@@ -81,6 +81,10 @@ export function WeeklySummaryCard() {
 
   async function generate() {
     if (loading) return;
+    if (storagePreference !== "cloud") {
+      setError("Local privacy mode is on. Journal entries were not sent to cloud AI.");
+      return;
+    }
     setLoading(true);
     setError("");
 
@@ -92,6 +96,8 @@ export function WeeklySummaryCard() {
           action: "weekly-summary",
           journalEntries: thisWeekEntries,
           mood: moodSummary,
+          privacyMode: "cloud",
+          cloudConsent: true,
         }),
       });
 

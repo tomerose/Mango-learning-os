@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useStore } from "@/lib/store";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -30,6 +31,7 @@ const SUGGESTED_PROMPTS = [
 // ─── Component ─────────────────────────────────────────────────
 
 export function AiCompanionChat() {
+  const { storagePreference } = useStore();
   const [messages, setMessages] = React.useState<Message[]>([GREETING]);
   const [input, setInput] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -51,6 +53,19 @@ export function AiCompanionChat() {
     const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
+
+    if (storagePreference !== "cloud") {
+      setMessages([
+        ...next,
+        {
+          role: "assistant",
+          content:
+            "Local privacy mode is on. This message was not sent to cloud AI.",
+        },
+      ]);
+      return;
+    }
+
     setLoading(true);
 
     // Add a placeholder for the assistant response
@@ -63,6 +78,8 @@ export function AiCompanionChat() {
         body: JSON.stringify({
           action: "chat",
           content: trimmed,
+          privacyMode: "cloud",
+          cloudConsent: true,
         }),
       });
 

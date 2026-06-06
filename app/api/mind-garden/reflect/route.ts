@@ -30,6 +30,7 @@ interface ReflectRequest {
   moodIntensity?: number;      // 1-10
   historyNotes?: string;       // Optional context from previous reflections
   privacyMode?: "local" | "cloud";  // Storage preference
+  cloudConsent?: boolean;      // Explicit consent to process sensitive content in cloud AI
 }
 
 interface CrisisCheck {
@@ -358,7 +359,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { mode, userInput, mood, moodIntensity, historyNotes, privacyMode } = body;
+  const { mode, userInput, mood, moodIntensity, historyNotes, privacyMode, cloudConsent } = body;
 
   if (!mode || !userInput?.trim()) {
     return NextResponse.json({ error: "mode and userInput required" }, { status: 400 });
@@ -384,6 +385,14 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  if (privacyMode !== "cloud" || cloudConsent !== true) {
+    return NextResponse.json({
+      error: "Explicit cloud consent required for Mind Garden reflection processing.",
+      crisisCheck,
+      privacyEnforced: true,
+    }, { status: 403 });
+  }
+
   // ── STEP 1: Build AI prompt ──────────────────────────────────
   const systemPrompt = MODE_PROMPTS[mode] ?? MODE_PROMPTS.journal;
 
@@ -391,7 +400,7 @@ export async function POST(req: NextRequest) {
     mood ? `用户当前标记的心情: ${mood}` : "",
     moodIntensity ? `情绪强度: ${moodIntensity}/10` : "",
     historyNotes ? `之前反思记录: ${historyNotes.slice(0, 500)}` : "",
-    privacyMode === "local" ? "⚠ 用户选择了本地存储模式 — 内容完全在用户设备上" : "",
+    "用户已明确选择云端同步并同意本次内容用于云端生成。",
   ].filter(Boolean).join("\n");
 
   const userPrompt = contextParts
@@ -412,9 +421,7 @@ export async function POST(req: NextRequest) {
       try { parsed = JSON.parse(jsonMatch[0]); } catch { /* use raw text */ }
     }
 
-    const privacyNote = privacyMode === "local"
-      ? "🔒 本地模式: 你的所有内容仅存储在你的设备上，不会上传到任何服务器。"
-      : "🔒 你的内容受端到端加密保护。不会用于AI训练。你可以随时在设置中切换到本地模式。";
+    const privacyNote = "🔒 云端模式: 你已明确同意本次内容用于云端生成。不会用于AI训练。你可以随时在设置中切换到本地模式。";
 
     const response: ReflectResponse = {
       mode,

@@ -7,9 +7,21 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { action, content } = body as { action: string; content: string };
+    const { action, content, privacyMode, cloudConsent } = body as {
+      action: string;
+      content: string;
+      privacyMode?: "local" | "cloud";
+      cloudConsent?: boolean;
+    };
 
     if (!content?.trim()) return NextResponse.json({ error: "Content required" }, { status: 400 });
+
+    if (privacyMode !== "cloud" || cloudConsent !== true) {
+      return NextResponse.json(
+        { error: "Explicit cloud consent required for Mind Garden analysis." },
+        { status: 403 }
+      );
+    }
 
     if (!process.env.AI_API_KEY) {
       return NextResponse.json({ error: "AI not configured" }, { status: 503 });
