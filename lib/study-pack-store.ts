@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // Study Pack Persistence Store V2
 // Primary: IndexedDB (full content) → Fallback: localStorage (metadata)
+// Cloud: Supabase (best-effort, when logged in)
 // Survives page refresh, browser restart, and quota pressure.
 // ═══════════════════════════════════════════════════════════════
 
@@ -10,6 +11,10 @@ import {
   buildPackMeta, isIDBAvailable,
   type IDBPackRecord,
 } from "@/lib/db/study-pack-idb";
+import {
+  upsertStudyPackCloud, fetchStudyPacksCloud, deleteStudyPackCloud,
+  isCloudSyncAvailable, migrateLocalToCloud,
+} from "@/lib/supabase/study-pack-queries";
 
 export interface StudyPackSession {
   id: string;
@@ -81,9 +86,17 @@ function toMetadata(pack: IDBPackRecord): PackMetadata {
 
 // ── Public API ─────────────────────────────────────────────────
 
-/** Load all study packs (metadata from IDB, fallback to localStorage) */
+/** Load all study packs (cloud → IDB → localStorage) */
 export async function loadStudyPacks(): Promise<StudyPackSession[]> {
-  // Try IndexedDB first
+  // Try cloud first (if logged in)
+  if (isCloudSyncAvailable()) {
+    try {
+      const cloud = await fetchStudyPacksCloud();
+      if (cloud.length > 0) return cloud;
+    } catch { /* fall through */ }
+  }
+
+  // Try IndexedDB
   if (isIDBAvailable()) {
     try {
       const packs = await getAllPacks();
@@ -128,7 +141,7 @@ export function loadStudyPacksSync(): StudyPackSession[] {
   }));
 }
 
-/** Save a study pack (dual-write: IDB full + localStorage metadata) */
+/** Save a study pack (IDB + localStorage + cloud) */
 export async function saveStudyPack(pack: StudyPackSession): Promise<void> {
   const now = new Date().toISOString();
   const updated = { ...pack, updatedAt: now };
@@ -168,6 +181,11 @@ export async function saveStudyPack(pack: StudyPackSession): Promise<void> {
     meta.unshift(newMeta);
   }
   saveMetadata(meta);
+
+  // Cloud sync (best-effort)
+  if (isCloudSyncAvailable()) {
+    try { await upsertStudyPackCloud(updated); } catch { /* best effort */ }
+  }
 }
 
 /** Synchronous save for localStorage-only mode */
@@ -204,6 +222,11 @@ export function saveStudyPackSync(pack: StudyPackSession): void {
     };
     localStorage.setItem(key, JSON.stringify(content));
   } catch { /* content too large for localStorage */ }
+
+  // Cloud sync (fire-and-forget)
+  if (isCloudSyncAvailable()) {
+    upsertStudyPackCloud(pack).catch(() => {});
+  }
 }
 
 /** Get a full pack by ID (tries IDB first, then localStorage content) */
@@ -255,6 +278,10 @@ export async function deleteStudyPack(id: string): Promise<void> {
   saveMetadata(meta);
   // localStorage content
   try { localStorage.removeItem(`mango-pack-content-${id}`); } catch { /* noop */ }
+  // Cloud
+  if (isCloudSyncAvailable()) {
+    try { await deleteStudyPackCloud(id); } catch { /* best effort */ }
+  }
 }
 
 /** Synchronous delete (localStorage only) */
@@ -262,6 +289,18 @@ export function deleteStudyPackSync(id: string): void {
   const meta = loadMetadata().filter(m => m.id !== id);
   saveMetadata(meta);
   try { localStorage.removeItem(`mango-pack-content-${id}`); } catch { /* noop */ }
+  // Cloud sync (fire-and-forget)
+  if (isCloudSyncAvailable()) {
+    deleteStudyPackCloud(id).catch(() => {});
+  }
+}
+
+/** Sync all local packs to cloud (call after login) */
+export async function syncAllToCloud(): Promise<number> {
+  if (!isCloudSyncAvailable()) return 0;
+  const local = loadStudyPacksSync();
+  if (local.length === 0) return 0;
+  return migrateLocalToCloud(local);
 }
 
 /** Rename a study pack */

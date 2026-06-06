@@ -8,7 +8,7 @@ import {
   FileText, Clock, Target, GraduationCap, BookOpen,
   ChevronRight, Loader2, Trash2, Download, Edit3,
   ExternalLink, Search, CheckCircle2, AlertTriangle, Globe,
-  Github, FileUp, Tag, Shield, X, Layers,
+  Github, FileUp, Tag, Shield, X, Layers, Brain, Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,9 +23,11 @@ import type { QualityReport } from "@/lib/ai/content-quality-v2";
 import {
   saveStudyPackSync, loadStudyPacksSync, getRecentStudyPacks,
   buildPackFromResponse, deleteStudyPackSync, getPackById,
+  renameStudyPack, duplicateStudyPack,
   type StudyPackSession,
 } from "@/lib/study-pack-store";
 import { migrateOldPacks } from "@/lib/study-pack-store";
+import { PackPractice } from "@/components/study-pack/pack-practice";
 
 /* ═══════════════════════════════════════════════════════════════
    Study Pack V11 — The core MangoOS experience.
@@ -71,7 +73,7 @@ interface ReviewPackage {
   sources: ResearchSource[];
 }
 
-type Step = "input" | "researching" | "sources" | "generating" | "preview" | "error";
+type Step = "input" | "researching" | "sources" | "generating" | "preview" | "practicing" | "error";
 type View = "wizard" | "history";
 
 // ── Constants ────────────────────────────────────────────────────
@@ -445,12 +447,23 @@ export default function PackPage() {
                             <GraduationCap className="size-5 text-primary" />
                           </div>
                           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={async () => {
+                              const dup = await duplicateStudyPack(pack.id);
+                              if (dup) refreshPacks();
+                            }} className="size-7 rounded-lg hover:bg-primary-subtle flex items-center justify-center"
+                              title="复制"><Layers className="size-3" /></button>
+                            <button onClick={() => {
+                              const newName = prompt("重命名学习包", pack.courseName);
+                              if (newName && newName.trim()) {
+                                renameStudyPack(pack.id, newName.trim()).then(refreshPacks);
+                              }
+                            }} className="size-7 rounded-lg hover:bg-bg-muted flex items-center justify-center"
+                              title="重命名"><Pencil className="size-3" /></button>
                             <button onClick={() => handleOpenPack(pack)}
                               className="size-7 rounded-lg hover:bg-primary-subtle flex items-center justify-center"
                               title="打开"><ExternalLink className="size-3.5" /></button>
                             <button onClick={() => {
-                              deleteStudyPackSync(pack.id);
-                              refreshPacks();
+                              if (confirm("确定删除？")) { deleteStudyPackSync(pack.id); refreshPacks(); }
                             }} className="size-7 rounded-lg hover:bg-red-50 flex items-center justify-center"
                               title="删除"><Trash2 className="size-3.5 text-red-400" /></button>
                           </div>
@@ -564,6 +577,17 @@ export default function PackPage() {
                       onRegenerate={() => setStep("input")}
                     />
                   )}
+                  {step === "practicing" && reviewPackage && (
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-title font-serif">闪卡练习</h3>
+                        <Button variant="ghost" size="sm" onClick={() => setStep("preview")} className="gap-1.5">
+                          <ArrowLeft className="size-3.5" /> 返回讲义
+                        </Button>
+                      </div>
+                      <PackPractice generatedHandout={reviewPackage} onClose={() => setStep("preview")} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: Quality & Export */}
@@ -597,6 +621,9 @@ export default function PackPage() {
                         <Button onClick={handleExport} disabled={exporting} className="gap-2 w-full rounded-xl" size="sm">
                           {exporting ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
                           导出文件
+                        </Button>
+                        <Button onClick={() => setStep("practicing")} variant="secondary" className="gap-2 w-full rounded-xl" size="sm">
+                          <Brain className="size-3.5" /> 闪卡练习
                         </Button>
                         <p className="text-[9px] text-fg-muted/50 text-center">导出为 {exportFormat === "docx" ? "HTML 格式 Word 文档" : exportFormat === "pdf" ? "浏览器打印 PDF" : "纯文本 Markdown"}</p>
                       </div>
@@ -652,6 +679,9 @@ export default function PackPage() {
                           {exporting ? <Loader2 className="size-3 animate-spin" /> : <Download className="size-3" />}
                           导出
                         </Button>
+                        <Button size="sm" variant="secondary" onClick={() => setStep("practicing")} className="gap-1.5 h-8 text-[11px]">
+                          <Brain className="size-3" /> 练习
+                        </Button>
                       </div>
                     </div>
 
@@ -701,6 +731,17 @@ export default function PackPage() {
                         <Edit3 className="size-3.5" /> 修改输入重新生成
                       </Button>
                     </div>
+                  </div>
+                )}
+                {step === "practicing" && reviewPackage && (
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-title font-serif">闪卡练习</h3>
+                      <Button variant="ghost" size="sm" onClick={() => setStep("preview")} className="gap-1.5">
+                        <ArrowLeft className="size-3.5" /> 返回讲义
+                      </Button>
+                    </div>
+                    <PackPractice generatedHandout={reviewPackage} onClose={() => setStep("preview")} />
                   </div>
                 )}
               </div>
