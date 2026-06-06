@@ -1,48 +1,45 @@
 // ═══════════════════════════════════════════════════════════════
-// WeCom (企业微信) Bot Webhook
-// Setup: WeCom Admin → Apps → Custom Bot → Webhook URL
-// Set to: https://mangoleaningos.top/api/wecom/webhook
+// WeCom (企业微信) Bot Callback
+// Setup: WeCom Admin → Apps → Bot → Callback URL
+// Or: Group Bot → configure receive URL
 // ═══════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { cognitiveOS, composeCognitiveResponse } from "@/lib/ai/cognitive-engine";
+import { cognitiveFast } from "@/lib/ai/cognitive-engine";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 15;
 
 interface WeComMessage {
-  msgtype: string; text?: { content?: string }; user?: string;
-  FromUserName?: string; Content?: string; MsgType?: string;
+  msgtype?: string;
+  text?: { content?: string };
+  Content?: string;
+  MsgType?: string;
 }
 
 export async function POST(req: NextRequest) {
   let body: WeComMessage;
   try { body = await req.json(); } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
-
-  // Handle both WeCom bot format and WeChat callback format
-  const content =
-    body.text?.content ??
-    body.Content ??
-    "";
-
-  if (!content.trim()) {
     return NextResponse.json({
       msgtype: "text",
       text: { content: "请发送文字消息，芒宝会帮你进行认知分析。" },
     });
   }
 
-  try {
-    const result = await cognitiveOS(content.trim());
-    const response = composeCognitiveResponse(result);
-    const truncated = response.slice(0, 1800);
+  const content = body.text?.content ?? body.Content ?? "";
 
-    // WeCom bot response format
+  if (!content.trim()) {
     return NextResponse.json({
       msgtype: "text",
-      text: { content: truncated },
+      text: { content: "你好！我是芒宝🧠 发送任何学习问题，我会帮你进行认知分析。\n\n🌐 完整体验：mangoleaningos.top" },
+    });
+  }
+
+  try {
+    const result = await cognitiveFast(content.trim());
+    return NextResponse.json({
+      msgtype: "text",
+      text: { content: result.fullResponse },
     });
   } catch {
     return NextResponse.json({
@@ -57,6 +54,6 @@ export async function GET() {
   return NextResponse.json({
     service: "MangoOS Cognitive WeCom Bot",
     status: "active",
-    setup: "Add this webhook URL to WeCom Bot configuration",
+    setup: "Use this URL as WeCom Bot callback URL",
   });
 }
