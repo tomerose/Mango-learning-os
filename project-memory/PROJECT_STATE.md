@@ -1,6 +1,6 @@
 # MangoLearningOS — Project State
 
-**Updated:** 2026-06-06 | **Version:** v7 Research Pipeline
+**Updated:** 2026-06-06 | **Version:** v7.3 内测版 | **Branch:** `claude/v10-study-pack`
 
 ## Stack (v7)
 Next.js 15.5 (App Router) · React 19 · TypeScript 5.8 · Tailwind CSS 4.1
@@ -12,42 +12,71 @@ shadcn/ui (New York) · Supabase (PostgreSQL + RLS) · DeepSeek AI · Vercel
 - Surface: 6-level (paper/card/floating/glass/focus/hero)
 - Shadow: 0 8px 30px rgb(0,0,0,0.04)
 
-## Architecture (v7 additions)
-- **Research Orchestrator:** `lib/ai/research-orchestrator.ts` — Multi-source pipeline (query expansion → 6 providers → dedup/rank/score → synthesis)
-- **Content Quality Engine v2:** `lib/ai/content-quality-v2.ts` — 7-gate quality validation (relevance, grounding, structure, completeness, anti-generic, formatting, actionability)
-- **Feature Output Contracts:** `lib/feature-contracts.ts` — Standardized output specs for 6 major features
-- **Exam Review Module:** Full pipeline (input → research → generate → export Word/PDF/MD)
-- **Mind Garden v2:** Safe structured mental wellness (10 modes, crisis detection, privacy-first)
+## Architecture
+- **Research Orchestrator (9 providers):** Web (DuckDuckGo), GitHub, Academic (arXiv), Bilibili, Douyin, Open Library, Free Dictionary, Gutendex, Local Files
+- **Content Quality Engine v2:** 7-gate validation (relevance, grounding, structure, completeness, anti-generic, formatting, actionability)
+- **Feature Output Contracts:** 6 feature contracts (exam-review, tutor, mind-garden, knowledge-capture, career, research)
+- **Exam Review Module:** Full pipeline (input → research → 18-section handout → Word/PDF/MD export)
+- **Mind Garden v2:** 10 safe modes, crisis detection, privacy toggle (local/cloud)
+- **Knowledge Forest v4:** Notion-style sidebar + 5 content tabs + rich content
+- **Rich Text Editor:** Formatting toolbar, edit/preview toggle, properties panel, cover image
+- **PaddleOCR Client:** HTTP service wrapper for superior OCR (Docker deployment)
 - **Dual-mode persistence:** guest (localStorage) / cloud (Supabase + RLS)
-- **AI layer:** `lib/ai/client.ts` — pluggable OpenAI-compatible (`streamChat`, `completeChat`, `extractJson`)
+- **AI layer:** DeepSeek via OpenAI-compatible (`streamChat`, `completeChat`, `extractJson`)
 
-## Routes (7 windows + aux)
+## Routes (7 windows)
 
 | Route | Window | Key Modules |
 |-------|--------|-------------|
-| `/exam` | Mangoing | **Exam Review Tab** (research→generate→export), Knowledge Forest, Knowledge Network, Notes, Resources |
-| `/agent` | Mango Tutor | AgentChat, ConceptExplainer, ExerciseGenerator, MistakeAnalyzer |
-| `/hub` | Mangosum | HubWelcome, MagicCard, LearningGoals, QuickActions |
-| `/grow` | Mango Friend | Mind Garden (10 modes), Projects |
+| `/exam` | Mangoing | Exam Review, Knowledge Forest v4, Notes (RichEditor), Resources |
+| `/agent` | Mango Tutor | AgentChat, ConceptExplainer, ExerciseGenerator |
+| `/hub` | Mangosum | HubWelcome, MagicCard, Onboarding, UpdateModal (内测版) |
+| `/grow` | Mango Friend | Mind Garden Pro (10 modes), Journal, CBT, Companion |
 | `/planner` | Mango Plan | AI plan generation, Task management |
 | `/dna` | Mango DNA | Persona profile, agent gallery |
-| `/profile` | Mango | XP, level, achievements, stats |
+| `/profile` | Mango | XP, level, stats, contact card |
 
-## New API Routes (v7)
-- `/api/exam-review/generate` — Full exam handout generation (online research + AI)
-- `/api/exam-review/export` — Export to Word/PDF/Markdown/HTML
-- `/api/mind-garden/reflect` — Safe structured mental wellness (10 modes + crisis detection)
+## API Routes (v7.3)
+- `/api/exam-review/generate` — Full exam handout (online research → AI → 18 sections)
+- `/api/exam-review/export` — Word/PDF/Markdown/HTML export
+- `/api/mind-garden/reflect` — 10-mode safe mental wellness + crisis detection
 - `/api/forest/enrich` — Multi-source forest enrichment (Wikipedia + GitHub + web)
+- `/api/notes/enrich` — AI note enrichment (Wikipedia + DDG)
+- `/api/notes/import/file` — File import (Word/PDF/MD)
+- `/api/notes/import/url` — URL content fetch
+- `/api/wechat/webhook` — WeChat Official Account webhook
+- `/api/wecom/webhook` — WeCom bot webhook
+- `/api/cron/wechat-daily` — Daily WeChat content push
 
-## Research Providers
-| Provider | Status | Requires |
-|----------|--------|----------|
+## Research Providers (9 total)
+| Provider | Status | API Key |
+|----------|--------|---------|
 | Web Search (DuckDuckGo) | ✅ Free | None |
-| GitHub | ✅ Free (60/h) / ✅ Token (5000/h) | GITHUB_TOKEN |
+| GitHub | ✅ Free 60/h | GITHUB_TOKEN optional |
 | Academic (arXiv) | ✅ Free | None |
-| YouTube | ⚠ Fallback mode | YOUTUBE_API_KEY |
+| Bilibili (哔哩哔哩) | ✅ Free | None |
+| Douyin (抖音) | ✅ Fallback URL | None |
+| Open Library | ✅ Free | None |
+| Free Dictionary | ✅ Free | None |
+| Gutendex (Gutenberg) | ✅ Free | None |
 | Local Files | ✅ | User upload |
 
 ## Database (Supabase)
 - 21 tables (unchanged from v6)
 - All tables RLS-protected
+
+## Agent Collaboration and Synchronization Rules
+
+- **ClaudeCoda** owns product implementation, UI/UX refinement, interaction polish, visual consistency, new experience construction.
+- **Codex** owns engineering audit, production readiness, bug fixing, regression testing, TypeScript/data-flow hardening, export reliability, persistence verification, mock/fake logic detection, necessary architecture cleanup.
+- Agents sync through Git commits, branches, and project-memory files — NOT implicit knowledge.
+- No two agents on the same branch simultaneously.
+- No two agents modifying the same core directories without coordination.
+- Codex's first task must be audit-only (no code changes).
+- Codex changes reviewed through diff before merge.
+- Production readiness = lint + typecheck + build + core workflow verification.
+- Stability > visual decoration or new feature expansion.
+
+## Current Auth Codes (v7.3)
+- Guest / First entry: `sillyfind2025`
+- Login / Register: `tokentome222`

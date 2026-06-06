@@ -99,3 +99,19 @@
 - [x] Dark mode support (next-themes)
 - [x] PWA manifest + service worker
 - [x] Apple-style design: rounded-2xl cards, glassmorphism, 8px grid
+
+---
+
+## Agent Collaboration and Synchronization Rules
+
+- **ClaudeCoda** owns: product implementation, UI/UX refinement, interaction polish, visual consistency, new experience construction, feature output contracts.
+- **Codex** owns: engineering audit, production readiness, bug fixing, regression testing, TypeScript/data-flow hardening, export reliability, persistence verification, mock/fake logic detection, necessary architecture cleanup.
+- Synchronization through Git commits, branches, and project-memory files.
+- No two agents on same branch. No overlapping directory edits without coordination.
+- Codex first task = audit-only. Codex changes = diff review before merge.
+- Production readiness = lint + typecheck + build + core workflow verification.
+- Stability > visual decoration.
+
+## Current Auth Codes (v7.3)
+- Guest / First entry: `sillyfind2025`
+- Login / Register: `tokentome222`
