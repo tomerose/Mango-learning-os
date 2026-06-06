@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { AmbientOrbs, FloatingParticles } from "@/components/ui/ambient-orbs";
 import { PageTransition } from "@/components/layout/page-transition";
 import { StaggerReveal, FadeIn, ScaleIn } from "@/components/ui/motion-system";
+import { LifeCommandCenter } from "@/components/hub/life-command-center";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub v7 — Warm Paper · Editorial Wellness · Mobile-First
@@ -153,7 +154,10 @@ export default function HubPage() {
         </motion.div>
       </section>
 
-      {/* ═══ 2. TODAY ═══ */}
+      {/* ═══ 2. Life Command Center (V9) ═══ */}
+      <LifeCommandCenter />
+
+      {/* ═══ 3. TODAY ═══ */}
       <Section delay={0.05}>
         <SectionHeader title="今日学习" />
         <StaggerReveal className="grid grid-cols-1 sm:grid-cols-3 gap-3">
