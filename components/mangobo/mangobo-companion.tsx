@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
+import { MangoCharacter } from "./mango-character";
 
 /* ═══════════════════════════════════════════════════════════════
    Mangobo — Global Floating AI Companion
@@ -145,18 +146,11 @@ export function MangoboCompanion() {
           whileHover={{ scale: 1.08, boxShadow: "0 0 30px rgba(197,139,116,0.3)" }}
           whileTap={{ scale: 0.95 }}
         >
-          {/* Mango icon — always visible, always works */}
-          <img src="/favicon-32.png" alt="芒宝" className="absolute inset-0 w-full h-full object-cover rounded-full" />
-          {/* Video overlay — plays when browser supports autoplay */}
-          <video
-            ref={videoRef}
-            src="/mangobo.mp4"
-            autoPlay loop muted playsInline
-            preload="none"
-            className="absolute inset-0 w-full h-full object-cover rounded-full"
-            style={{ opacity: 0 }}
-            onPlay={e => { (e.target as HTMLVideoElement).style.opacity = "1"; }}
-          />
+          {/* CSS Animated Mango — zero deps, all platforms */}
+          <MangoCharacter />
+          {/* Hidden video — plays audio-free animation if supported */}
+          <video ref={videoRef} src="/mangobo.mp4" autoPlay loop muted playsInline preload="none"
+            className="hidden" />
           {/* Glass overlay */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-b from-transparent via-transparent to-black/10" />
         </motion.button>

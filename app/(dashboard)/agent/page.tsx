@@ -87,7 +87,7 @@ function AgentPageInner() {
     store.addNote({
       subject: captureData.subject,
       title: captureData.question.slice(0, 60),
-      body: `Q: ${captureData.question}\n\nA: ${captureData.answer}`,
+      body: `## 问题\n${captureData.question}\n\n## 解答\n${captureData.answer}\n\n---\n*由芒宝自动捕获 · ${new Date().toLocaleDateString("zh-CN")}*`,
       tags: ["对话捕获", captureData.subject],
     });
     setCaptured(true);
