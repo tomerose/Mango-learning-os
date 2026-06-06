@@ -254,8 +254,9 @@ export interface FastCognitiveResponse {
 }
 
 export async function cognitiveFast(input: string, timeoutMs: number = 3000): Promise<FastCognitiveResponse> {
+  // timeoutMs = 0 means no timeout (async customer-service mode)
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
   try {
     const raw = await completeChat([
@@ -263,7 +264,7 @@ export async function cognitiveFast(input: string, timeoutMs: number = 3000): Pr
       { role: "user", content: input.slice(0, 500) },
     ], { temperature: 0.3, signal: controller.signal, maxTokens: 400 });
 
-    clearTimeout(timeout);
+    if (timeout) clearTimeout(timeout);
     const json = extractJson(raw);
     const parsed = JSON.parse(json);
 
@@ -290,7 +291,7 @@ export async function cognitiveFast(input: string, timeoutMs: number = 3000): Pr
 
     return result;
   } catch (err: unknown) {
-    clearTimeout(timeout);
+    if (timeout) clearTimeout(timeout);
     const name = (err as {name?:string}).name ?? "";
     const code = (err as {code?:string}).code ?? "";
     if ((name === "AbortError" || name === "TimeoutError") || (code === "AbortError" || code === "ETIMEDOUT")) {
