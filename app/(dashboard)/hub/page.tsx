@@ -10,10 +10,12 @@ import {
 import { useStore } from "@/lib/store";
 import { MagicCard } from "@/components/hub/magic-card";
 import { MangoOnboarding, shouldShowOnboarding } from "@/components/onboarding/MangoOnboarding";
+import { CognitiveFlows } from "@/components/hub/cognitive-flows";
 import { cn } from "@/lib/utils";
 import { AmbientOrbs, FloatingParticles } from "@/components/ui/ambient-orbs";
 import { PageTransition } from "@/components/layout/page-transition";
 import { getRecentStudyPacks, type StudyPackSession } from "@/lib/study-pack-store";
+import { useSubjects } from "@/lib/subjects";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub V10.1 — Study Cockpit
@@ -39,6 +41,25 @@ function Section({ children, delay = 0 }: { children: React.ReactNode; delay?: n
     >
       {children}
     </motion.section>
+  );
+}
+
+function SubjectsSection() {
+  const { subjects } = useSubjects();
+  if (subjects.length === 0) return null;
+  return (
+    <Section delay={0.14}>
+      <h2 className="text-title mb-4">学习科目</h2>
+      <div className="flex flex-wrap gap-2">
+        {subjects.map((s) => (
+          <Link key={s.id} href={`/agent?subject=${s.id}`}
+            className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-small hover:bg-bg-muted transition-colors">
+            <span className="size-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+            {s.label}
+          </Link>
+        ))}
+      </div>
+    </Section>
   );
 }
 
@@ -180,6 +201,14 @@ export default function HubPage() {
           })}
         </div>
       </Section>
+
+      {/* ═══ 5. COGNITIVE FLOWS (Daily real content) ═══ */}
+      <Section delay={0.12}>
+        <CognitiveFlows />
+      </Section>
+
+      {/* ═══ 6. SUBJECTS ═══ */}
+      <SubjectsSection />
 
       {/* ═══ Magic Card Modal ═══ */}
       <MagicCard open={magicOpen} onClose={() => setMagicOpen(false)} />
