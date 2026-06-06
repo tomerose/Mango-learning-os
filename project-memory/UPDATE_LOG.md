@@ -305,6 +305,19 @@ Mangosum / Mango Tutor / Mangoing / Mango Friend / Mango Plan / Mango DNA / Mang
 - AI quiz generation
 - Weakness analysis
 
+---
+## 🔜 待后续 (2026-06-07 标记)
+
+| # | 任务 | 状态 | 备注 |
+|---|------|:--:|------|
+| 1 | 🥭 **芒宝 Live2D 伴侣** | 🔜 下一步 | 用户用 Gemini 生成角色图+动画视频 → ClaudeCoda 实现 CSS/Framer Motion 轻量伪Live2D（浮动+呼吸+表情切换+语音气泡） |
+| 2 | 💰 微信/支付宝支付 | ⏸️ 暂停 | 需企业商户资质，当前 Mango Code 兑换替代 |
+| 3 | 🎬 motion-canvas 教育动画 | 🔜 轻量版 | CSS/Framer Motion/SVG/Lottie 替代方案，不做 WebGL |
+| 4 | 🎤 Deepgram 实时对话流 | 🔜 | WebSocket hook 已就位(`lib/deepgram/use-deepgram-voice.ts`)，需接双向对话 |
+| 5 | 📷 OCR → Agent 全管线 | 🔜 | PaddleOCR 客户端已就位(`lib/paddleocr/client.ts`)，需 Docker 部署后连线 |
+| 6 | 📱 PWA 离线支持 | 🔜 | manifest.json 已有，需完善 service worker 离线缓存 |
+
+---
 ## 2026-06-01 — V1.0
 - Initial release
 - Dashboard, AI Tutor, Study Planner, Knowledge Hub, Mind Garden, Mango DNA, Profile
