@@ -19,6 +19,7 @@ import {
   buildStudyPackPrompt,
   buildMistakeAnalysisPrompt,
 } from "@/lib/ai/content-engine";
+import { combinedSearch, formatSearchResults } from "@/lib/api-integrations/web-search";
 
 function msg(content: string): ChatMessage[] { return [{ role: "user", content }]; }
 
@@ -247,13 +248,22 @@ async function executeToolReal(
       };
     }
 
-    // ── Web Research: best-effort summary ──────────────────────
+    // ── Web Research: REAL search via Wikipedia + DuckDuckGo ────
     case "web_research": {
-      const prompt = `请基于你的知识为以下主题提供学习资源建议：${intent}\n\n列出3-5个推荐的学习资源（教材、网站、课程），每个包括：资源名、类型、适用水平、简短说明。中文。`;
+      let searchResults = "";
+      try {
+        const results = await combinedSearch(intent, { wikipedia: true, duckduckgo: true });
+        searchResults = formatSearchResults(results);
+      } catch { /* search failed, fall through to LLM */ }
+
+      const prompt = searchResults
+        ? `以下是对「${intent}」的实时搜索结果：\n\n${searchResults}\n\n请基于以上搜索结果，为用户提供3-5个最相关的学习资源推荐。每个包括：资源名、类型、适用水平、简要说明。中文。`
+        : `请基于你的知识为以下主题提供学习资源建议：${intent}\n\n列出3-5个推荐的学习资源（教材、网站、课程），每个包括：资源名、类型、适用水平、简短说明。中文。`;
+
       const result = await completeChat(msg(prompt));
       return {
-        message: "学习资源搜索完成",
-        output: { type: "summary", title: "学习资源推荐", content: { research: result.trim() } },
+        message: searchResults ? "实时搜索完成（Wikipedia + DuckDuckGo）" : "学习资源搜索完成（知识库）",
+        output: { type: "summary", title: "学习资源推荐", content: { research: result.trim(), searchResults } },
       };
     }
 
