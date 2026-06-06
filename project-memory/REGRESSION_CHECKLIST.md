@@ -66,5 +66,14 @@ done
 - [x] Login/Register → tokentome222 works, sillyfind2025 rejected
 - [x] No tokentome111 references in source
 
+---
+
+## Agent Collaboration and Synchronization Rules
+- ClaudeCoda: product implementation, UI/UX, visual consistency, new features
+- Codex: engineering audit, bug fixing, regression testing, export reliability, mock detection
+- Sync through Git commits + branches + project-memory. No implicit knowledge.
+- No two agents on same branch. Codex first task = audit-only.
+- Production readiness = lint + typecheck + build + workflow verification.
+
 ## Last Checked
 2026-06-06 — v7.3 内测版 deployment

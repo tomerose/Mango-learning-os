@@ -19,8 +19,14 @@
 - **Knowledge Forest v4:** Notion-style redesign with sidebar + 5 content tabs + multi-source community import (file/URL/manual)
 - **Rich Text Editor:** Notion-like with formatting toolbar, edit/preview toggle, properties panel, cover image, tag management
 - **Official Forests:** Massively enriched — IELTS (12 topics/10 notes/14 flashcards), AI Engineer (12/6/8), CFA L1 (10/5/6), TOEFL (7/2/3)
-- **New API routes:** `/api/exam-review/generate`, `/api/exam-review/export`, `/api/mind-garden/reflect`, `/api/forest/enrich`
-- **New libs:** `research-orchestrator.ts`, `content-quality-v2.ts`, `feature-contracts.ts`, `rich-editor.tsx`
+## 2026-06-06 — v7 Research Pipeline → v7.3 内测版
+
+## Agent Collaboration and Synchronization Rules
+- ClaudeCoda: product implementation, UI/UX, visual consistency, new features
+- Codex: engineering audit, bug fixing, regression testing, export reliability, mock detection
+- Sync through Git commits + branches + project-memory. No implicit knowledge.
+- No two agents on same branch. Codex first task = audit-only.
+- Production readiness = lint + typecheck + build + workflow verification.
 
 ## 2026-06-06 — v6 Warm Paper Wellness (complete redesign)
 - **Commit:** 401368a | **Deployed:** https://mangoleaningos.top

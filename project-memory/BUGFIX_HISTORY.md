@@ -26,6 +26,17 @@
 **Symptom:** Planner lost notes functionality after merge
 **Fix:** Restored Mango Plan as standalone window with pure planning focus
 
+---
+
+## Agent Collaboration and Synchronization Rules
+- ClaudeCoda: product implementation, UI/UX, visual consistency, new features
+- Codex: engineering audit, bug fixing, regression testing, export reliability, mock detection
+- Sync through Git commits + branches + project-memory. No implicit knowledge.
+- No two agents on same branch. Codex first task = audit-only.
+- Production readiness = lint + typecheck + build + workflow verification.
+
+---
+
 ### #5: Mango DNA 丢失
 **Symptom:** DNA page was redirecting to profile
 **Fix:** Restored `/dna` as standalone route with full MangoDNAContent
