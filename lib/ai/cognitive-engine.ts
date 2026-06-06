@@ -323,7 +323,10 @@ export async function cognitiveFast(input: string, timeoutMs: number = 4500): Pr
     return result;
   } catch (err: unknown) {
     clearTimeout(timeout);
-    if (err instanceof Error && (err as Error & {code?:string}).code === "AbortError" || (err as Error & {code?:string}).code === "ETIMEDOUT") {
+    const name = (err as {name?:string}).name ?? "";
+    const code = (err as {code?:string}).code ?? "";
+    // DOMException uses .name, Node.js might use .code
+    if ((name === "AbortError" || name === "TimeoutError") || (code === "AbortError" || code === "ETIMEDOUT")) {
       return {
         state: "partial",
         misconception: "",
