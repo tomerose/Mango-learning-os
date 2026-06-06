@@ -42,3 +42,6 @@ yarn-error.log*
 
 # claude
 .claude/
+
+# react native
+mango-mobile/

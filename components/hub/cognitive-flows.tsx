@@ -16,10 +16,13 @@ import { searchWeb, searchWikipedia } from "@/lib/data/enriched-apis";
 interface FlowCard { title: string; content: string; source?: string; url?: string; }
 
 const FLOWS = [
-  { id: "english" as const, icon: BookOpen, label: "English Flow", desc: "实时英语学习内容", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/20" },
-  { id: "world" as const, icon: Globe, label: "World Intelligence", desc: "全球资讯结构化解读", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/20" },
-  { id: "planning" as const, icon: Calendar, label: "Learning Plan", desc: "系统生成今日学习任务", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/20" },
+  { id: "english" as const, icon: BookOpen, label: "English Flow", desc: "BBC · 词典 · Wikipedia", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/20" },
+  { id: "world" as const, icon: Globe, label: "World Intelligence", desc: "HN · DuckDuckGo · 航天", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/20" },
+  { id: "podcast" as const, icon: Sparkles, label: "Podcasts", desc: "TED · 科学 · 教育播客", color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-950/20" },
+  { id: "planning" as const, icon: Calendar, label: "Learning Plan", desc: "AI 生成今日任务", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/20" },
 ];
+
+type FlowId = "english" | "world" | "podcast" | "planning";
 
 // ═══ English Flow — Real API data ═══
 async function fetchEnglishFlow(): Promise<FlowCard[]> {
@@ -169,15 +172,70 @@ async function fetchPlanFlow(): Promise<FlowCard[]> {
   return cards;
 }
 
+// ═══ Podcast Flow — Free RSS feeds ═══
+const PODCAST_FEEDS = [
+  { name: "TED Talks Daily", url: "https://feeds.megaphone.fm/TPG6175046888", desc: "Ideas worth spreading" },
+  { name: "Science Friday", url: "https://feeds.simplecast.com/fBqZcX_b", desc: "Science news and discovery" },
+  { name: "Hidden Brain", url: "https://feeds.simplecast.com/MGHJBvuX", desc: "Psychology and behavior" },
+];
+
+async function fetchPodcastFlow(): Promise<FlowCard[]> {
+  const cards: FlowCard[] = [];
+  // Fetch first available podcast RSS
+  for (const podcast of PODCAST_FEEDS.slice(0, 2)) {
+    try {
+      const res = await fetch("/api/data/rss?url=" + encodeURIComponent(podcast.url));
+      const data = await res.json();
+      const items = data.items ?? [];
+      if (items.length > 0) {
+        const latest = items.slice(0, 2);
+        latest.forEach((item: any) => {
+          cards.push({
+            title: `🎙️ ${podcast.name}: ${item.title ?? "Latest Episode"}`,
+            content: item.content?.slice(0, 250) ?? `${podcast.desc}. Latest episode from ${podcast.name}.`,
+            source: podcast.name,
+            url: item.url,
+          });
+        });
+        break; // Use first successful feed
+      }
+    } catch { /* Feed unavailable */ }
+  }
+
+  // Fallback: hardcoded recommendations
+  if (cards.length === 0) {
+    cards.push({
+      title: "🎙️ TED Talks Daily",
+      content: "Inspiring talks on technology, entertainment, and design. New episodes every weekday.",
+      source: "TED",
+      url: "https://www.ted.com/talks",
+    });
+    cards.push({
+      title: "🎙️ Science Friday",
+      content: "Weekly science news, interviews, and discoveries. Covering biology, physics, space, and more.",
+      source: "Science Friday",
+      url: "https://www.sciencefriday.com/",
+    });
+    cards.push({
+      title: "🎙️ Hidden Brain",
+      content: "Exploring the unconscious patterns that drive human behavior. Psychology and neuroscience insights.",
+      source: "Hidden Brain",
+      url: "https://hiddenbrain.org/",
+    });
+  }
+
+  return cards;
+}
+
 // ═══ Component ═══
 
 export function CognitiveFlows() {
-  const [activeFlow, setActiveFlow] = React.useState<"english" | "world" | "planning" | null>(null);
+  const [activeFlow, setActiveFlow] = React.useState<FlowId | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [cards, setCards] = React.useState<FlowCard[]>([]);
   const [error, setError] = React.useState("");
 
-  async function loadFlow(flow: "english" | "world" | "planning") {
+  async function loadFlow(flow: FlowId) {
     if (activeFlow === flow) { setActiveFlow(null); return; }
     setActiveFlow(flow);
     setLoading(true);
@@ -188,6 +246,7 @@ export function CognitiveFlows() {
       let result: FlowCard[] = [];
       if (flow === "english") result = await fetchEnglishFlow();
       else if (flow === "world") result = await fetchWorldFlow();
+      else if (flow === "podcast") result = await fetchPodcastFlow();
       else result = await fetchPlanFlow();
 
       setCards(result);
@@ -202,7 +261,7 @@ export function CognitiveFlows() {
   return (
     <div className="flex flex-col gap-4">
       {/* Flow selector */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {FLOWS.map(flow => (
           <motion.button key={flow.id}
             onClick={() => loadFlow(flow.id)}

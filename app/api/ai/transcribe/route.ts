@@ -10,15 +10,16 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get("file");
-    if (!file || !(file instanceof File)) {
+    if (!file || typeof file === "string") {
       return NextResponse.json({ error: "请上传音频文件（mp3/wav/m4a/webm）" }, { status: 400 });
     }
+    const audioFile = file as File;
 
     // Auto-route to Whisper if API key configured
     if (process.env.OPENAI_API_KEY) {
-      const buffer = Buffer.from(await file.arrayBuffer());
+      const buffer = Buffer.from(await audioFile.arrayBuffer());
       const whisperForm = new FormData();
-      whisperForm.append("file", new Blob([buffer], { type: file.type }), file.name);
+      whisperForm.append("file", new Blob([buffer], { type: audioFile.type }), audioFile.name);
       whisperForm.append("model", "whisper-1");
       whisperForm.append("language", "zh");
 
