@@ -27,7 +27,7 @@ const VoiceInput = dynamic(() => import("@/components/agent/voice-input"), { ssr
    Task Center | Templates | Timeline | Results
    ═══════════════════════════════════════════════════════════════ */
 
-type View = "templates" | "compose" | "running" | "result" | "tasks";
+type View = "templates" | "running" | "result" | "tasks";
 
 // ── Task Store (localStorage) ───────────────────────────────────
 
@@ -55,7 +55,11 @@ export default function AgentPage() {
     if (!tpl) return;
     setComposeInput(tpl.intent);
     setComposeFiles([]);
-    setView("compose");
+    // Stay in templates view — compose form is already rendered there
+    // Scroll to compose area
+    setTimeout(() => {
+      document.getElementById("agent-compose")?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   }
 
   // ── Execute task ───────────────────────────────────────────
@@ -166,7 +170,7 @@ export default function AgentPage() {
               </div>
 
               {/* Free-form input */}
-              <div className="card-card p-5 flex flex-col gap-3 mt-4">
+              <div id="agent-compose" className="card-card p-5 flex flex-col gap-3 mt-4 scroll-mt-20">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="size-4 text-primary" />
                   <span className="text-sm font-medium font-serif">自由描述任务</span>
