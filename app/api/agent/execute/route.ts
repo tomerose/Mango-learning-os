@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { completeChat, type ChatMessage } from "@/lib/ai/client";
 import { TOOL_REGISTRY } from "@/lib/agent/tool-registry";
 import type { AgentToolName } from "@/lib/agent/types";
+import { resolveSession } from "@/lib/auth/session";
+import { guard, guardQuota } from "@/lib/plan/guard";
+import { recordQuotaUse } from "@/lib/quota/quota";
 
 function msg(content: string): ChatMessage[] { return [{ role: "user", content }]; }
 function sys(content: string): ChatMessage[] { return [{ role: "system", content }]; }
@@ -25,6 +28,16 @@ interface ToolCall {
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Server-side guard: auth + plan + quota ──
+    const session = await resolveSession(req);
+    const blocked = guard({ plan: session.plan }, "canUseMangoAgent");
+    if (blocked) return blocked;
+
+    const quotaResult = recordQuotaUse(session.userId ?? "guest", "agentTasks", session.plan);
+    if (!quotaResult.allowed) {
+      return guardQuota({ plan: session.plan }, "maxDailyAgentTasks", quotaResult.current)!;
+    }
+
     const { intent, files } = (await req.json()) as ExecuteRequest;
     if (!intent?.trim()) {
       return NextResponse.json({ error: "Intent is required" }, { status: 400 });

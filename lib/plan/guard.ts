@@ -5,25 +5,8 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { NextResponse } from "next/server";
-
-export type PlanTier = "guest" | "standard" | "pro" | "admin";
-
-interface PlanFeatures {
-  canUseAgent: boolean;
-  canGenerateStudyPack: boolean;
-  canUseDeepResearch: boolean;
-  canUploadFiles: boolean;
-  maxFileSizeMB: number;
-  maxDailyAgentTasks: number;
-  maxDailyStudyPacks: number;
-}
-
-const FEATURES: Record<PlanTier, PlanFeatures> = {
-  guest: { canUseAgent: false, canGenerateStudyPack: false, canUseDeepResearch: false, canUploadFiles: false, maxFileSizeMB: 0, maxDailyAgentTasks: 0, maxDailyStudyPacks: 0 },
-  standard: { canUseAgent: true, canGenerateStudyPack: true, canUseDeepResearch: false, canUploadFiles: true, maxFileSizeMB: 10, maxDailyAgentTasks: 20, maxDailyStudyPacks: 3 },
-  pro: { canUseAgent: true, canGenerateStudyPack: true, canUseDeepResearch: true, canUploadFiles: true, maxFileSizeMB: 50, maxDailyAgentTasks: 100, maxDailyStudyPacks: 20 },
-  admin: { canUseAgent: true, canGenerateStudyPack: true, canUseDeepResearch: true, canUploadFiles: true, maxFileSizeMB: 200, maxDailyAgentTasks: 9999, maxDailyStudyPacks: 9999 },
-};
+import type { PlanTier, PlanFeatureFlags } from "./types";
+import { PLAN_FEATURES } from "./types";
 
 interface GateContext {
   plan: PlanTier;
@@ -31,17 +14,25 @@ interface GateContext {
   dailyStudyPacks?: number;
 }
 
-/** Enforce a feature gate. Returns null if allowed, or a NextResponse if blocked. */
+/** Enforce a boolean feature gate. Returns null if allowed, NextResponse if blocked. */
 export function guard(
   ctx: GateContext,
-  feature: keyof PlanFeatures,
+  feature: keyof PlanFeatureFlags,
 ): NextResponse | null {
-  const tier = FEATURES[ctx.plan] ?? FEATURES.guest;
+  const tier = PLAN_FEATURES[ctx.plan] ?? PLAN_FEATURES.guest;
   const allowed = tier[feature];
 
   if (typeof allowed === "boolean" && !allowed) {
+    const requiredPlan = requiredPlanFor(feature);
     return NextResponse.json(
-      { error: `此功能需要升级计划 (当前: ${ctx.plan})`, code: "PLAN_REQUIRED", requiredPlan: feature },
+      {
+        error: `此功能需要升级计划`,
+        code: "PLAN_REQUIRED",
+        currentPlan: ctx.plan,
+        requiredFeature: feature,
+        requiredPlan,
+        upgradeHint: requiredPlan === "standard" ? "注册或登录即可使用" : "使用 Mango Code 兑换 Pro 版",
+      },
       { status: 403 },
     );
   }
@@ -49,18 +40,27 @@ export function guard(
   return null;
 }
 
-/** Enforce a quota check. Returns null if allowed, or a 429 response. */
+/** Enforce a quota check. Returns null if allowed, 429 if exceeded. */
 export function guardQuota(
   ctx: GateContext,
   quota: "maxDailyAgentTasks" | "maxDailyStudyPacks",
   current: number,
 ): NextResponse | null {
-  const tier = FEATURES[ctx.plan] ?? FEATURES.guest;
+  const tier = PLAN_FEATURES[ctx.plan] ?? PLAN_FEATURES.guest;
   const max = tier[quota] as number;
 
   if (current >= max) {
+    const label = quota === "maxDailyAgentTasks" ? "Agent 任务" : "学习包";
+    const resetAt = beijingNextMidnight();
     return NextResponse.json(
-      { error: `今日${quota === "maxDailyAgentTasks" ? "Agent 任务" : "学习包"}已达上限 (${current}/${max})`, code: "QUOTA_EXCEEDED", current, max },
+      {
+        error: `今日${label}已达上限 (${current}/${max})`,
+        code: "QUOTA_EXCEEDED",
+        current,
+        max,
+        resetAt,
+        upgradeHint: "升级到 Pro 版可获得更高配额",
+      },
       { status: 429 },
     );
   }
@@ -68,9 +68,37 @@ export function guardQuota(
   return null;
 }
 
-/** Resolve plan from request context */
-export function resolvePlan(opts: { isGuest?: boolean; isAuthenticated?: boolean; override?: PlanTier }): PlanTier {
+/** Resolve plan from request context. */
+export function resolvePlan(opts: {
+  isGuest?: boolean;
+  isAuthenticated?: boolean;
+  override?: PlanTier;
+}): PlanTier {
   if (opts.override) return opts.override;
   if (opts.isGuest || !opts.isAuthenticated) return "guest";
   return "standard";
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════════
+
+function requiredPlanFor(feature: keyof PlanFeatureFlags): PlanTier {
+  // Walk tiers from guest up to find the first that allows this feature
+  const tiers: PlanTier[] = ["guest", "standard", "pro", "admin"];
+  for (const tier of tiers) {
+    const val = PLAN_FEATURES[tier][feature];
+    if (typeof val === "boolean" && val) return tier;
+    if (typeof val === "number" && val > 0) return tier;
+  }
+  return "pro";
+}
+
+function beijingNextMidnight(): string {
+  const now = new Date();
+  const bj = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  const bjDate = bj.toISOString().slice(0, 10);
+  const next = new Date(bjDate + "T00:00:00+08:00");
+  next.setDate(next.getDate() + 1);
+  return next.toISOString();
 }

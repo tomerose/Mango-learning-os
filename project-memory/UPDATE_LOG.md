@@ -1,5 +1,64 @@
 # MangoLearningOS — Update Log
 
+## 2026-06-07 — V12: Auth / Plan / Quota / Mango Code / Profile Center (Current)
+- **Build:** 84/84 pages, 0 TS errors
+- **Scope:** Full User/Auth/Plan/Quota/Mango Code/Profile-Billing foundation + UI redesign
+
+### Backend Infrastructure
+| 系统 | 文件 |
+|------|------|
+| Plan Types (四级计划 + 全功能标记) | `lib/plan/types.ts` |
+| Server-side Gate (guard/guardQuota) | `lib/plan/guard.ts` |
+| Beijing Time Quota (UTC+8, 内存存储) | `lib/quota/quota.ts` |
+| Mango Code Types + Engine (防双重兑换) | `lib/mango-code/types.ts`, `mango-code.ts` |
+| Session Resolver (API route auth) | `lib/auth/session.ts` |
+| Client Plan Hook | `lib/plan/use-plan.ts` |
+
+### API Routes (7 new)
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/auth/plan` | GET | Current user plan + features + quota |
+| `/api/auth/quota` | GET | Daily quota status only |
+| `/api/mango-code/redeem` | POST | Redeem Mango Code (anti-double-spend) |
+| `/api/admin/generate-code` | POST | Generate codes (admin gated) |
+| `/api/admin/codes` | GET | List all codes (admin gated) |
+| `/api/user/delete-data` | POST | Cascading data deletion |
+| `/api/user/profile` | GET/PATCH | Profile fetch + update |
+
+### API Guard Integration
+| Route | Guard |
+|-------|-------|
+| `/api/agent/execute` | auth → plan(canUseMangoAgent) → quota(maxDailyAgentTasks) |
+| `/api/study-pack/generate` | auth → plan(canUseDeepStudyPack) → quota(maxDailyStudyPacks) |
+
+### UI — Auth Pages (redesigned)
+| Component | Description |
+|-----------|-------------|
+| `components/auth/auth-form.tsx` | 3-step wizard: Code → Auth → Success, premium Calm Academic OS |
+| `app/(auth)/layout.tsx` | Watercolor ambient orbs background |
+
+### UI — Profile Center (7 new components)
+| Component | Description |
+|-----------|-------------|
+| `profile-header.tsx` | Avatar + Plan badge + XP/Level/Streak stats |
+| `plan-card.tsx` | Feature grid + upgrade CTA per plan |
+| `quota-display.tsx` | Dual progress bars (Agent + Study Pack) |
+| `mango-code-redeem.tsx` | Input + live validation + success/error states |
+| `learning-assets.tsx` | 6-asset grid (Packs/Tasks/Notes/Mistakes/Cards/Reviews) |
+| `privacy-section.tsx` | Storage toggle + privacy policy + Delete My Data |
+| `weekly-update-section.tsx` | V12 changelog expandable list |
+| `billing-section.tsx` | 3-tier comparison + payment coming soon + FAQ |
+
+### UI — Feature Gates
+| Component | Description |
+|-----------|-------------|
+| `feature-lock.tsx` | Lock card with plan badge + upgrade CTA + compact variant |
+| `quota-exhausted.tsx` | Quota used card with reset timer + upgrade CTA |
+
+### Update Modal
+- V12 changelog: New (5), Improved (2), Fixed (1)
+- Categorized sections with color-coded tags
+
 ## 2026-06-07 — P1-P6 Final Complete: All 6 Gaps Closed + Voice + Agent Loop
 - **Commit:** 1cb15ae | **Deploy:** https://mango-learning-b6f4wqrae-mango-s-projects5.vercel.app
 - **Build:** 82/82 pages, 0 TS errors, 1m
