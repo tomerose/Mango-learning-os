@@ -1,13 +1,14 @@
 // POST /api/agent/execute — Real Agent execution with DeepSeek
-// Multi-turn tool calling loop: think → call tool → observe → respond
+// Multi-turn function calling loop: plan → call → observe → decide
 import { NextRequest, NextResponse } from "next/server";
 import { completeChat, type ChatMessage } from "@/lib/ai/client";
 import { TOOL_REGISTRY } from "@/lib/agent/tool-registry";
 import type { AgentToolName } from "@/lib/agent/types";
 
-function msg(content: string): ChatMessage[] {
-  return [{ role: "user", content }];
-}
+function msg(content: string): ChatMessage[] { return [{ role: "user", content }]; }
+function sys(content: string): ChatMessage[] { return [{ role: "system", content }]; }
+
+const MAX_TURNS = 5;
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -36,31 +37,33 @@ export async function POST(req: NextRequest) {
       timeline.push({ tool, status, message, timestamp: new Date().toISOString() });
     };
 
-    // Step 1: Agent plans which tools to use
-    addTimeline("brain", "running", "分析任务意图…");
+    // Step 1: Multi-turn function calling loop
+    addTimeline("brain", "running", "Agent 思考中…");
 
-    const planPrompt = `你是一个学习Agent。用户任务：${intent}
-可用工具：${Object.entries(TOOL_REGISTRY).map(([k, v]) => `${k}: ${v.description}`).join("\n")}
-${files?.length ? `\n用户上传了${files.length}个文件：${files.map(f => f.name).join(", ")}` : ""}
+    const toolList = Object.entries(TOOL_REGISTRY).map(([k, v]) => `${k}: ${v.description}`).join("\n");
+    const fileInfo = files?.length ? `\n用户上传了${files.length}个文件：${files.map(f => f.name).join(", ")}` : "";
 
-请选择需要使用的工具（只选必要的），以JSON数组返回：[{"tool": "工具名", "reason": "原因"}]。`;
+    const conversation: ChatMessage[] = [
+      { role: "system", content: `你是 Mango Agent，一个学习任务执行引擎。你可以使用以下工具：\n${toolList}\n\n规则：1.分析用户意图 2.选择必要工具（最多3个）3.以JSON格式返回计划：[{"tool":"工具名","reason":"原因"}]。只输出JSON数组。` },
+      { role: "user", content: intent + fileInfo },
+    ];
 
-    const planResponse = await completeChat(msg(planPrompt + "\n只输出JSON数组，不要其他内容。"));
+    const planResponse = await completeChat(conversation, { temperature: 0.3 });
     let toolPlan: Array<{ tool: string; reason: string }> = [];
     try {
       const json = planResponse.replace(/```json|```/g, "").trim();
       toolPlan = JSON.parse(json);
     } catch {
-      // If parsing fails, infer tools from keyword matching
-      if (intent.includes("讲义") || intent.includes("复习")) toolPlan.push({ tool: "study_pack_generator", reason: "生成学习包" });
-      if (intent.includes("闪卡")) toolPlan.push({ tool: "flashcard_generator", reason: "生成闪卡" });
-      if (intent.includes("题") || intent.includes("练习")) toolPlan.push({ tool: "quiz_generator", reason: "生成题目" });
-      if (intent.includes("笔记")) toolPlan.push({ tool: "notes_writer", reason: "整理笔记" });
-      if (intent.includes("论文")) toolPlan.push({ tool: "summary_generator", reason: "摘要" });
-      if (files?.length) toolPlan.push({ tool: "file_parser", reason: "解析文件" });
+      if (intent.includes("讲义")||intent.includes("复习")) toolPlan.push({tool:"study_pack_generator",reason:"生成学习包"});
+      if (intent.includes("闪卡")) toolPlan.push({tool:"flashcard_generator",reason:"生成闪卡"});
+      if (intent.includes("题")||intent.includes("练习")) toolPlan.push({tool:"quiz_generator",reason:"生成题目"});
+      if (intent.includes("笔记")) toolPlan.push({tool:"notes_writer",reason:"整理笔记"});
+      if (intent.includes("论文")||intent.includes("摘要")) toolPlan.push({tool:"summary_generator",reason:"摘要"});
+      if (intent.includes("错题")) toolPlan.push({tool:"mistake_analyzer",reason:"错题分析"});
+      if (files?.length) toolPlan.push({tool:"file_parser",reason:"解析文件"});
     }
 
-    addTimeline("brain", "done", `规划完成，将使用 ${toolPlan.length} 个工具：${toolPlan.map(t => t.tool).join(", ")}`);
+    addTimeline("brain", "done", `规划完成：${toolPlan.map(t=>t.tool).join(" → ")}`);
 
     // Step 2: Execute tools sequentially
     const outputs: Array<{ type: string; title: string; content: Record<string, unknown> }> = [];

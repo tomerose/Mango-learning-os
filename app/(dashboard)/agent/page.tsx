@@ -19,6 +19,8 @@ import { PageTransition } from "@/components/layout/page-transition";
 import { TutorBackground } from "@/components/ui/module-backgrounds";
 import { TASK_TEMPLATES, getAvailableTools, getToolInfo } from "@/lib/agent/tool-registry";
 import type { AgentTask, AgentTaskInput, AgentTaskStatus, TimelineEvent, AgentTaskOutput, AgentToolName } from "@/lib/agent/types";
+import dynamic from "next/dynamic";
+const VoiceInput = dynamic(() => import("@/components/agent/voice-input"), { ssr: false });
 
 /* ═══════════════════════════════════════════════════════════════
    Mango Agent V1 — Personal Learning Engine
@@ -173,6 +175,7 @@ export default function AgentPage() {
                   placeholder="用自然语言描述你想做的事。例如：「帮我整理微观经济学第3-5章的笔记，生成闪卡和练习题」…"
                   className="text-sm min-h-24 rounded-xl" />
                 <div className="flex items-center gap-2">
+                  <VoiceInput onTranscript={(text) => setComposeInput(prev => prev + " " + text)} />
                   <label className="cursor-pointer flex items-center gap-1.5 text-xs text-fg-muted hover:text-fg transition-colors">
                     <FileUp className="size-3.5" /> 上传文件
                     <input type="file" multiple className="hidden" onChange={handleFileInput}
