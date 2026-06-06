@@ -16,6 +16,7 @@ import {
   setTaskDone,
   upsertTask,
   insertNote,
+  updateNote as updateNoteCloud,
   deleteNote as deleteNoteCloud,
   insertReflection,
   insertQuizAttempt,
@@ -92,6 +93,7 @@ interface StoreValue extends StoreState {
   toggleTask: (id: string) => void;
   addTask: (task: Omit<Task, "id">) => void;
   addNote: (note: Omit<Note, "id" | "updatedLabel">) => void;
+  updateNote: (id: string, updates: Partial<Omit<Note, "id" | "updatedLabel">>) => void;
   deleteNote: (id: string) => void;
   addReflection: (r: Omit<Reflection, "id" | "dateLabel">) => void;
   reviewCard: (id: string, grade: ReviewGrade) => void;
@@ -422,6 +424,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const updateNote = React.useCallback((id: string, updates: Partial<Omit<Note, "id" | "updatedLabel">>) => {
+    setState((p) => ({
+      ...p,
+      notes: p.notes.map((n) =>
+        n.id === id ? { ...n, ...updates, updatedLabel: "刚刚编辑" } : n
+      ),
+    }));
+    const prev = stateRef.current;
+    if (prev.mode === "cloud") {
+      updateNoteCloud(id, updates).catch((e) => console.error("[store] updateNote:", e));
+    }
+  }, []);
+
   const addReflection = React.useCallback(
     (r: Omit<Reflection, "id" | "dateLabel">) => {
       const prev = stateRef.current;
@@ -537,6 +552,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleTask,
       addTask,
       addNote,
+      updateNote,
       deleteNote,
       addReflection,
       reviewCard,
@@ -553,6 +569,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleTask,
       addTask,
       addNote,
+      updateNote,
       deleteNote,
       addReflection,
       reviewCard,

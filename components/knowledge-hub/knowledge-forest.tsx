@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
   Brain, FileText, Sparkles, X, ArrowRight, Loader2, Trees,
-  Download, Check, BookOpen, GraduationCap, Layers, Target,
-  Upload, Globe, Expand,
+  Download, Check, BookOpen, Layers, Target,
+  Upload, Globe, Pencil, Plus, Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
@@ -14,6 +14,7 @@ import { useSubjects } from "@/lib/subjects";
 import { listOfficialForests, getOfficialForest, generateForest, type KnowledgeForest as ForestType } from "@/lib/ai/forest-generator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 /* ═══════════════════════════════════════════════════════════════
    Knowledge Forest v3 — Hierarchical 3D Sphere System
@@ -30,7 +31,7 @@ function sphereProject(x: number, y: number, z: number, cx: number, cy: number) 
 }
 
 export function KnowledgeForest() {
-  const { notes, addNote, flashcards } = useStore();
+  const { notes, addNote, updateNote, deleteNote, flashcards } = useStore();
   const { subjects, getMeta } = useSubjects();
 
   // State
@@ -42,9 +43,18 @@ export function KnowledgeForest() {
   const [mouseOver, setMouseOver] = React.useState(false);
   const [selectedSubject, setSelectedSubject] = React.useState<string | null>(null);
   const [selectedConcept, setSelectedConcept] = React.useState<string | null>(null);
-  const [expandedNote, setExpandedNote] = React.useState<{title:string; body:string; tags:string[]} | null>(null);
-  const [communityUpload, setCommunityUpload] = React.useState("");
-  const [communityForests, setCommunityForests] = React.useState<Array<{key:string; title:string; description:string}>>([]);
+  // Note editor state
+  const [editNoteId, setEditNoteId] = React.useState<string | null>(null);
+  const [editTitle, setEditTitle] = React.useState("");
+  const [editBody, setEditBody] = React.useState("");
+  const [editTags, setEditTags] = React.useState("");
+  const [enriching, setEnriching] = React.useState(false);
+  // Community upload form
+  const [showCommunityForm, setShowCommunityForm] = React.useState(false);
+  const [commTitle, setCommTitle] = React.useState("");
+  const [commDesc, setCommDesc] = React.useState("");
+  const [commNotes, setCommNotes] = React.useState<Array<{title:string;body:string;tags:string}>>([]);
+  const [communityForests, setCommunityForests] = React.useState<Array<{key:string;title:string;description:string;notes:Array<{title:string;body:string;tags:string[]}>}>>([]);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Load community forests from localStorage
@@ -54,6 +64,66 @@ export function KnowledgeForest() {
       if (stored) setCommunityForests(JSON.parse(stored));
     } catch {}
   }, []);
+
+  // AI enrichment for note editor
+  async function enrichNote() {
+    if (!editTitle.trim() || enriching) return;
+    setEnriching(true);
+    try {
+      const res = await fetch("/api/notes/enrich", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editTitle.trim(), topic: editBody.trim().slice(0, 500) }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.body) setEditBody(data.body);
+        if (data.tags) setEditTags(Array.isArray(data.tags) ? data.tags.join(", ") : data.tags);
+      }
+    } catch {} finally { setEnriching(false); }
+  }
+
+  function saveEditedNote() {
+    if (!editNoteId || !editTitle.trim()) return;
+    updateNote(editNoteId, {
+      title: editTitle.trim(),
+      body: editBody.trim(),
+      tags: editTags.split(/[,，\s]+/).map((t:string) => t.trim()).filter(Boolean),
+    });
+    setEditNoteId(null);
+  }
+
+  function publishCommunityForest() {
+    if (!commTitle.trim()) return;
+    const newForest = {
+      key: `community-${Date.now()}`,
+      title: commTitle.trim(),
+      description: commDesc.trim() || "社区共享森林",
+      notes: commNotes.map(n => ({
+        title: n.title,
+        body: n.body,
+        tags: n.tags.split(/[,，\s]+/).map(t => t.trim()).filter(Boolean),
+      })),
+    };
+    const updated = [newForest, ...communityForests];
+    setCommunityForests(updated);
+    try { localStorage.setItem("mango-community-forests", JSON.stringify(updated)); } catch {}
+    // Also save to user notes
+    commNotes.forEach(n => {
+      if (n.title.trim()) {
+        addNote({
+          subject: subjects[0]?.id ?? "ai",
+          title: `[社区] ${n.title.trim()}`,
+          body: n.body.trim(),
+          tags: ["社区森林", commTitle.trim(), ...n.tags.split(/[,，\s]+/).map(t => t.trim()).filter(Boolean)],
+        });
+      }
+    });
+    // Reset form
+    setCommTitle(""); setCommDesc(""); setCommNotes([]); setShowCommunityForm(false);
+    // Generate forest from the uploaded data
+    setGenPrompt(commTitle.trim());
+  }
 
   // Auto-rotation
   React.useEffect(() => {
@@ -200,51 +270,58 @@ export function KnowledgeForest() {
                     <Globe className="size-3" /> {f.title}
                   </button>
                 )) : (
-                  <span className="text-caption">还没有社区森林，上传一个吧 →</span>
+                  <span className="text-caption">还没有社区森林</span>
                 )}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  value={communityUpload}
-                  onChange={e => setCommunityUpload(e.target.value)}
-                  placeholder="输入学习主题分享给社区，如：考研数学"
-                  className="text-xs"
-                  onKeyDown={e => {
-                    if (e.key === "Enter" && communityUpload.trim()) {
-                      const newForest = {
-                        key: `community-${Date.now()}`,
-                        title: communityUpload.trim(),
-                        description: "社区共享森林",
-                      };
-                      const updated = [...communityForests, newForest];
-                      setCommunityForests(updated);
-                      try { localStorage.setItem("mango-community-forests", JSON.stringify(updated)); } catch {}
-                      setGenPrompt(communityUpload.trim());
-                      setCommunityUpload("");
-                    }
-                  }}
-                />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={!communityUpload.trim()}
-                  onClick={() => {
-                    if (!communityUpload.trim()) return;
-                    const newForest = {
-                      key: `community-${Date.now()}`,
-                      title: communityUpload.trim(),
-                      description: "社区共享森林",
-                    };
-                    const updated = [...communityForests, newForest];
-                    setCommunityForests(updated);
-                    try { localStorage.setItem("mango-community-forests", JSON.stringify(updated)); } catch {}
-                    setGenPrompt(communityUpload.trim());
-                    setCommunityUpload("");
-                  }}
-                >
-                  <Upload className="size-3 mr-1" /> 上传
+                <Button size="sm" variant="outline" onClick={() => setShowCommunityForm(!showCommunityForm)} className="text-xs">
+                  <Plus className="size-3 mr-1" /> {showCommunityForm ? "收起" : "上传森林"}
                 </Button>
               </div>
+              {/* Community Upload Form */}
+              <AnimatePresence>
+                {showCommunityForm && (
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden border border-border rounded-xl p-4 bg-bg-muted/50 flex flex-col gap-3">
+                    <p className="text-xs font-medium">上传社区森林（含笔记、标签、资源）</p>
+                    <Input value={commTitle} onChange={e => setCommTitle(e.target.value)}
+                      placeholder="森林主题，如：考研数学 · 线性代数" className="text-xs" />
+                    <Textarea value={commDesc} onChange={e => setCommDesc(e.target.value)}
+                      placeholder="简介...（可选）" className="text-xs min-h-16" />
+                    {/* Note entries */}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-caption">笔记内容 ({commNotes.length} 条)</span>
+                        <button onClick={() => setCommNotes(p => [...p, {title:"",body:"",tags:""}])}
+                          className="text-xs text-primary hover:underline flex items-center gap-1">
+                          <Plus className="size-3" /> 添加笔记
+                        </button>
+                      </div>
+                      {commNotes.map((n, i) => (
+                        <div key={i} className="flex flex-col gap-1.5 border border-border rounded-lg p-2 bg-bg-surface">
+                          <div className="flex items-center gap-2">
+                            <Input value={n.title} onChange={e => {
+                              const updated = [...commNotes]; updated[i].title = e.target.value; setCommNotes(updated);
+                            }} placeholder={`笔记 ${i+1} 标题`} className="text-xs flex-1" />
+                            <button onClick={() => setCommNotes(p => p.filter((_,j) => j !== i))}
+                              className="text-fg-muted hover:text-destructive shrink-0"><X className="size-3.5" /></button>
+                          </div>
+                          <Textarea value={n.body} onChange={e => {
+                            const updated = [...commNotes]; updated[i].body = e.target.value; setCommNotes(updated);
+                          }} placeholder="内容..." className="text-xs min-h-14" />
+                          <Input value={n.tags} onChange={e => {
+                            const updated = [...commNotes]; updated[i].tags = e.target.value; setCommNotes(updated);
+                          }} placeholder="标签，逗号分隔" className="text-xs" />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button size="sm" variant="outline" onClick={() => { setCommTitle(""); setCommDesc(""); setCommNotes([]); setShowCommunityForm(false); }}>取消</Button>
+                      <Button size="sm" onClick={publishCommunityForest} disabled={!commTitle.trim()}>
+                        <Upload className="size-3 mr-1" /> 发布到社区
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         )}
@@ -381,27 +458,66 @@ export function KnowledgeForest() {
 
             {conceptNotes.length > 0 ? (
               <div className="flex flex-col gap-2">
-                {conceptNotes.map(n => (
-                  <button key={n.title}
-                    onClick={() => setExpandedNote({ title: n.title, body: n.body, tags: n.tags })}
-                    className="flex items-start gap-2 rounded-lg bg-bg-muted p-3 text-left hover:bg-bg-muted/80 transition-colors cursor-pointer group">
-                    <FileText className="size-3.5 text-fg-muted mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-medium group-hover:text-primary transition-colors">{n.title}</p>
-                        <Expand className="size-3 text-fg-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      <p className="text-caption mt-0.5 line-clamp-3">{n.body}</p>
-                      {n.tags.length > 0 && (
-                        <div className="flex gap-1 mt-1.5">
-                          {n.tags.slice(0, 3).map(t => (
-                            <span key={t} className="text-[9px] rounded-full border border-border px-1.5 py-0.5 text-fg-muted">{t}</span>
-                          ))}
+                {conceptNotes.map(n => {
+                  // Find matching user note for editing
+                  const userNote = notes.find(un => un.title.includes(n.title) || n.title.includes(un.title));
+                  return (
+                  <div key={n.title} className="flex flex-col gap-2 rounded-lg bg-bg-muted p-3 group">
+                    <div className="flex items-start gap-2">
+                      <FileText className="size-3.5 text-fg-muted mt-0.5 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-medium">{n.title}</p>
                         </div>
+                        <p className="text-caption mt-0.5 line-clamp-3">{n.body}</p>
+                        {n.tags.length > 0 && (
+                          <div className="flex gap-1 mt-1.5">
+                            {n.tags.slice(0, 3).map(t => (
+                              <span key={t} className="text-[9px] rounded-full border border-border px-1.5 py-0.5 text-fg-muted">{t}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {userNote ? (
+                        <>
+                          <button onClick={() => {
+                            setEditNoteId(userNote.id);
+                            setEditTitle(userNote.title);
+                            setEditBody(userNote.body);
+                            setEditTags(userNote.tags.join(", "));
+                          }}
+                            className="text-xs text-primary hover:underline flex items-center gap-1">
+                            <Pencil className="size-3" /> 编辑
+                          </button>
+                          <button onClick={() => {
+                            setEditNoteId(userNote.id);
+                            setEditTitle(userNote.title);
+                            setEditBody(userNote.body);
+                            setEditTags(userNote.tags.join(", "));
+                            enrichNote();
+                          }}
+                            className="text-xs text-amber-600 hover:underline flex items-center gap-1">
+                            <Sparkles className="size-3" /> AI 充实
+                          </button>
+                        </>
+                      ) : (
+                        <button onClick={() => {
+                          addNote({
+                            subject: subjects[0]?.id ?? "ai",
+                            title: n.title,
+                            body: n.body,
+                            tags: n.tags,
+                          });
+                        }}
+                          className="text-xs text-primary hover:underline flex items-center gap-1">
+                          <Plus className="size-3" /> 加入我的笔记
+                        </button>
                       )}
                     </div>
-                  </button>
-                ))}
+                  </div>);
+                })}
                 {/* Flashcards */}
                 {activeForest.flashcards && activeForest.flashcards.length > 0 && (
                   <div className="mt-2 p-3 rounded-lg bg-amber-50/30 border border-amber-200/30">
@@ -437,40 +553,31 @@ export function KnowledgeForest() {
         )}
       </AnimatePresence>
 
-      {/* ── Note Detail Modal ── */}
+      {/* ── Inline Note Editor ── */}
       <AnimatePresence>
-        {expandedNote && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-4"
-            onClick={() => setExpandedNote(null)}>
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              onClick={e => e.stopPropagation()}
-              className="bg-surface rounded-2xl border border-border p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-2xl">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-serif font-semibold">{expandedNote.title}</h3>
-                <button onClick={() => setExpandedNote(null)}
-                  className="size-8 flex items-center justify-center rounded-lg hover:bg-bg-muted transition-colors">
-                  <X className="size-4" />
-                </button>
-              </div>
-              {expandedNote.tags.length > 0 && (
-                <div className="flex gap-1.5 mb-4 flex-wrap">
-                  {expandedNote.tags.map(t => (
-                    <span key={t} className="text-xs rounded-full border border-border px-2 py-0.5 text-fg-muted">{t}</span>
-                  ))}
-                </div>
-              )}
-              <div className="prose prose-sm max-w-none text-fg-secondary whitespace-pre-wrap leading-relaxed">
-                {expandedNote.body}
-              </div>
-              <div className="mt-4 flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => setExpandedNote(null)}>关闭</Button>
-                <Link href={`/agent?q=${encodeURIComponent("请讲解：" + expandedNote.title)}`}
-                  className="inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline">
-                  <Brain className="size-3" /> 向导师深入学习
-                </Link>
-              </div>
-            </motion.div>
+        {editNoteId && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+            className="card-card p-5 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <span className="text-small font-medium flex items-center gap-2">
+                <Pencil className="size-3.5" /> 编辑笔记
+              </span>
+              <button onClick={() => setEditNoteId(null)} className="size-7 flex items-center justify-center rounded-lg hover:bg-bg-muted"><X className="size-3.5" /></button>
+            </div>
+            <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="标题" className="text-sm" autoFocus />
+            <div className="relative">
+              <Textarea value={editBody} onChange={e => setEditBody(e.target.value)} placeholder="内容…" className="min-h-32 text-sm" />
+              <button onClick={enrichNote} disabled={enriching || !editTitle.trim()}
+                className="absolute bottom-2 right-2 inline-flex items-center gap-1 text-xs rounded-lg bg-amber-100 text-amber-700 px-2 py-1 hover:bg-amber-200 transition-colors disabled:opacity-50">
+                {enriching ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+                AI 充实
+              </button>
+            </div>
+            <Input value={editTags} onChange={e => setEditTags(e.target.value)} placeholder="标签，逗号分隔" className="text-sm" />
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => setEditNoteId(null)}>取消</Button>
+              <Button size="sm" onClick={saveEditedNote} disabled={!editTitle.trim()}>保存修改</Button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

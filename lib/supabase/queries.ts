@@ -104,6 +104,18 @@ export async function deleteNote(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function updateNote(
+  id: string,
+  updates: Partial<Omit<Note, "id" | "updatedLabel">>
+): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("knowledge_notes")
+    .update({ ...toNoteRow(updates), updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw error;
+}
+
 // ---- Flashcards (SM-2) ---------------------------------------
 export async function fetchFlashcards(): Promise<Flashcard[]> {
   const supabase = createClient();

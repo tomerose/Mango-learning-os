@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, Trash2, FileText, Download, FileUp, Link, Copy, FileOutput, Printer } from "lucide-react";
+import { Plus, Trash2, FileText, Download, FileUp, Link, Copy, FileOutput, Printer, Pencil, Sparkles, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,7 +32,7 @@ import { ImportNoteDialog } from "@/components/knowledge-hub/import-note-dialog"
 import type { SubjectId } from "@/lib/types";
 
 export function NotesTab() {
-  const { notes, addNote, deleteNote, hydrated } = useStore();
+  const { notes, addNote, updateNote, deleteNote, hydrated } = useStore();
   const { subjects } = useSubjects();
   const [open, setOpen] = React.useState(false);
   const [importOpen, setImportOpen] = React.useState(false);
@@ -41,12 +41,42 @@ export function NotesTab() {
   const [title, setTitle] = React.useState("");
   const [body, setBody] = React.useState("");
   const [tags, setTags] = React.useState("");
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [enriching, setEnriching] = React.useState(false);
 
   function reset() {
     setSubject("ai");
     setTitle("");
     setBody("");
     setTags("");
+    setEditingId(null);
+  }
+
+  function startEdit(note: typeof notes[0]) {
+    setEditingId(note.id);
+    setSubject(note.subject);
+    setTitle(note.title);
+    setBody(note.body);
+    setTags(note.tags.join(", "));
+    setOpen(true);
+  }
+
+  // AI enrichment via Wikipedia + web search
+  async function enrichContent() {
+    if (!title.trim() || enriching) return;
+    setEnriching(true);
+    try {
+      const res = await fetch("/api/notes/enrich", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title.trim(), topic: body.trim().slice(0, 500) }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.body) setBody(data.body);
+        if (data.tags) setTags(Array.isArray(data.tags) ? data.tags.join(", ") : data.tags);
+      }
+    } catch {} finally { setEnriching(false); }
   }
 
   // ── Export helpers ─────────────────────────────────────
@@ -90,15 +120,17 @@ h1{font-size:22px;border-bottom:2px solid #e0e0e0;padding-bottom:8px;}
 
   function submit() {
     if (!title.trim()) return;
-    addNote({
+    const noteData = {
       subject,
       title: title.trim(),
       body: body.trim(),
-      tags: tags
-        .split(/[,，\s]+/)
-        .map((t) => t.trim())
-        .filter(Boolean),
-    });
+      tags: tags.split(/[,，\s]+/).map((t) => t.trim()).filter(Boolean),
+    };
+    if (editingId) {
+      updateNote(editingId, noteData);
+    } else {
+      addNote(noteData);
+    }
     reset();
     setOpen(false);
   }
@@ -164,9 +196,9 @@ h1{font-size:22px;border-bottom:2px solid #e0e0e0;padding-bottom:8px;}
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>新建笔记</DialogTitle>
+              <DialogTitle>{editingId ? "编辑笔记" : "新建笔记"}</DialogTitle>
               <DialogDescription>
-                保存到本地，刷新后依然在。配置 Supabase 后将自动云端同步。
+                {editingId ? "修改标题、内容或标签后保存。" : "保存到本地，刷新后依然在。配置 Supabase 后将自动云端同步。"}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4">
@@ -192,12 +224,23 @@ h1{font-size:22px;border-bottom:2px solid #e0e0e0;padding-bottom:8px;}
                 placeholder="标题"
                 autoFocus
               />
-              <Textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="内容…"
-                className="min-h-28"
-              />
+              <div className="relative">
+                <Textarea
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="内容…（可点击下方「AI 充实」自动从百科和知乎补全知识）"
+                  className="min-h-28"
+                />
+                <button
+                  type="button"
+                  onClick={enrichContent}
+                  disabled={enriching || !title.trim()}
+                  className="absolute bottom-2 right-2 inline-flex items-center gap-1 text-xs rounded-lg bg-amber-100 text-amber-700 px-2 py-1 hover:bg-amber-200 transition-colors disabled:opacity-50"
+                >
+                  {enriching ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+                  AI 充实内容
+                </button>
+              </div>
               <Input
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
@@ -205,11 +248,11 @@ h1{font-size:22px;border-bottom:2px solid #e0e0e0;padding-bottom:8px;}
               />
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>
+              <Button variant="outline" onClick={() => { setOpen(false); reset(); }}>
                 取消
               </Button>
               <Button onClick={submit} disabled={!title.trim()}>
-                保存
+                {editingId ? "更新" : "保存"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -242,6 +285,7 @@ h1{font-size:22px;border-bottom:2px solid #e0e0e0;padding-bottom:8px;}
                     </span>
                     <div className="flex items-center gap-1">
                       <span className="text-muted-foreground text-xs">{n.updatedLabel}</span>
+                      <button onClick={() => startEdit(n)} title="编辑" className="text-muted-foreground hover:text-primary opacity-0 transition-opacity group-hover:opacity-100"><Pencil className="size-3" /></button>
                       <button onClick={() => exportAsWord(n)} title="导出 Word" className="text-muted-foreground hover:text-primary opacity-0 transition-opacity group-hover:opacity-100"><FileOutput className="size-3" /></button>
                       <button onClick={() => exportAsPDF(n)} title="打印 PDF" className="text-muted-foreground hover:text-primary opacity-0 transition-opacity group-hover:opacity-100"><Printer className="size-3" /></button>
                       <button onClick={() => deleteNote(n.id)} aria-label="删除笔记" className="text-muted-foreground hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100"><Trash2 className="size-3.5" /></button>
