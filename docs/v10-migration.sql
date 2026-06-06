@@ -1,41 +1,4 @@
--- V10 Migration — run in Supabase SQL Editor
-CREATE TABLE IF NOT EXISTS content_raw (
-  id SERIAL PRIMARY KEY,
-  source TEXT NOT NULL,
-  url TEXT,
-  title TEXT NOT NULL,
-  content TEXT,
-  category TEXT,
-  status TEXT DEFAULT 'pending',
-  ingested_at TIMESTAMP DEFAULT NOW(),
-  processed_at TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS cognitive_units (
-  id SERIAL PRIMARY KEY,
-  user_id TEXT,
-  type TEXT,
-  key_concept TEXT,
-  structured_data JSONB DEFAULT '{}',
-  source_url TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS learning_sessions (
-  id SERIAL PRIMARY KEY,
-  user_id TEXT,
-  flow TEXT,
-  duration_sec INTEGER,
-  cards_completed INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS decision_logs (
-  id SERIAL PRIMARY KEY,
-  user_id TEXT,
-  recommendation TEXT NOT NULL,
-  user_action TEXT,
-  feedback TEXT,
-  autonomy_level TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
+CREATE TABLE IF NOT EXISTS content_raw (id SERIAL PRIMARY KEY, source TEXT NOT NULL, url TEXT, title TEXT NOT NULL, content TEXT, category TEXT, status TEXT DEFAULT 'pending', ingested_at TIMESTAMP DEFAULT NOW(), processed_at TIMESTAMP);
+CREATE TABLE IF NOT EXISTS cognitive_units (id SERIAL PRIMARY KEY, user_id TEXT, type TEXT, key_concept TEXT, structured_data JSONB DEFAULT '{}', source_url TEXT, created_at TIMESTAMP DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS learning_sessions (id SERIAL PRIMARY KEY, user_id TEXT, flow TEXT, duration_sec INTEGER, cards_completed INTEGER DEFAULT 0, created_at TIMESTAMP DEFAULT NOW());
+CREATE TABLE IF NOT EXISTS decision_logs (id SERIAL PRIMARY KEY, user_id TEXT, recommendation TEXT NOT NULL, user_action TEXT, feedback TEXT, autonomy_level TEXT, created_at TIMESTAMP DEFAULT NOW());
