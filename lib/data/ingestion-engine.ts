@@ -22,21 +22,59 @@ export interface LearningFlow {
   generatedAt: string;
 }
 
-// ═══ RSS Source Configuration ═══
+// ═══ Data Source Configuration (RSS + Public APIs) ═══
 
 const RSS_SOURCES = {
   english: [
     "https://feeds.bbci.co.uk/news/rss.xml",
-    "https://www.economist.com/feeds/print-sections/77/britain.xml",
   ],
   world: [
     "https://hnrss.org/frontpage?points=50",
-    "https://www.reddit.com/r/worldnews/.rss",
   ],
   tech: [
     "https://hnrss.org/frontpage?points=100",
   ],
 };
+
+// Public APIs for enriched content (no API key needed)
+export const PUBLIC_APIS = {
+  dictionary: (word: string) => `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`,
+  news: "https://api.spaceflightnewsapi.net/v4/articles/?limit=5",
+  books: (query: string) => `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}`,
+  universities: (country: string) => `http://universities.hipolabs.com/search?country=${encodeURIComponent(country)}`,
+  quote: "https://zenquotes.io/api/today",
+};
+
+// ═══ Fetch enriched content from public APIs ═══
+
+export async function fetchPublicAPI(type: keyof typeof PUBLIC_APIS, param?: string): Promise<unknown> {
+  const url = typeof PUBLIC_APIS[type] === "function"
+    ? (PUBLIC_APIS[type] as (p: string) => string)(param ?? "")
+    : PUBLIC_APIS[type] as string;
+
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+// ═══ Dictionary lookup for English Flow ═══
+
+export async function lookupWord(word: string): Promise<{ definition: string; example: string; phonetic: string } | null> {
+  try {
+    const data = await fetchPublicAPI("dictionary", word) as Array<{ meanings: Array<{ definitions: Array<{ definition: string; example?: string }> }>; phonetic?: string }> | null;
+    if (!data?.[0]) return null;
+    const m = data[0].meanings[0]?.definitions[0];
+    return {
+      definition: m?.definition ?? "",
+      example: m?.example ?? "",
+      phonetic: data[0].phonetic ?? "",
+    };
+  } catch { return null; }
+}
 
 // ═══ Client-side RSS fetcher (via Next.js API route proxy) ═══
 
