@@ -17,6 +17,7 @@ import { AmbientOrbs, FloatingParticles } from "@/components/ui/ambient-orbs";
 import { PageTransition } from "@/components/layout/page-transition";
 import { StaggerReveal, FadeIn, ScaleIn } from "@/components/ui/motion-system";
 import { LifeCommandCenter } from "@/components/hub/life-command-center";
+import { CognitiveFlows } from "@/components/hub/cognitive-flows";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub v7 — Warm Paper · Editorial Wellness · Mobile-First
@@ -157,7 +158,10 @@ export default function HubPage() {
       {/* ═══ 2. Life Command Center (V9) ═══ */}
       <LifeCommandCenter />
 
-      {/* ═══ 3. TODAY ═══ */}
+      {/* ═══ 3. Cognitive Flows (V10) ═══ */}
+      <CognitiveFlows />
+
+      {/* ═══ 4. TODAY ═══ */}
       <Section delay={0.05}>
         <SectionHeader title="今日学习" />
         <StaggerReveal className="grid grid-cols-1 sm:grid-cols-3 gap-3">
