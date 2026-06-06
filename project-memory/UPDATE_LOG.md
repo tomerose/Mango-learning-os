@@ -1,6 +1,14 @@
 # MangoLearningOS — Update Log
 
-## 2026-06-07 — V12: Auth / Plan / Quota / Mango Code / Profile Center (Current)
+## 2026-06-07 — V13.5: Notes重塑 + MindGarden修复 + 导航重构 (Current)
+- **Build:** 92 pages, 0 TS errors
+- **Notes V2:** 模板点击填充结构化内容(6套完整Markdown模板) + AI分析按钮 + 笔记详情页 + 导入增强
+- **Mind Garden:** `/api/mind-garden` 隐私阻断已移除，陪伴聊天恢复；`/api/mind-garden/reflect` 10模式全部连通AI
+- **导航:** 底部4项 → 今日/学习包/导师/我的；更多抽屉收纳其余功能
+- **Agent:** 进度动画(🥭旋转+步骤描述+工具badge)
+- **5 GitHub集成:** Open-LLM-VTuber芒宝伴侣 + PaddleOCR双通道 + Wikipedia/DuckDuckGo实时搜索 + 4免费API
+
+## 2026-06-07 — V12: Auth / Plan / Quota / Mango Code / Profile Center
 - **Build:** 84/84 pages, 0 TS errors
 - **Scope:** Full User/Auth/Plan/Quota/Mango Code/Profile-Billing foundation + UI redesign
 

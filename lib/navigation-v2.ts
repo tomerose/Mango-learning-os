@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────────────────────────
 import {
   Sun, Package, Bot, Trees, Heart,
-  CalendarCheck, GraduationCap, Mic, User, MoreHorizontal, FileText,
+  CalendarCheck, Mic, User, FileText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,8 +27,7 @@ export const navItemsV2: NavItem[] = [
   { id: "notes", label: "笔记", shortLabel: "笔记", href: "/notes", icon: FileText, description: "结构化笔记 · 6种模板 · 导入", tier: "secondary" },
   { id: "forest", label: "知识森林", shortLabel: "森林", href: "/forest", icon: Trees, description: "知识网络 · 笔记关联 · 学习计划", tier: "secondary" },
   { id: "grow", label: "花园", shortLabel: "花园", href: "/grow", icon: Heart, description: "心灵花园 Pro · 10种模式 · 自我关怀", tier: "secondary" },
-  { id: "planner", label: "学习计划", shortLabel: "计划", href: "/planner", icon: CalendarCheck, description: "智能生成计划 · 任务管理", tier: "secondary" },
-  { id: "dna", label: "学习身份", shortLabel: "身份", href: "/dna", icon: GraduationCap, description: "学习轨迹 · 优势弱项 · 成长进度", tier: "secondary" },
+  { id: "planner", label: "学习计划", shortLabel: "计划", href: "/planner", icon: CalendarCheck, description: "任务管理 · 学习身份 · 闪卡 · 考试", tier: "secondary" },
   // ── Beta ───────────────────────────────────────────────────
   { id: "voice", label: "Mango Voice", shortLabel: "Voice", href: "/voice", icon: Mic, description: "语音对话 · 内测中", tier: "beta" },
 ];
@@ -42,7 +41,7 @@ export const moreNavItems: NavItem[] = navItemsV2.filter(n => n.tier !== "primar
 export const redirectMapV2: Record<string, string> = {
   "/dashboard": "/hub", "/ai-tutor": "/agent", "/study-planner": "/planner",
   "/knowledge-hub": "/agent", "/exam": "/pack", "/exam-mode": "/pack",
-  "/exam-master": "/pack", "/mind-garden": "/grow", "/mango-dna": "/dna",
+  "/exam-master": "/pack", "/mind-garden": "/grow", "/mango-dna": "/planner", "/dna": "/planner",
   "/analytics": "/hub", "/projects": "/grow", "/mind": "/grow",
   "/knowledge-tree": "/agent",
 };
