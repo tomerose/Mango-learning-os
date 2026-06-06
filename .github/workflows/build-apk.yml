@@ -1,0 +1,55 @@
+name: Build Android APK from PWA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/v10-study-pack]
+    paths:
+      - 'public/manifest.webmanifest'
+      - 'public/sw.js'
+      - 'public/icon-*.png'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Bubblewrap
+        run: npm install -g @bubblewrap/cli
+
+      - name: Initialize Bubblewrap project
+        run: |
+          bubblewrap init --manifest https://mangoleaningos.top/manifest.webmanifest --directory twa-project
+        continue-on-error: true
+
+      - name: Build APK
+        run: |
+          cd twa-project
+          bubblewrap build
+        continue-on-error: true
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mango-android-apk
+          path: |
+            twa-project/app/build/outputs/apk/**/*.apk
+            twa-project/*.apk
+            *.apk
+          if-no-files-found: warn
