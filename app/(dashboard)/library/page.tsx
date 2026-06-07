@@ -4,10 +4,10 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  Search, Filter, ArrowUpDown, Download, Edit3, Trash2, Copy,
-  FileText, BookOpen, Brain, Target, Sparkles, ExternalLink,
-  Archive, RotateCcw, Layers, Calendar, MoreHorizontal,
-  Library, ChevronRight, CalendarCheck,
+  Search, Filter, Download, Edit3, Trash2, Copy,
+  FileText, BookOpen, Brain, Target, Sparkles,
+  Archive, RotateCcw, Layers, Calendar,
+  Library, ChevronRight, CalendarCheck, Layers3, HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileShell, MissionHero, EmptyState, SkeletonState } from "@/components/mobile/premium-mobile";
@@ -16,6 +16,8 @@ import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "@/lib/artifact/types";
 import type { ArtifactMeta } from "@/lib/artifact/artifact-store";
 import { SAMPLE_ARTIFACTS } from "@/lib/artifact/samples";
 import { artifactToPlan, planToStoreTasks } from "@/lib/outcome/planner-bridge";
+import { artifactToFlashcards } from "@/lib/outcome/flashcard-bridge";
+import { artifactToQuiz } from "@/lib/outcome/flashcard-bridge";
 import { useStore } from "@/lib/store";
 
 // ── Helper ──────────────────────────────────────────────────────
@@ -108,13 +110,47 @@ export default function LibraryPage() {
     if (!selectedArtifact) return;
     const title = selectedArtifact.title || "artifact";
     const content = selectedArtifact.content || selectedArtifact.sections?.map((s: any) => `## ${s.title}\n\n${s.content}`).join("\n\n") || "";
-    const blob = new Blob([content], { type: format === "html" ? "text/html" : "text/markdown;charset=utf-8" });
+    const ext = format === "html" ? "html" : format === "docx" ? "docx" : "md";
+    const mime = format === "html" ? "text/html" : format === "docx"
+      ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      : "text/markdown;charset=utf-8";
+    const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${title}.${format === "html" ? "html" : "md"}`;
+    a.download = `${title}.${ext}`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function handleFlashcards() {
+    if (!selectedArtifact) return;
+    const cards = artifactToFlashcards(selectedArtifact, 15);
+    const text = cards.map(c => `Q: ${c.front}\nA: ${c.back}\n---`).join("\n\n");
+    const blob = new Blob([`# ${selectedArtifact.title} — 闪卡\n\n${text}`], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedArtifact.title}_闪卡.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setPlanGenerated(true);
+    setTimeout(() => setPlanGenerated(false), 1500);
+  }
+
+  function handleQuiz() {
+    if (!selectedArtifact) return;
+    const quiz = artifactToQuiz(selectedArtifact, 8);
+    const text = quiz.map((q, i) => `${i + 1}. ${q.question}\n   答案：${q.correctAnswer}\n   解析：${q.explanation}\n`).join("\n");
+    const blob = new Blob([`# ${selectedArtifact.title} — 练习\n\n${text}`], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedArtifact.title}_练习.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setPlanGenerated(true);
+    setTimeout(() => setPlanGenerated(false), 1500);
   }
 
   const displayItems = showSamples
@@ -281,13 +317,31 @@ export default function LibraryPage() {
                           onClick={() => handleExport("md")}
                           className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
                         >
-                          <Download className="size-3" />导出 MD
+                          <Download className="size-3" />MD
+                        </button>
+                        <button
+                          onClick={() => handleExport("docx")}
+                          className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
+                        >
+                          <FileText className="size-3" />DOCX
+                        </button>
+                        <button
+                          onClick={handleFlashcards}
+                          className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
+                        >
+                          <Layers3 className="size-3" />闪卡
+                        </button>
+                        <button
+                          onClick={handleQuiz}
+                          className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
+                        >
+                          <HelpCircle className="size-3" />练习
                         </button>
                         <button
                           onClick={handleCopy}
                           className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
                         >
-                          <Copy className="size-3" />{planGenerated && selectedArtifact ? "已复制" : "复制"}
+                          <Copy className="size-3" />复制
                         </button>
                         <button
                           onClick={() => handleDelete(selectedArtifact.id)}

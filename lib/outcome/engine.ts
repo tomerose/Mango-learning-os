@@ -1,15 +1,16 @@
 /**
- * MangoOS V14.2 — Outcome Engine
+ * MangoOS V14.3 — Production Outcome Engine
  *
- * Unified artifact generation pipeline:
- * normalizeInput → inferIntent → selectTemplate → generateStructuredArtifact
- * → qualityReview → autoRepairIfNeeded → persistArtifact → exportReady
+ * Pipeline: normalize→infer→search→parse→template→generate→quality→repair→persist→export
+ * V14.3 adds: real source search, material parsing, targeted quality repair, artifact→actions bridge
  */
 import type { Artifact, ArtifactInput } from "@/lib/artifact/types";
 import { createArtifactFromInput, saveArtifact } from "@/lib/artifact/artifact-store";
 import { evaluateArtifactQuality, qualityGate, generateFallbackArtifact } from "@/lib/artifact/quality-gate";
 import { TASK_TEMPLATES, inferTaskType } from "./templates";
 import { resolveIdentityContext, identityContextToPrompt, type IdentityContext } from "./identity-context";
+import { searchSources } from "./source-adapter";
+import { parseMaterials, materialContextToPrompt, type MaterialContext } from "./material-parser";
 import type { PlanTier } from "@/lib/plan/types";
 
 // ── Pipeline stages ───────────────────────────────────────────
@@ -36,6 +37,8 @@ function buildSystemPrompt(
   templateType: string,
   identity: IdentityContext,
   input: ArtifactInput,
+  materialContext?: MaterialContext | null,
+  sources?: Artifact["sources"],
 ): string {
   const template = TASK_TEMPLATES[templateType as keyof typeof TASK_TEMPLATES];
   if (!template) throw new Error(`Unknown template: ${templateType}`);
@@ -45,6 +48,10 @@ function buildSystemPrompt(
     .join("\n\n");
 
   const identityPrompt = identityContextToPrompt(identity);
+  const materialPrompt = materialContext ? materialContextToPrompt(materialContext) : "";
+  const sourcePrompt = sources?.length
+    ? `\n## 搜索到的参考来源\n${sources.map(s => `- [${s.title}](${s.url ?? ""}) — ${s.platform} (${s.reliability})`).join("\n")}\n\n请参考以上来源增强内容可信度。标注来源时使用 [来源: 平台名] 格式。`
+    : "";
 
   return `${template.systemPromptIntro}
 
@@ -53,9 +60,10 @@ ${identityPrompt}
 
 ## 用户输入
 ${input.prompt}
-${input.files?.length ? `\n附带文件：${input.files.map(f => f.name).join("、")}` : ""}
 ${input.course ? `\n课程：${input.course}` : ""}
 ${input.school ? `\n学校：${input.school}` : ""}
+${sourcePrompt}
+${materialPrompt}
 
 ## 必须包含的章节
 ${sections}
@@ -69,7 +77,8 @@ ${sections}
 - 所有内容必须是可实际使用的真实学习内容
 - 例题必须完整（题目 + 解答）
 - 练习必须有明确步骤
-- 如果信息不足，请标注"建议补充以下资料：..."`
+- 如果信息不足，请标注"建议补充以下资料：..."
+- 如果搜索到了来源，请在相关内容处标注 [来源: 平台名]`
 }
 
 // ── Parse AI response into artifact sections ───────────────────
@@ -127,14 +136,45 @@ export async function runOutcomePipeline(
   stages[0].completedAt = new Date().toISOString();
   stages[0].details = `Detected type: ${taskType}`;
 
+  // Stage 1b: Source search (V14.3 — real web retrieval)
+  stages.push({ name: "search", status: "running", startedAt: new Date().toISOString() });
+  let sources: Artifact["sources"] = [];
+  const isPro = input.planTier === "pro" || input.planTier === "admin";
+  try {
+    const searchResult = await searchSources({
+      query: input.prompt.slice(0, 200),
+      maxResults: isPro ? 8 : 4,
+      platforms: isPro ? ["wikipedia", "duckduckgo", "dictionary"] : ["wikipedia", "duckduckgo"],
+    });
+    sources = searchResult.sources;
+    stages[1].status = "done";
+    stages[1].details = `${sources.length} sources from ${searchResult.searchedPlatforms.join(", ")} · ${searchResult.elapsedMs}ms`;
+  } catch {
+    stages[1].status = "done";
+    stages[1].details = "Source search skipped (network unavailable)";
+  }
+  stages[1].completedAt = new Date().toISOString();
+
+  // Stage 1c: Material parsing (V14.3)
+  stages.push({ name: "parse", status: "running", startedAt: new Date().toISOString() });
+  let materialContext: MaterialContext | null = null;
+  if (input.files?.length) {
+    materialContext = parseMaterials(input.files);
+    stages[2].details = `${materialContext.materials.length} files · ${materialContext.totalLength} chars`;
+  } else {
+    stages[2].details = "No files attached";
+  }
+  stages[2].status = "done";
+  stages[2].completedAt = new Date().toISOString();
+
   // Stage 2: Select template + resolve identity
   stages.push({ name: "template", status: "running", startedAt: new Date().toISOString() });
   const template = TASK_TEMPLATES[taskType];
   const identity = resolveIdentityContext(input.identityContext, input.planTier);
-  const systemPrompt = buildSystemPrompt(taskType, identity, input);
-  stages[1].status = "done";
-  stages[1].completedAt = new Date().toISOString();
-  stages[1].details = `Template: ${template.label} · Identity: ${identity.name}`;
+  const systemPrompt = buildSystemPrompt(taskType, identity, input, materialContext, sources);
+  stages[3].status = "done";
+  stages[3].completedAt = new Date().toISOString();
+  stages[3].details = `Template: ${template.label} · Identity: ${identity.name}`;
 
   // Stage 3: Generate artifact
   stages.push({ name: "generate", status: "running", startedAt: new Date().toISOString() });
@@ -234,13 +274,35 @@ export async function runOutcomePipeline(
   stages[3].status = "done";
   stages[3].completedAt = new Date().toISOString();
 
-  if (!gate.passed) {
-    stages[3].details = `Score ${gate.score.total}/100 · Failed: ${gate.failures.join(", ")}`;
-    // Auto-repair attempt: re-tag sections, still save
+  if (!gate.passed && retries < maxRetries) {
+    // Stage 4b: Targeted repair — retry with specific fix instructions
+    stages[4].status = "running";
+    stages[4].details = `Repairing: ${gate.failures.join(", ")}`;
+    const repairPrompt = `${systemPrompt}\n\n## ⚠️ 质量未达标，重新生成\n以下维度需要改进：\n${gate.failures.map(f => `- ${f}`).join("\n")}\n\n请针对以上不足重新生成完整内容。`;
+    try {
+      const repairedResponse = await callAI(repairPrompt, input.prompt, input.planTier);
+      if (repairedResponse.length >= 500) {
+        const repairedSections = parseResponseToSections(repairedResponse, taskType);
+        artifact.content = repairedResponse;
+        artifact.sections = repairedSections;
+        const reGate = qualityGate(artifact, retries + 1);
+        artifact.qualityBreakdown = reGate.score;
+        artifact.qualityScore = reGate.score.total;
+        stages[4].details = `Repaired · Score ${reGate.score.total}/100`;
+        retries++;
+      }
+    } catch { /* repair failed, keep original */ }
+    stages[4].status = "done";
+    stages[4].completedAt = new Date().toISOString();
+  } else if (!gate.passed) {
+    stages[4].details = `Score ${gate.score.total}/100 · Failed after retries: ${gate.failures.join(", ")}`;
     artifact.status = "reviewed";
   } else {
-    stages[3].details = `Score ${gate.score.total}/100 · Passed`;
+    stages[4].details = `Score ${gate.score.total}/100 · Passed`;
   }
+
+  // Inject sources into artifact
+  artifact.sources = sources;
 
   // Stage 5: Persist
   stages.push({ name: "persist", status: "running", startedAt: new Date().toISOString() });
