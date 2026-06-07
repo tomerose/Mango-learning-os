@@ -1,430 +1,233 @@
 "use client";
 
 import * as React from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { MessageSquare, Lightbulb, Dumbbell, Upload, Mic, User, Brain, Bot } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Bot, Sparkles, Zap, FileText, Target, BookOpen,
+  Clock, CheckCircle2, Loader2, AlertTriangle, ArrowRight,
+  Plus, Play, RotateCcw, ExternalLink, ChevronRight,
+  Brain, Lightbulb, MessageSquare, Upload, Layers, History,
+  X, Download, Edit3, Trash2, Search, Globe,
+  GraduationCap, Dumbbell, Mic, FileUp, Image,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PageShell } from "@/components/layout/page-shell";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { useSubjects } from "@/lib/subjects";
-import { useStore } from "@/lib/store";
-import { AgentChat } from "@/components/agent/agent-chat";
-import { AgentSuggestions } from "@/components/agent/agent-suggestions";
-import { ConceptExplainer } from "@/components/agent/concept-explainer";
-import { ExerciseGenerator } from "@/components/agent/exercise-generator";
-import { MistakeAnalyzer } from "@/components/agent/mistake-analyzer";
-import { DocumentImporter } from "@/components/knowledge-tree/document-importer";
-import { SubjectManager } from "@/components/subject-manager";
-import { SkillTree } from "@/components/ui/skill-tree";
-import { MangoDNAContent } from "@/components/mango-dna/mango-dna-content";
-import { VoiceSoulContent } from "@/components/mango-dna/voice-soul/VoiceSoulContent";
-import { DEFAULT_IDENTITIES, type LearningIdentity } from "@/lib/ai/identity-engine";
-import type { SubjectId } from "@/lib/types";
-import Link from "next/link";
-import { AgentTaskCard, MissionHero, MobileShell } from "@/components/mobile/premium-mobile";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { PageTransition } from "@/components/layout/page-transition";
+import { TutorBackground } from "@/components/ui/module-backgrounds";
+import { TASK_TEMPLATES, getAvailableTools, getToolInfo } from "@/lib/agent/tool-registry";
+import type { AgentTask, AgentTaskInput, TimelineEvent, AgentToolName } from "@/lib/agent/types";
+import type { AgentArtifact } from "@/lib/agent/artifact-types";
+import { ArtifactRenderer } from "@/components/agent/artifact-renderer";
+import dynamic from "next/dynamic";
+const VoiceInput = dynamic(() => import("@/components/agent/voice-input"), { ssr: false });
 
-type MainTab = "chat" | "identity" | "dna";
+type View = "templates" | "running" | "result" | "tasks";
 
-function AgentPageInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { subjects, getMeta } = useSubjects();
-  const store = useStore();
-  const [mainTab, setMainTab] = React.useState<MainTab>("chat");
-  const [chatTab, setChatTab] = React.useState("chat");
-  const [selectedIdentity, setSelectedIdentity] = React.useState<LearningIdentity | null>(null);
+// ── Artifact History (localStorage) ────────────────────────────
 
-  // Read tab from URL
-  React.useEffect(() => {
-    const t = searchParams.get("tab");
-    if (t === "identity" || t === "dna") setMainTab(t as MainTab);
-  }, [searchParams]);
-
-  const subjectFromParams = searchParams.get("subject");
-  const [subject, setSubject] = React.useState<SubjectId>(
-    () => (subjects.find((s) => s.id === subjectFromParams)?.id as SubjectId | undefined) ?? subjects[0]?.id ?? "ai",
-  );
-  const autoQuestion = searchParams.get("q");
-
-  React.useEffect(() => {
-    if (autoQuestion) {
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent("agent:suggestion", { detail: { prompt: autoQuestion } }));
-      }, 500);
-    }
-  }, [autoQuestion]);
-
-  const setSubjectAndParams = React.useCallback((newSubject: SubjectId) => {
-    setSubject(newSubject);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("subject", newSubject);
-    router.replace(`/agent?${params.toString()}`, { scroll: false });
-  }, [router, searchParams]);
-
-  const subjectMeta = getMeta(subject);
-
-  function handleSuggestion(prompt: string) {
-    setChatTab("chat");
-    window.dispatchEvent(new CustomEvent("agent:suggestion", { detail: { prompt } }));
-  }
-
-  const [extractedText, setExtractedText] = React.useState("");
-  const [extractedName, setExtractedName] = React.useState("");
-  const [captureData, setCaptureData] = React.useState<{question:string; answer:string; subject:string} | null>(null);
-  const [captured, setCaptured] = React.useState(false);
-
-  // Listen for knowledge capture events from agent chat
-  React.useEffect(() => {
-    const handler = (e: CustomEvent) => { setCaptureData(e.detail); setCaptured(false); };
-    window.addEventListener("agent:knowledge-capture", handler as EventListener);
-    return () => window.removeEventListener("agent:knowledge-capture", handler as EventListener);
-  }, []);
-
-  const [planGenerating, setPlanGenerating] = React.useState(false);
-
-  function handleCapture() {
-    if (!captureData) return;
-    store.addNote({
-      subject: captureData.subject,
-      title: captureData.question.slice(0, 60),
-      body: `## 问题\n${captureData.question}\n\n## 解答\n${captureData.answer}\n\n---\n*由芒宝自动捕获 · ${new Date().toLocaleDateString("zh-CN")}*`,
-      tags: ["对话捕获", captureData.subject],
-    });
-    setCaptured(true);
-  }
-
-  async function handleGeneratePlan() {
-    if (!captureData) return;
-    setPlanGenerating(true);
-    try {
-      const res = await fetch("/api/ai/generate", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: "plan", input: `基于以下学习对话生成每日任务：\nQ: ${captureData.question}\nA: ${captureData.answer.slice(0, 500)}` }),
-      });
-      const data = await res.json();
-      if (data.content) {
-        // Parse plan into tasks
-        const tasks = (typeof data.content === "string" ? data.content : data.content?.plan ?? "")
-          .split("\n").filter((l: string) => l.match(/^[-*•\d]+[.)]\s/) || l.includes("任务")).slice(0, 5);
-        tasks.forEach((t: string) => {
-          store.addTask({ title: t.replace(/^[-*•\d]+[.)]\s*/, "").slice(0, 80), subject: captureData.subject, done: false, priority: "medium", dueLabel: "今天", estimatedMin: 25 });
-        });
-      }
-    } catch {} finally { setPlanGenerating(false); }
-  }
-
-  // Demo skills for identity skill tree
-  const demoSkills = selectedIdentity
-    ? selectedIdentity.topics.map((t, i) => ({ label: t, pct: selectedIdentity.progress + Math.floor(Math.random() * 15), color: ["#C58B74", "#8A9E8B", "#7B8FCA", "#D4A090"][i % 4] }))
-    : [];
-
-  return (
-    <>
-    <div className="md:hidden">
-      <MobileShell>
-        <MissionHero
-          eyebrow="Agent Workbench"
-          title="让 Mango 直接执行学习任务"
-          description={`${subjectMeta.label} · 对话、讲解、练习、资料导入和知识保存都保留在同一个移动工作台。`}
-          icon={Bot}
-        />
-
-        <section className="grid grid-cols-2 gap-3">
-          <AgentTaskCard icon={MessageSquare} title="Chat" description="带上下文的流式对话" active={mainTab === "chat" && chatTab === "chat"} onClick={() => { setMainTab("chat"); setChatTab("chat"); }} />
-          <AgentTaskCard icon={Lightbulb} title="Explain" description="结构化概念讲解" active={mainTab === "chat" && chatTab === "explain"} onClick={() => { setMainTab("chat"); setChatTab("explain"); }} />
-          <AgentTaskCard icon={Dumbbell} title="Practice" description="生成练习并检查" active={mainTab === "chat" && chatTab === "practice"} onClick={() => { setMainTab("chat"); setChatTab("practice"); }} />
-          <AgentTaskCard icon={Upload} title="Import" description="文档导入为笔记" active={mainTab === "chat" && chatTab === "knowledge"} onClick={() => { setMainTab("chat"); setChatTab("knowledge"); }} />
-          <AgentTaskCard icon={User} title="Identity" description="学习身份与技能树" active={mainTab === "identity"} onClick={() => setMainTab("identity")} />
-          <AgentTaskCard icon={Brain} title="DNA" description="人格画像与语音灵魂" active={mainTab === "dna"} onClick={() => setMainTab("dna")} />
-        </section>
-
-        {mainTab === "chat" && (
-          <section className="space-y-4">
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {subjects.map((s) => (
-                <button key={s.id} onClick={() => setSubjectAndParams(s.id)}
-                  className={cn("shrink-0 rounded-full border px-3 py-2 text-xs font-semibold",
-                    subject === s.id ? "border-primary bg-primary text-primary-on" : "border-white/10 bg-white/[0.055] text-white/58")}>
-                  {s.label}
-                </button>
-              ))}
-              <SubjectManager />
-            </div>
-
-            <div className="h-[58dvh] min-h-[460px]">
-              {chatTab === "chat" && <AgentChat subject={subject} className="h-full" />}
-              {chatTab === "explain" && <div className="mango-paper-card p-3"><ConceptExplainer subject={subject} /></div>}
-              {chatTab === "practice" && <div className="mango-paper-card p-3"><ExerciseGenerator subject={subject} /></div>}
-              {chatTab === "knowledge" && (
-                <div className="mango-paper-card space-y-4 p-3">
-                  <DocumentImporter onExtracted={(doc) => { setExtractedText(doc.text); setExtractedName(doc.fileName); }} />
-                  {extractedText && (
-                    <div className="space-y-3">
-                      <div className="max-h-48 overflow-y-auto rounded-2xl bg-bg-muted p-3">
-                        <p className="text-small text-fg-muted whitespace-pre-wrap line-clamp-12">{extractedText.slice(0, 3000)}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => { store.addNote({ subject, title: extractedName.replace(/\.[^.]+$/, ""), body: extractedText.slice(0, 80000), tags: [subject] }); setExtractedText(""); setExtractedName(""); }}>
-                          <Upload className="size-3.5 mr-1" />保存为笔记
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => { setExtractedText(""); setExtractedName(""); }}>取消</Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {chatTab === "chat" && <AgentSuggestions subject={subject} onSelect={handleSuggestion} />}
-            {/* Mistake Analyzer — mobile */}
-            {chatTab === "chat" && <div className="mt-3"><MistakeAnalyzer subject={subject} /></div>}
-            {captureData && chatTab === "chat" && (
-              <div className="mango-glass-card flex flex-wrap items-center gap-2 p-3">
-                {captured ? (
-                  <span className="text-xs text-emerald-200">已保存到知识库</span>
-                ) : (
-                  <button onClick={handleCapture} className="rounded-full bg-white/8 px-3 py-2 text-xs font-semibold text-white/70">
-                    保存到知识库
-                  </button>
-                )}
-                <button onClick={handleGeneratePlan} disabled={planGenerating}
-                  className="rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-on disabled:opacity-50">
-                  {planGenerating ? "生成中..." : "生成学习任务"}
-                </button>
-              </div>
-            )}
-          </section>
-        )}
-
-        {mainTab === "identity" && (
-          <section className="space-y-4">
-            <Link href="/voice" className="mango-glass-card flex items-center gap-4 p-4">
-              <span className="grid size-12 place-items-center rounded-2xl bg-primary/18 text-amber-200"><Mic className="size-6" /></span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-white">Mango Voice</span>
-                <span className="mt-1 block text-xs text-white/45">独立语音学习窗口 · 实时对话</span>
-              </span>
-            </Link>
-            <div className="grid gap-3">
-              {DEFAULT_IDENTITIES.map(id => (
-                <button key={id.id} onClick={() => setSelectedIdentity(selectedIdentity?.id === id.id ? null : id)}
-                  className={cn("mango-glass-card p-4 text-left", selectedIdentity?.id === id.id && "border-primary/45 bg-primary/12")}>
-                  <p className="text-sm font-semibold text-white">{id.name}</p>
-                  <p className="mt-1 text-xs text-white/45">{id.goal}</p>
-                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full rounded-full bg-primary" style={{ width: `${id.progress}%` }} />
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Selected identity detail — mobile */}
-            {selectedIdentity && (
-              <div className="mango-glass-card p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-white">{selectedIdentity.name} · {selectedIdentity.persona.name}</p>
-                    <p className="mt-1 text-xs text-white/45">{selectedIdentity.persona.teachingStyle}</p>
-                  </div>
-                  <Link href={`/agent?subject=ai&q=${encodeURIComponent("我是" + selectedIdentity.name + "，请帮我学习")}`}
-                    className="text-xs font-semibold text-amber-200 hover:underline">开始对话 →</Link>
-                </div>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40 mb-2">技能进度</p>
-                  <SkillTree skills={demoSkills} onSelect={(skill) => {
-                    handleSuggestion(`请讲解：${skill.label}（${selectedIdentity.name}学习路径）`);
-                    setMainTab("chat");
-                  }} />
-                </div>
-              </div>
-            )}
-          </section>
-        )}
-
-        {mainTab === "dna" && (
-          <section className="mango-paper-card space-y-4 p-3">
-            <MangoDNAContent />
-            <VoiceSoulContent />
-          </section>
-        )}
-      </MobileShell>
-    </div>
-
-    <div className="hidden md:block">
-    <PageShell title="Mango Tutor" description={`${subjectMeta.label} · 对话 · 身份 · 语音`}>
-      <div className="flex flex-col gap-4">
-        {/* Main tabs: Chat / Identity / Voice */}
-        <Tabs value={mainTab} onValueChange={v => setMainTab(v as MainTab)}>
-          <TabsList className="w-full max-w-md">
-            <TabsTrigger value="chat"><MessageSquare className="size-3.5 mr-1" />对话</TabsTrigger>
-            <TabsTrigger value="identity"><User className="size-3.5 mr-1" />学习身份</TabsTrigger>
-            <TabsTrigger value="dna"><Brain className="size-3.5 mr-1" />DNA</TabsTrigger>
-          </TabsList>
-
-          {/* ═══ CHAT TAB ═══ */}
-          <TabsContent value="chat" className="mt-4">
-            {/* Subject pills */}
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              {subjects.map((s) => (
-                <button key={s.id} onClick={() => setSubjectAndParams(s.id)}
-                  className={cn("inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium transition-colors duration-200",
-                    subject === s.id ? "border-transparent bg-primary text-primary-on" : "text-fg-muted hover:bg-bg-muted")}>
-                  <span className="size-2 rounded-full" style={{ backgroundColor: s.color }} />{s.label}
-                </button>
-              ))}
-              <SubjectManager />
-            </div>
-
-            {/* Chat sub-tabs */}
-            <Tabs value={chatTab} onValueChange={setChatTab}>
-              <TabsList className="w-full max-w-xl">
-                {[
-                  { id: "chat", label: "对话", icon: MessageSquare },
-                  { id: "explain", label: "讲解", icon: Lightbulb },
-                  { id: "practice", label: "练习", icon: Dumbbell },
-                  { id: "knowledge", label: "导入", icon: Upload },
-                ].map(tab => (
-                  <TabsTrigger key={tab.id} value={tab.id} className="flex-1 text-xs">
-                    <tab.icon className="size-3.5 mr-1" />{tab.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <TabsContent value="chat" className="mt-3">
-                <div className="h-[calc(100dvh-20rem)] md:h-[calc(100dvh-16rem)]">
-                  <AgentChat subject={subject} className="h-full" />
-                </div>
-                <AgentSuggestions subject={subject} onSelect={handleSuggestion} />
-                {/* Knowledge Capture */}
-                {captureData && (
-                  <div className="mt-2 flex items-center gap-2 flex-wrap">
-                    {captured ? (
-                      <span className="text-xs text-emerald-500">已保存到知识库 ✓</span>
-                    ) : (
-                      <button onClick={handleCapture}
-                        className="inline-flex items-center gap-1.5 text-xs rounded-full border border-border px-3 py-1.5 hover:bg-primary-subtle hover:border-primary/30 transition-colors">
-                        <Brain className="size-3" /> 保存到知识库
-                      </button>
-                    )}
-                    <button onClick={handleGeneratePlan} disabled={planGenerating}
-                      className="inline-flex items-center gap-1.5 text-xs rounded-full border border-border px-3 py-1.5 hover:bg-primary-subtle hover:border-primary/30 transition-colors">
-                      {planGenerating ? "生成中..." : "📋 生成学习任务"}
-                    </button>
-                  </div>
-                )}
-                <div className="mt-3"><MistakeAnalyzer subject={subject} /></div>
-              </TabsContent>
-              <TabsContent value="explain" className="mt-3"><ConceptExplainer subject={subject} /></TabsContent>
-              <TabsContent value="practice" className="mt-3"><ExerciseGenerator subject={subject} /></TabsContent>
-              <TabsContent value="knowledge" className="mt-3">
-                <div className="max-w-2xl space-y-4">
-                  <DocumentImporter onExtracted={(doc) => { setExtractedText(doc.text); setExtractedName(doc.fileName); }} />
-                  {extractedText && (
-                    <div className="space-y-3">
-                      <div className="card-card p-4 max-h-48 overflow-y-auto">
-                        <p className="text-small text-fg-muted whitespace-pre-wrap line-clamp-12">{extractedText.slice(0, 3000)}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => { store.addNote({ subject, title: extractedName.replace(/\.[^.]+$/, ""), body: extractedText.slice(0, 80000), tags: [subject] }); setExtractedText(""); setExtractedName(""); }}>
-                          <Upload className="size-3.5 mr-1" />保存为笔记
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => { setExtractedText(""); setExtractedName(""); }}>取消</Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </TabsContent>
-
-          {/* ═══ IDENTITY TAB ═══ */}
-          <TabsContent value="identity" className="mt-4">
-            <div className="flex flex-col gap-6">
-              {/* Mango Voice trigger */}
-              <Link href="/voice" className="card-card p-5 flex items-center gap-4 cursor-pointer hover:border-primary/30 transition-colors">
-                <div className="size-14 rounded-2xl flex items-center justify-center"
-                  style={{ background: "radial-gradient(circle, rgba(197,139,116,0.3) 0%, rgba(197,139,116,0.1) 100%)" }}>
-                  <Mic className="size-7 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-small font-medium">Mango Voice</p>
-                  <p className="text-caption mt-0.5">独立语音学习窗口 · 5个人格 · 实时对话</p>
-                </div>
-                <span className="text-caption">打开 →</span>
-              </Link>
-
-              {/* Learning Identities */}
-              <div>
-                <p className="text-label mb-3">学习身份</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {DEFAULT_IDENTITIES.map(id => (
-                    <button key={id.id} onClick={() => setSelectedIdentity(selectedIdentity?.id === id.id ? null : id)}
-                      className={cn("card-card p-4 text-left hover:border-primary/30 transition-colors flex flex-col gap-3",
-                        selectedIdentity?.id === id.id && "border-primary/40 bg-primary-subtle")}>
-                      <div className="flex items-center gap-3">
-                        <span className="size-10 rounded-xl flex items-center justify-center text-sm font-bold text-white"
-                          style={{ backgroundColor: id.id === "ielts-candidate" ? "#C58B74" : id.id === "ai-engineer" ? "#7B8FCA" : "#8A9E8B" }}>
-                          {id.name.slice(0, 2)}
-                        </span>
-                        <div>
-                          <p className="text-small font-medium">{id.name}</p>
-                          <p className="text-caption">{id.goal}</p>
-                        </div>
-                      </div>
-                      <div className="h-1 rounded-full bg-bg-muted overflow-hidden">
-                        <div className="h-full rounded-full bg-primary" style={{ width: `${id.progress}%` }} />
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {id.topics.map(t => (
-                          <span key={t} className="text-caption bg-bg-muted rounded-md px-1.5 py-0.5">{t}</span>
-                        ))}
-                      </div>
-                      <p className="text-xs text-fg-muted">人格: {id.persona.name} · {id.persona.voice}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Selected identity detail + SkillTree */}
-              {selectedIdentity && (
-                <div className="card-card p-5 flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-small font-medium">{selectedIdentity.name} · {selectedIdentity.persona.name}</p>
-                      <p className="text-caption mt-0.5">{selectedIdentity.persona.teachingStyle}</p>
-                    </div>
-                    <Link href={`/agent?subject=ai&q=${encodeURIComponent("我是" + selectedIdentity.name + "，请帮我学习")}`}
-                      className="text-xs text-primary hover:underline">开始对话 →</Link>
-                  </div>
-                  <div>
-                    <p className="text-label mb-2">技能进度</p>
-                    <SkillTree skills={demoSkills} onSelect={(skill) => {
-                      handleSuggestion(`请讲解：${skill.label}（${selectedIdentity.name}学习路径）`);
-                      setMainTab("chat");
-                    }} />
-                  </div>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ═══ DNA TAB ═══ */}
-          <TabsContent value="dna" className="mt-4">
-            <MangoDNAContent />
-            <div className="mt-6"><VoiceSoulContent /></div>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </PageShell>
-    </div>
-    </>
-  );
+function loadArtifactHistory(): AgentArtifact[] {
+  try { const r = localStorage.getItem("mango-artifacts-v1"); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveArtifactHistory(artifacts: AgentArtifact[]) {
+  try { localStorage.setItem("mango-artifacts-v1", JSON.stringify(artifacts.slice(0, 50))); } catch {}
 }
 
+// ── Legacy task store ──────────────────────────────────────────
+
+function loadTasks(): AgentTask[] {
+  try { const r = localStorage.getItem("mango-agent-tasks-v1"); return r ? JSON.parse(r) : []; } catch { return []; }
+}
+function saveTasks(tasks: AgentTask[]) { try { localStorage.setItem("mango-agent-tasks-v1", JSON.stringify(tasks.slice(0, 50))); } catch {} }
+
 export default function AgentPage() {
+  const [view, setView] = React.useState<View>("templates");
+  const [tasks, setTasks] = React.useState<AgentTask[]>([]);
+  const [activeTask, setActiveTask] = React.useState<AgentTask | null>(null);
+  const [composeInput, setComposeInput] = React.useState("");
+  const [composeFiles, setComposeFiles] = React.useState<AgentTaskInput[]>([]);
+  const [timeline, setTimeline] = React.useState<TimelineEvent[]>([]);
+  const [artifact, setArtifact] = React.useState<AgentArtifact | null>(null);
+  const [artifactHistory, setArtifactHistory] = React.useState<AgentArtifact[]>([]);
+  const [expandedOutputId, setExpandedOutputId] = React.useState<string | null>(null);
+  const [plan] = React.useState(() => {
+    try { return localStorage.getItem("mango-user-plan") || "standard"; } catch { return "standard"; }
+  });
+  const availableTools = getAvailableTools(plan);
+
+  React.useEffect(() => { setTasks(loadTasks().slice(0, 20)); setArtifactHistory(loadArtifactHistory().slice(0, 20)); }, []);
+
+  function startFromTemplate(templateId: string) {
+    const tpl = TASK_TEMPLATES.find(t => t.id === templateId);
+    if (!tpl) return;
+    setComposeInput(tpl.intent);
+    setTimeout(() => document.getElementById("agent-compose")?.scrollIntoView({ behavior: "smooth" }), 100);
+  }
+
+  // ── Execute task → AgentArtifact ─────────────────────────────
+
+  async function executeTask() {
+    if (!composeInput.trim()) return;
+    setView("running");
+    setArtifact(null);
+    const taskId = `task-${Date.now()}`;
+    const iso = new Date().toISOString();
+    const events: TimelineEvent[] = [];
+    const addEvent = (type: TimelineEvent["type"], message: string, toolName?: AgentToolName) => {
+      events.push({ id: `ev-${events.length}`, timestamp: new Date().toISOString(), type, message, toolName, status: type === "error" ? "error" : "done" });
+      setTimeline([...events]);
+    };
+
+    addEvent("thinking", "Agent 分析任务中…");
+    try {
+      const res = await fetch("/api/agent/execute", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ intent: composeInput, files: composeFiles.map(f => ({ name: f.label ?? f.value, text: "" })) }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const a: AgentArtifact = data.artifact;
+        if (a) {
+          for (const ev of a.timeline ?? []) addEvent(ev.type === "error" ? "error" : ev.status === "running" ? "thinking" : "tool_end", ev.message, ev.toolName);
+          addEvent("output", a.artifactSummary || "生成完成");
+          setArtifact(a);
+          const hist = loadArtifactHistory(); hist.unshift(a); saveArtifactHistory(hist.slice(0, 30)); setArtifactHistory(hist.slice(0, 30));
+          const task: AgentTask = { id: taskId, title: a.artifactTitle || composeInput.slice(0, 40), intent: composeInput, status: "completed", inputs: [{ type: "text", value: composeInput }, ...composeFiles], timeline: events, toolsUsed: a.toolsUsed, outputs: [{ id: `out-${Date.now()}`, type: "summary", title: a.artifactTitle, content: { summary: a.artifactSummary, markdown: a.artifactMarkdown }, linkedIds: [], editable: true, saved: true }], sources: a.sources.map(s => s.title), qualityScore: a.qualityScore, createdAt: iso, updatedAt: iso, completedAt: iso };
+          setActiveTask(task); const all = [task, ...tasks]; setTasks(all); saveTasks(all); setView("result"); return;
+        }
+      }
+    } catch {}
+    addEvent("error", "AI 服务暂不可用。请检查 AI_API_KEY 配置后重试。");
+    setView("result");
+  }
+
+  function deleteTask(id: string) { const f = tasks.filter(t => t.id !== id); setTasks(f); saveTasks(f); }
+  function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files; if (!files) return;
+    for (const f of Array.from(files)) setComposeFiles(prev => [...prev, { type: "file" as const, value: f.name, label: f.name, mimeType: f.type }]);
+  }
+
   return (
-    <React.Suspense fallback={<div className="p-8 text-fg-muted text-small">加载中…</div>}>
-      <AgentPageInner />
-    </React.Suspense>
+    <PageTransition>
+    <div className="relative flex flex-col gap-6 pb-20">
+      <TutorBackground />
+      <header className="relative z-10 flex items-center justify-between">
+        <div><h1 className="text-display font-serif">Mango Agent</h1><p className="text-sm text-fg-muted">任务执行 · 结构化产出 · 智能工具</p></div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => { setView("tasks"); setArtifactHistory(loadArtifactHistory().slice(0, 20)); }} className={cn("flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors", view === "tasks" ? "bg-primary-subtle text-primary" : "text-fg-muted hover:text-fg")}><History className="size-3.5" /> 历史</button>
+          <button onClick={() => setView("templates")} className={cn("flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition-colors", view === "templates" ? "bg-primary-subtle text-primary" : "text-fg-muted hover:text-fg")}><Sparkles className="size-3.5" /> 模板</button>
+        </div>
+      </header>
+
+      <div className="relative z-10">
+        <AnimatePresence mode="wait">
+          {/* ═══ TEMPLATES ═══ */}
+          {view === "templates" && (
+            <motion.div key="templates" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
+              <div className="flex items-center gap-2 mb-2"><Zap className="size-4 text-primary" /><span className="text-sm font-medium">选择任务模板开始</span></div>
+              <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {TASK_TEMPLATES.map(tpl => (
+                  <motion.button key={tpl.id} whileTap={{ scale: 0.98 }} onClick={() => startFromTemplate(tpl.id)} className="card-card p-4 flex flex-col gap-3 text-left hover:shadow-md transition-all group">
+                    <div className="flex items-start justify-between"><span className="text-2xl">{tpl.icon}</span><ArrowRight className="size-4 text-fg-muted/30 group-hover:text-primary transition-all" /></div>
+                    <div><p className="text-sm font-semibold font-serif">{tpl.title}</p><p className="text-xs text-fg-muted">{tpl.description}</p></div>
+                    <div className="flex flex-wrap gap-1 mt-auto">{tpl.suggestedTools.slice(0, 3).map(t => <span key={t} className="text-[9px] rounded-full px-2 py-0.5 bg-bg-muted text-fg-muted">{getToolInfo(t)?.label ?? t}</span>)}</div>
+                  </motion.button>
+                ))}
+              </div>
+              <div id="agent-compose" className="card-card p-5 flex flex-col gap-3 mt-4 scroll-mt-20">
+                <div className="flex items-center gap-2"><MessageSquare className="size-4 text-primary" /><span className="text-sm font-medium font-serif">自由描述任务</span></div>
+                <Textarea value={composeInput} onChange={e => setComposeInput(e.target.value)} placeholder="用自然语言描述你想做的事…" className="text-sm min-h-24 rounded-xl" />
+                <div className="flex items-center gap-2">
+                  <VoiceInput onTranscript={(text) => setComposeInput(prev => prev + " " + text)} />
+                  <label className="cursor-pointer flex items-center gap-1.5 text-xs text-fg-muted hover:text-fg"><FileUp className="size-3.5" />上传<input type="file" multiple onChange={handleFileInput} className="hidden" /></label>
+                  {composeFiles.length > 0 && <span className="text-[10px] text-fg-muted">{composeFiles.length} 个文件</span>}
+                  <Button onClick={executeTask} disabled={!composeInput.trim()} className="gap-2 rounded-xl ml-auto"><Play className="size-4" />执行</Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══ RUNNING ═══ */}
+          {view === "running" && (
+            <motion.div key="running" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card-card p-6 sm:p-8 flex flex-col gap-5">
+              <div className="flex items-center gap-4">
+                <motion.div animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }} transition={{ duration: 2, repeat: Infinity }} className="size-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-400/20"><span className="text-2xl">🥭</span></motion.div>
+                <div><p className="text-base font-semibold font-serif">{timeline.length <= 2 ? "Agent 分析任务中…" : "正在执行…"}</p><p className="text-xs text-fg-muted">{composeInput.slice(0, 60)}</p></div>
+              </div>
+              <div className="text-xs text-fg-muted/60 bg-bg-subtle rounded-xl p-3">
+                {timeline.length <= 2 && "🧠 正在理解需求，规划执行方案…"}
+                {timeline.length > 2 && timeline.length < 5 && "🔧 调用工具处理任务…"}
+                {timeline.length >= 5 && "📝 整理结果，生成结构化输出…"}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {timeline.map((ev, i) => (
+                  <motion.div key={ev.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }} className={cn("flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm", ev.status === "error" ? "bg-red-50 text-red-600" : ev.type === "output" ? "bg-emerald-50 text-emerald-700 font-medium" : "text-fg-muted")}>
+                    {ev.status === "done" ? <CheckCircle2 className="size-4 text-emerald-500 shrink-0" /> : ev.status === "error" ? <AlertTriangle className="size-4 shrink-0" /> : <Loader2 className="size-4 animate-spin shrink-0" />}
+                    <span>{ev.message}</span>
+                    {ev.toolName && <Badge variant="secondary" className="text-[9px] ml-auto">{getToolInfo(ev.toolName)?.label ?? ev.toolName}</Badge>}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ═══ RESULT ═══ */}
+          {view === "result" && (
+            <motion.div key="result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <Button variant="outline" size="sm" onClick={() => { setView("templates"); setArtifact(null); }} className="gap-1.5 rounded-xl text-xs"><Plus className="size-3.5" />新任务</Button>
+              </div>
+              {artifact ? (
+                <ArtifactRenderer
+                  artifact={artifact}
+                  onClose={() => setView("templates")}
+                  onRegenerate={executeTask}
+                  onExport={(fmt) => {
+                    const blob = new Blob([artifact.artifactMarkdown], { type: "text/markdown" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url; a.download = `${artifact.artifactTitle || "artifact"}.md`; a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                />
+              ) : (
+                <div className="card-card p-8 text-center">
+                  <AlertTriangle className="size-10 text-amber-400 mx-auto mb-3" />
+                  <p className="text-sm font-medium">生成未完成</p>
+                  <p className="text-xs text-fg-muted/60 mt-1">请返回重试或检查 AI 服务配置</p>
+                  <Button onClick={() => setView("templates")} className="mt-4 rounded-xl">返回模板</Button>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* ═══ HISTORY ═══ */}
+          {view === "tasks" && (
+            <motion.div key="tasks" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
+              <div className="relative"><Search className="size-4 absolute top-1/2 left-3.5 -translate-y-1/2 text-fg-muted/40" /><Input placeholder="搜索历史…" className="pl-10 h-11 rounded-xl" /></div>
+              {artifactHistory.length === 0 ? (
+                <div className="card-card p-8 text-center"><Bot className="size-10 text-fg-muted/20 mx-auto mb-3" /><p className="text-sm font-medium text-fg-muted">暂无执行记录</p><p className="text-xs text-fg-muted/50 mt-1">完成 Agent 任务后自动保存</p></div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {artifactHistory.map(a => (
+                    <div key={a.id} className="card-card p-4 flex items-center gap-4 group hover:shadow-sm transition-all cursor-pointer" onClick={() => { setArtifact(a); setView("result"); }}>
+                      <div className={cn("size-9 rounded-xl flex items-center justify-center shrink-0", a.status === "completed" ? "bg-emerald-100" : "bg-amber-100")}>
+                        {a.status === "completed" ? <CheckCircle2 className="size-4 text-emerald-600" /> : <AlertTriangle className="size-4 text-amber-500" />}
+                      </div>
+                      <div className="flex-1 min-w-0"><p className="text-sm font-medium truncate">{a.artifactTitle || "未命名"}</p><p className="text-[10px] text-fg-muted">{new Date(a.createdAt).toLocaleDateString("zh-CN")} · {a.qualityScore}分</p></div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={e => { e.stopPropagation(); const hist = artifactHistory.filter(h => h.id !== a.id); setArtifactHistory(hist); saveArtifactHistory(hist); }} className="size-7 rounded-lg hover:bg-red-50 flex items-center justify-center"><Trash2 className="size-3.5 text-red-400" /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+    </PageTransition>
   );
 }

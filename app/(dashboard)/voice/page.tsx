@@ -3,11 +3,13 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Mic, MicOff, ChevronLeft, Loader2, Brain, Check } from "lucide-react";
+import { Mic, MicOff, ChevronLeft, Loader2, Brain, Check, ArrowRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PageTransition } from "@/components/layout/page-transition";
+import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 import { BUILTIN_PERSONAS, DEFAULT_IDENTITIES, type VoicePersona } from "@/lib/ai/identity-engine";
+import Link from "next/link";
 
 const WAVE_BARS = 24;
 

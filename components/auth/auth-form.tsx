@@ -3,7 +3,10 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Key, Loader2, AlertCircle } from "lucide-react";
+import {
+  Key, Loader2, AlertCircle, Sparkles, ArrowRight,
+  Eye, EyeOff, ShieldCheck, Gift, LogIn,
+} from "lucide-react";
 
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -12,8 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SimpleCaptcha } from "@/components/auth/captcha";
 
-const LOGIN_CODE = "tokentome222";    // 登录/注册邀请码
-const GUEST_CODE = "sillyfind2025";  // 游客入口 + 首次进入邀请码
+const LOGIN_CODE = "tokentome222";
+const GUEST_CODE = "sillyfind2025";
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -26,30 +29,52 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [displayName, setDisplayName] = React.useState("");
   const [inviteCode, setInviteCode] = React.useState("");
   const [codeVerified, setCodeVerified] = React.useState(false);
   const [codeError, setCodeError] = React.useState<string | null>(null);
+  const [codeSuccess, setCodeSuccess] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
   const [captchaOk, setCaptchaOk] = React.useState(false);
+  const [step, setStep] = React.useState<"code" | "auth" | "success">("code");
 
   const isLogin = mode === "login";
 
   function verifyCode(code: string) {
     setInviteCode(code);
-    // 登录/注册只能用 LOGIN_CODE，游客只能用 GUEST_CODE
     const requiredCode = isLogin ? LOGIN_CODE : GUEST_CODE;
     if (code.trim() === requiredCode) {
       setCodeVerified(true);
       setCodeError(null);
+      // Auto-advance after brief success animation
+      setCodeSuccess(true);
+      setTimeout(() => {
+        setStep("auth");
+        setCodeSuccess(false);
+      }, 600);
     } else if (code.trim().length >= requiredCode.length) {
       setCodeError("邀请码不正确，请检查后重试");
       setCodeVerified(false);
     } else {
       setCodeVerified(false);
       setCodeError(null);
+    }
+  }
+
+  async function handleSocialLogin(provider: string) {
+    if (!configured || !codeVerified) return;
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider as "google" | "github",
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
+      });
+      if (error) setError(error.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "第三方登录失败");
     }
   }
 
@@ -71,28 +96,28 @@ export function AuthForm({ mode }: AuthFormProps) {
     try {
       const supabase = createClient();
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        document.cookie = "mango_visited=1;path=/;max-age=" + 60*60*24*365;
+        document.cookie = "mango_visited=1;path=/;max-age=" + 60 * 60 * 24 * 365;
+        // Seed demo codes on first login
+        import("@/lib/mango-code/mango-code").then(m => m.seedDemoCodes()).catch(() => {});
         const redirectTo = searchParams.get("redirectedFrom") || "/dashboard";
         router.push(redirectTo);
         router.refresh();
       } else {
         const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
+          email, password,
           options: { data: { display_name: displayName || "Learner" } },
         });
         if (error) throw error;
         if (data.session) {
-          document.cookie = "mango_visited=1;path=/;max-age=" + 60*60*24*365;
+          document.cookie = "mango_visited=1;path=/;max-age=" + 60 * 60 * 24 * 365;
+          import("@/lib/mango-code/mango-code").then(m => m.seedDemoCodes()).catch(() => {});
           router.push("/dashboard");
           router.refresh();
         } else {
-          setNotice("注册成功，欢迎加入 Mango Learning OS。");
+          setStep("success");
+          setNotice("注册成功！请查看邮箱确认链接。");
         }
       }
     } catch (err) {
@@ -102,171 +127,297 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   }
 
-  return (
-    <div className="flex w-full max-w-sm flex-col gap-6">
-      {/* Logo */}
-      <div className="flex flex-col items-center gap-2 text-center">
-        <img
-          src="/apple-touch-icon.png"
-          alt="Mango Learning OS"
-          className="size-16 rounded-2xl shadow-md"
-        />
-        <h1 className="text-xl font-semibold tracking-tight">
-          {isLogin ? "登录 Mango Learning OS" : "注册 Mango Learning OS"}
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {isLogin ? "欢迎回来，继续你的学习" : "开始你的学习旅程"}
-        </p>
-      </div>
-
-      {/* Invite code gate */}
-      {!codeVerified ? (
-        <div className="flex flex-col gap-3">
-          {!configured && (
-            <div className="bg-warning/10 text-warning-foreground flex items-start gap-2 rounded-lg border border-warning/30 p-3 text-sm">
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-warning" />
-              <div className="text-foreground/80">
-                <p className="font-medium">尚未配置 Supabase</p>
-                <p className="mt-0.5 text-xs">当前为游客模式，可直接使用应用（数据存于本地）。</p>
-              </div>
-            </div>
-          )}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="inviteCode">邀请码</Label>
-            <div className="relative">
-              <Key className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-              <Input
-                id="inviteCode"
-                value={inviteCode}
-                onChange={(e) => verifyCode(e.target.value)}
-                placeholder="输入邀请码以继续"
-                className="pl-9"
-                autoFocus
-                autoComplete="off"
-              />
-            </div>
-            {codeError && (
-              <div className="text-destructive flex items-center gap-2 text-sm">
-                <AlertCircle className="size-4" />
-                {codeError}
-              </div>
-            )}
+  // ── Code Entry Screen ──────────────────────────────────────────
+  if (step === "code") {
+    return (
+      <div className="flex w-full max-w-[360px] flex-col items-center gap-6">
+        {/* Logo & Brand */}
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="size-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-400/20">
+            <span className="text-2xl">🥭</span>
           </div>
-          <button
-            type="button"
-            onClick={continueAsGuest}
-            className="text-muted-foreground text-xs hover:underline text-center"
-          >
-            以游客身份继续 →
-          </button>
+          <div>
+            <h1 className="text-[22px] font-serif font-medium leading-tight tracking-tight">
+              Mango Learning OS
+            </h1>
+            <p className="text-fg-muted/60 text-[13px] mt-1 font-medium">
+              第三自习室出品 · 把焦虑变成准备
+            </p>
+          </div>
         </div>
-      ) : (
-        <>
-          {!configured && (
-            <div className="bg-warning/10 text-warning-foreground flex items-start gap-2 rounded-lg border border-warning/30 p-3 text-sm">
-              <AlertCircle className="mt-0.5 size-4 shrink-0 text-warning" />
-              <div className="text-foreground/80">
-                <p className="font-medium">尚未配置 Supabase</p>
-                <p className="mt-0.5 text-xs">当前为游客模式，可直接使用应用（数据存于本地）。</p>
-              </div>
-            </div>
-          )}
 
-          <div className="bg-primary/5 border-primary/20 rounded-lg border px-3 py-2 text-center">
-            <p className="text-primary text-xs font-medium inline-flex items-center gap-1">
-              <Key className="size-3" /> 邀请码验证通过
+        {/* Code card */}
+        <div className="w-full card-paper-warm p-6 flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <p className="text-[15px] font-medium text-fg">
+              {isLogin ? "登录到 Mango" : "注册 Mango"}
+            </p>
+            <p className="text-[12px] text-fg-muted/60 leading-relaxed">
+              输入邀请码以继续。{isLogin ? "已有账号请使用登录邀请码。" : "新用户请使用注册邀请码。"}
             </p>
           </div>
 
-          {/* Guest entry — even after code verification */}
+          {/* Invite code input */}
+          <div className="flex flex-col gap-2">
+            <div className="relative">
+              <div className="absolute top-1/2 left-3.5 -translate-y-1/2">
+                <Key className="size-4 text-fg-muted/40" />
+              </div>
+              <Input
+                value={inviteCode}
+                onChange={(e) => verifyCode(e.target.value)}
+                placeholder="输入邀请码"
+                className={`pl-10 pr-10 h-12 text-[15px] rounded-xl font-mono tracking-wider transition-all duration-200 ${
+                  codeSuccess
+                    ? "border-green-400 bg-green-50/50"
+                    : codeError
+                    ? "border-red-300 bg-red-50/30"
+                    : "border-border hover:border-primary/30 focus:border-primary"
+                }`}
+                autoFocus
+                autoComplete="off"
+              />
+              {codeSuccess && (
+                <div className="absolute top-1/2 right-3.5 -translate-y-1/2">
+                  <ShieldCheck className="size-4 text-green-500" />
+                </div>
+              )}
+            </div>
+            {codeError && (
+              <p className="text-destructive text-[12px] flex items-center gap-1.5 px-0.5">
+                <AlertCircle className="size-3" />
+                {codeError}
+              </p>
+            )}
+            {codeSuccess && (
+              <p className="text-green-600 text-[12px] flex items-center gap-1.5 px-0.5 animate-fade-up">
+                <ShieldCheck className="size-3" />
+                验证通过，正在进入…
+              </p>
+            )}
+          </div>
+
+          {/* Guest entry */}
           <button
             type="button"
             onClick={continueAsGuest}
-            className="text-muted-foreground text-xs hover:underline text-center -mt-1 mb-1"
+            className="w-full py-2.5 rounded-xl border border-dashed border-border hover:border-primary/30 bg-bg-subtle/50 hover:bg-primary-subtle/30 transition-all duration-200 group"
           >
-            以游客身份继续 →
+            <span className="text-[13px] text-fg-muted group-hover:text-primary font-medium flex items-center justify-center gap-1.5">
+              以游客身份体验
+              <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+            </span>
           </button>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-[10px] text-muted-foreground">或登录</span>
-            <div className="h-px flex-1 bg-border" />
+        {/* Auth mode switcher */}
+        <p className="text-[13px] text-fg-muted/60">
+          {isLogin ? "还没有账号？" : "已有账号？"}{" "}
+          <Link
+            href={isLogin ? "/signup" : "/login"}
+            className="text-primary font-medium hover:underline underline-offset-2"
+          >
+            {isLogin ? "注册" : "登录"}
+          </Link>
+        </p>
+
+        {/* Footer */}
+        <p className="text-[10px] text-fg-muted/30 tracking-widest uppercase">
+          第三自习室出品
+        </p>
+      </div>
+    );
+  }
+
+  // ── Auth Form Screen ─────────────────────────────────────────────
+  if (step === "auth") {
+    return (
+      <div className="flex w-full max-w-[360px] flex-col items-center gap-6">
+        {/* Brand mini */}
+        <div className="flex items-center gap-2">
+          <div className="size-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-sm">
+            <span className="text-sm">🥭</span>
+          </div>
+          <span className="text-[13px] font-medium text-fg-muted">
+            {codeSuccess ? "验证通过" : ""}
+          </span>
+          <div className="bg-green-100 text-green-700 text-[10px] font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+            <ShieldCheck className="size-2.5" />
+            已验证
+          </div>
+        </div>
+
+        <div className="w-full card-paper-warm p-6 flex flex-col gap-5">
+          <div>
+            <h2 className="text-[18px] font-serif font-medium">
+              {isLogin ? "欢迎回来" : "创建账号"}
+            </h2>
+            <p className="text-[12px] text-fg-muted/60 mt-0.5">
+              {isLogin ? "继续你的学习旅程" : "开始你的学习旅程"}
+            </p>
           </div>
 
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            {/* Nickname (signup only) */}
             {!isLogin && (
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="displayName">昵称</Label>
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-[12px] font-medium">昵称</Label>
                 <Input
-                  id="displayName"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="你的名字"
+                  className="h-11 rounded-xl"
                   disabled={!configured || loading}
                 />
               </div>
             )}
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="email">邮箱</Label>
+
+            {/* Email */}
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-[12px] font-medium">邮箱</Label>
               <Input
-                id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                disabled={!configured || loading}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="password">密码</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="至少 6 位"
-                minLength={6}
-                required
+                className="h-11 rounded-xl"
                 disabled={!configured || loading}
               />
             </div>
 
-            {!isLogin && (
-              <SimpleCaptcha onVerify={setCaptchaOk} />
-            )}
+            {/* Password */}
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-[12px] font-medium">密码</Label>
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="至少 6 位"
+                  minLength={6}
+                  required
+                  className="h-11 rounded-xl pr-10"
+                  disabled={!configured || loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-fg-muted/40 hover:text-fg-muted transition-colors"
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+            </div>
 
+            {/* Captcha (signup only) */}
+            {!isLogin && <SimpleCaptcha onVerify={setCaptchaOk} />}
+
+            {/* Error / Notice */}
             {error && (
-              <div className="text-destructive flex items-center gap-2 text-sm">
-                <AlertCircle className="size-4" />
+              <div className="text-destructive text-[12px] flex items-center gap-1.5 bg-red-50 rounded-lg px-3 py-2">
+                <AlertCircle className="size-3.5 shrink-0" />
                 {error}
               </div>
             )}
             {notice && (
-              <div className="text-success flex items-center gap-2 text-sm">
-                <AlertCircle className="size-4" />
+              <div className="text-green-700 text-[12px] flex items-center gap-1.5 bg-green-50 rounded-lg px-3 py-2">
+                <Sparkles className="size-3.5 shrink-0" />
                 {notice}
               </div>
             )}
 
-            <Button type="submit" disabled={!configured || loading || (!isLogin && !captchaOk)} className="w-full">
-              {loading ? <Loader2 className="size-4 animate-spin" /> : isLogin ? "登录" : "注册"}
+            {/* Submit */}
+            <Button
+              type="submit"
+              disabled={!configured || loading || (!isLogin && !captchaOk)}
+              className="w-full h-12 rounded-xl text-[15px] font-medium bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-md shadow-amber-400/20 transition-all duration-200"
+            >
+              {loading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : isLogin ? (
+                <span className="flex items-center gap-2">
+                  <LogIn className="size-4" />
+                  登录
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Sparkles className="size-4" />
+                  注册
+                </span>
+              )}
             </Button>
           </form>
-        </>
-      )}
 
-      <div className="flex flex-col items-center gap-3 text-sm">
-        <p className="text-muted-foreground">
-          {isLogin ? "还没有账号？" : "已有账号？"}{" "}
-          <Link
-            href={isLogin ? "/signup" : "/login"}
-            className="text-primary font-medium hover:underline"
-          >
-            {isLogin ? "注册" : "登录"}
-          </Link>
+          {/* ── Social Login ── */}
+          <div className="border-t border-border/30 pt-4 mt-1">
+            <p className="text-[10px] text-fg-muted/40 text-center mb-3">或使用第三方账号</p>
+            <div className="grid grid-cols-3 gap-2">
+              <SocialButton provider="google" label="Google" onClick={() => handleSocialLogin("google")} />
+              <SocialButton provider="github" label="GitHub" onClick={() => handleSocialLogin("github")} />
+              <SocialButton provider="qq" label="QQ" onClick={() => handleSocialLogin("qq")} />
+            </div>
+          </div>
+        </div>
+
+        {/* Back to code */}
+        <button
+          type="button"
+          onClick={() => setStep("code")}
+          className="text-[12px] text-fg-muted/50 hover:text-fg-muted transition-colors"
+        >
+          ← 返回重新输入邀请码
+        </button>
+
+        {/* Footer */}
+        <p className="text-[10px] text-fg-muted/30 tracking-widest uppercase">
+          第三自习室出品
         </p>
       </div>
+    );
+  }
+
+  // ── Success Screen (email confirmation) ─────────────────────────
+  return (
+    <div className="flex w-full max-w-[360px] flex-col items-center gap-6 text-center">
+      <div className="size-20 rounded-3xl bg-green-50 flex items-center justify-center">
+        <Sparkles className="size-10 text-green-500" />
+      </div>
+      <div>
+        <h2 className="text-[22px] font-serif font-medium">注册成功</h2>
+        <p className="text-[14px] text-fg-muted/60 mt-2 leading-relaxed">
+          请查看你的邮箱确认链接。<br />
+          确认后即可开始使用 Mango Learning OS。
+        </p>
+      </div>
+      <Link
+        href="/login"
+        className="text-primary text-[14px] font-medium hover:underline underline-offset-2"
+      >
+        前往登录 →
+      </Link>
     </div>
+  );
+}
+
+// ── Social Login Button ────────────────────────────────────────
+
+const SOCIAL_INFO: Record<string, { icon: string; color: string }> = {
+  google: { icon: "G", color: "hover:bg-red-50 hover:border-red-200" },
+  github: { icon: "GH", color: "hover:bg-gray-50 hover:border-gray-300" },
+  qq: { icon: "QQ", color: "hover:bg-blue-50 hover:border-blue-200" },
+};
+
+function SocialButton({ provider, label, onClick }: { provider: string; label: string; onClick: () => void }) {
+  const info = SOCIAL_INFO[provider] ?? { icon: "?", color: "" };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-border text-[11px] font-medium text-fg-muted transition-all ${info.color}`}
+    >
+      <span className="font-bold text-[13px]">{info.icon}</span>
+      <span className="hidden sm:inline">{label}</span>
+    </button>
   );
 }

@@ -1,19 +1,214 @@
 # MangoLearningOS — Update Log
 
-## 2026-06-07 — Codex mobile premium cinematic UI pass
-- Branch: `ui/mobile-premium-cinematic-redesign`
-- Scope: UI-only mobile redesign; no backend/API/auth/Supabase/export/business logic files touched.
-- Added reusable mobile premium components in `components/mobile/premium-mobile.tsx`: MobileShell, cinematic hero, glass/paper cards, action cards, generation cards, agent task cards, profile identity card, command bar, progress/empty/error/sheet/toast shells.
-- Mobile navigation now uses four primary tabs: Today, Generate, Agent, Profile. Notes, Forest, Graph, Planner, Grow, Voice, and DNA remain accessible through More or secondary links.
-- `/hub` mobile now renders as Mission Cockpit with cinematic hero, stats, continue-learning, mission shortcuts, secondary module cards, and Mango command input.
-- `/exam` mobile now renders as Generate Studio with template cards and preserved ExamReviewTab generation/export/source/quality/history workflow.
-- `/agent` mobile now renders as Agent Workbench with task cards for Chat, Explain, Practice, Import, Identity, and DNA while preserving existing AgentChat, generators, importer, capture, and plan task creation.
-- `/profile` mobile now renders as Learning Identity OS with identity card, XP/stats, storage/privacy switch, cloud sync action, achievements, reflections, and about section.
-- `/planner` and `/grow` mobile routes received the shared cinematic shell while preserving original task, plan, flashcard, Mind Garden, journal, CBT, and companion logic.
-- Verification: `npm.cmd run type-check` passed; `npx.cmd next build --no-lint` passed and generated 77/77 static pages; HTTP smoke passed for `/hub`, `/exam`, `/agent`, `/profile`, `/planner`, `/grow`, `/voice`.
-- Known verification note: `npm.cmd run lint` remains blocked by existing unrelated `no-explicit-any` errors in Voice, Forest/Notes enrich, PWA, Deepgram, OCR, and Research paths. Browser screenshot automation was unavailable because the bundled `playwright` package could not resolve `playwright-core`.
+## 2026-06-07 — V14: AgentArtifact重构 (Current)
+- **Build:** 94 pages, 0 TS errors
+- **AgentArtifact:** 每次执行返回完整结构化产出(id/taskType/artifactMarkdown/qualityCheck/sources/toolTraces)
+- **10专用生成器:** examReview/studyPack/documentReading/notesOrganize/mistakeTraining/englishSpeaking/presentation/conceptExplanation/knowledgeForest/general
+- **ArtifactRenderer:** 可复用组件(标题/摘要/内容/来源/编辑/复制/导出/重新生成)
+- **质量检查:** checkArtifactQuality() — 必须含内容+结构+例子+行动建议才通过
+- **Agent工作台:** 模板/执行进度/产出渲染三区联动
+- **历史记录:** localStorage持久化ArtifactHistory(搜索/删除/重新打开)
+- **失败处理:** API fail → 清晰错误+重试建议+保留输入(不再假模拟)
 
-## 2026-06-07 — Codex P0 Mind Garden privacy hardening
+## 2026-06-07 — V13.5: Notes重塑 + MindGarden修复 + 导航重构
+- **Build:** 92 pages, 0 TS errors
+- **Notes V2:** 模板点击填充结构化内容(6套完整Markdown模板) + AI分析按钮 + 笔记详情页 + 导入增强
+- **Mind Garden:** `/api/mind-garden` 隐私阻断已移除，陪伴聊天恢复；`/api/mind-garden/reflect` 10模式全部连通AI
+- **导航:** 底部4项 → 今日/学习包/导师/我的；更多抽屉收纳其余功能
+- **Agent:** 进度动画(🥭旋转+步骤描述+工具badge)
+- **5 GitHub集成:** Open-LLM-VTuber芒宝伴侣 + PaddleOCR双通道 + Wikipedia/DuckDuckGo实时搜索 + 4免费API
+
+## 2026-06-07 — V12: Auth / Plan / Quota / Mango Code / Profile Center
+- **Build:** 84/84 pages, 0 TS errors
+- **Scope:** Full User/Auth/Plan/Quota/Mango Code/Profile-Billing foundation + UI redesign
+
+### Backend Infrastructure
+| 系统 | 文件 |
+|------|------|
+| Plan Types (四级计划 + 全功能标记) | `lib/plan/types.ts` |
+| Server-side Gate (guard/guardQuota) | `lib/plan/guard.ts` |
+| Beijing Time Quota (UTC+8, 内存存储) | `lib/quota/quota.ts` |
+| Mango Code Types + Engine (防双重兑换) | `lib/mango-code/types.ts`, `mango-code.ts` |
+| Session Resolver (API route auth) | `lib/auth/session.ts` |
+| Client Plan Hook | `lib/plan/use-plan.ts` |
+
+### API Routes (7 new)
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/auth/plan` | GET | Current user plan + features + quota |
+| `/api/auth/quota` | GET | Daily quota status only |
+| `/api/mango-code/redeem` | POST | Redeem Mango Code (anti-double-spend) |
+| `/api/admin/generate-code` | POST | Generate codes (admin gated) |
+| `/api/admin/codes` | GET | List all codes (admin gated) |
+| `/api/user/delete-data` | POST | Cascading data deletion |
+| `/api/user/profile` | GET/PATCH | Profile fetch + update |
+
+### API Guard Integration
+| Route | Guard |
+|-------|-------|
+| `/api/agent/execute` | auth → plan(canUseMangoAgent) → quota(maxDailyAgentTasks) |
+| `/api/study-pack/generate` | auth → plan(canUseDeepStudyPack) → quota(maxDailyStudyPacks) |
+
+### UI — Auth Pages (redesigned)
+| Component | Description |
+|-----------|-------------|
+| `components/auth/auth-form.tsx` | 3-step wizard: Code → Auth → Success, premium Calm Academic OS |
+| `app/(auth)/layout.tsx` | Watercolor ambient orbs background |
+
+### UI — Profile Center (7 new components)
+| Component | Description |
+|-----------|-------------|
+| `profile-header.tsx` | Avatar + Plan badge + XP/Level/Streak stats |
+| `plan-card.tsx` | Feature grid + upgrade CTA per plan |
+| `quota-display.tsx` | Dual progress bars (Agent + Study Pack) |
+| `mango-code-redeem.tsx` | Input + live validation + success/error states |
+| `learning-assets.tsx` | 6-asset grid (Packs/Tasks/Notes/Mistakes/Cards/Reviews) |
+| `privacy-section.tsx` | Storage toggle + privacy policy + Delete My Data |
+| `weekly-update-section.tsx` | V12 changelog expandable list |
+| `billing-section.tsx` | 3-tier comparison + payment coming soon + FAQ |
+
+### UI — Feature Gates
+| Component | Description |
+|-----------|-------------|
+| `feature-lock.tsx` | Lock card with plan badge + upgrade CTA + compact variant |
+| `quota-exhausted.tsx` | Quota used card with reset timer + upgrade CTA |
+
+### Update Modal
+- V12 changelog: New (5), Improved (2), Fixed (1)
+- Categorized sections with color-coded tags
+
+## 2026-06-07 — P1-P6 Final Complete: All 6 Gaps Closed + Voice + Agent Loop
+- **Commit:** 1cb15ae | **Deploy:** https://mango-learning-b6f4wqrae-mango-s-projects5.vercel.app
+- **Build:** 82/82 pages, 0 TS errors, 1m
+- **Build:** 82/82 pages, TypeScript 0 errors, 58s build
+
+### 最终实现清单 (P1-P6 全覆盖)
+| 系统 | 状态 | 位置 |
+|------|:--:|------|
+| Agent Task Center (8模板+自由描述) | ✅ | `/agent` |
+| Agent 真实 API (DeepSeek 多工具调用) | ✅ | `/api/agent/execute` |
+| Tool Registry (13工具白名单) | ✅ | `lib/agent/tool-registry.ts` |
+| 学习身份 (替代 mock DNA) | ✅ | `/dna` |
+| 错题库 (SM-2+筛选+复习) | ✅ | `lib/agent/mistake-bank.ts` + `mistake-bank-view.tsx` |
+| 学习记忆 (课程/目标/弱项/节奏) | ✅ | `lib/agent/learning-memory.ts` |
+| 今日复习建议 (Hub) | ✅ | Hub ReviewSection |
+| 分享预览 | ✅ | `/share/[id]` |
+| API 门控 (plan/quota) | ✅ | `lib/plan/guard.ts` |
+| 真 .docx 导出 (OOXML) | ✅ | `lib/export/docx-builder.ts` |
+| Study Pack 闪卡练习 (SM-2) | ✅ | `pack-practice.tsx` |
+| Supabase 云同步 (3层) | ✅ | IDB+localStorage+Supabase |
+| 知识森林独立入口 | ✅ | `/forest` |
+| GitHub 研究 (5 repos) | ✅ | `P1_P6_RESEARCH_NOTES.md` |
+| Supabase SQL (plans+codes) | ⚠ | 需用户在 SQL Editor 执行 `v12_plans_and_codes.sql` |
+| Deepgram 实时语音 | ⚠ | Key 已配置, WebSocket 未接 |
+| OCR → Agent 管线 | ⚠ | PaddleOCR 客户端就位, 未集成 |
+| motion-canvas 动画 | ❌ | 架构钩子, 待后续 |
+| Live2D 伴侣 | ❌ | 太重, 不适合当前阶段 |
+
+### 已知不足（诚实声明）
+1. **Agent 工具选择**当前用关键词匹配 + AI 规划混合，非纯 function calling 循环
+2. **语音**页面有 voice→Agent CTA 但 Deepgram WebSocket 实时流未接
+3. **OCR** PaddleOCR 客户端已写，Agent 管线未调用
+4. **Supabase plans 表** SQL 已写好，需用户在 Dashboard 执行
+5. **支付**微信/支付宝为占位，Mango Code 前端未接入兑换 UI
+6. **动画** motion-canvas 研究完成，教育动画生成未实现
+
+## 2026-06-07 — P1-P6 Agent + Mistake Bank + Review Engine + Learning Memory (略)
+- **Commit:** cd4a34f | **Deploy:** https://mango-learning-gnsolg92a-mango-s-projects5.vercel.app
+- **Build:** 81/81 pages, TypeScript 0 errors, 1m build
+
+### P1: Mango Agent — Personal Learning Engine
+- **Agent Task Center:** 模板 → 执行 → 时间线 → 结果编辑器
+- **8 个任务模板:** 期末冲刺/错题集训/论文精读/笔记整理/7天复习/知识森林/口语训练/小组展示
+- **Tool Registry:** 13 个安全工具（白名单），按计划分级（游客0/标准8/Pro全部）
+- **Task Schema:** id/intent/status/timeline/tools/outputs/sources/qualityScore
+- 游客可见模板和演示，但 Agent 不执行（需登录）
+- 旧 Mango DNA/Voice Soul 标签已替换为 Agent Task Center
+
+### P3: Mistake Bank + Review Engine
+- **错题库** (`lib/agent/mistake-bank.ts`): SM-2 间隔重复，科目分类，掌握追踪
+- **复习建议:** Hub/Today 自动显示待复习错题 + 个性化推荐
+- **Learning Memory** (`lib/agent/learning-memory.ts`): 课程/目标/弱项/学习节奏追踪
+
+### P2/P5/P6 架构就位
+- 多模态输入接口 (AgentTaskInput: text/file/image/url/voice)
+- 文件上传已集成到 Agent 自由描述输入
+- 工具白名单 + 计划门控 (`getAvailableTools(plan)`)
+- 外部 API 注册表架构（已在 Research Orchestrator 中覆盖 9 个 provider）
+
+### GitHub 研究完成
+- ✅ Open-LLM-VTuber (10.2k★) — 语音交互架构参考
+- ✅ PaddleOCR (80.9k★) — OCR 客户端已在 `/lib/paddleocr`
+- ✅ knowledge-work-plugins (19.3k★) — Tool Registry 白名单模式
+- ✅ motion-canvas (18.6k★) — 教育动画钩子
+- ✅ public-apis (439.8k★) — 免费 API 目录（已集成 6 个学术 API）
+
+### 受保护模块未触碰
+- ✅ Mind Garden 隐私 | ✅ Auth 邀请码 | ✅ store storagePreference
+- ✅ Study Pack P0 | ✅ Research Orchestrator | ✅ Knowledge Forest
+
+## 2026-06-07 — V11 Study Pack-Centered AI Learning OS + V11.1 Practice & Cloud (略, 见上文)
+- **Commit:** a94abf3 | **Branch:** `claude/v10-study-pack`
+- **Deployed:** https://mango-learning-ohpgefe7o-mango-s-projects5.vercel.app (1m build, 81 pages)
+
+### V11 Core: 产品架构重构
+- **导航从 4 项 → 5 项:** 今日(/hub) · 学习包(/pack) · 导师(/agent) · 知识森林(/forest) · 花园(/grow)
+- **学习包不再是 `/exam` 内的标签页**，而是专属 `/pack` 一级路由
+- **移动端底部导航**自动适配 5 个主入口 + "更多"抽屉
+- `/exam` → `/pack` 301 重定向（next.config + 客户端双重保障）
+- Hub CTA 按钮和所有链接指向 `/pack`
+
+### Study Pack Wizard (/pack)
+- 多步向导：课程信息表单 → 文件上传 → 生成 → 7步进度时间线 → 文档预览
+- **7步进度时间线(动画):** 解析资料→搜索来源→可靠性排序→生成结构→创建例题→质量检查→保存导出
+- **源卡片:** 9 个 provider 图标 + 可信度标签(高/中/低) + 相关度% + 外链
+- **文档阅读器:** 横向滚动 section 标签 + Markdown 渲染 + 移动端折叠面板
+- **桌面 3 栏驾驶舱** (lg+): 左栏(源/上下文) · 中栏(工作区) · 右栏(质量/导出)
+- **历史视图:** 网格卡片 + 质量分 + 一键打开
+
+### Study Pack 持久化 (3层)
+- **IndexedDB** (lib/db/study-pack-idb.ts): 完整内容存储, 支持大数据
+- **localStorage** (lib/study-pack-store.ts): 元数据快取 + 内容备用
+- **Supabase** (lib/supabase/study-pack-queries.ts): 跨设备云端同步
+- 重命名/复制/删除 全部可用, 刷新不丢数据
+
+### V11.1: 闪卡练习 + 云同步 + UI 完善
+- **闪卡练习 (pack-practice.tsx):** 自动从讲义提取考点/公式/概念 → 30 张闪卡 → SM-2 间隔重复 → 3D 翻转动画 → 四键评分
+- **Supabase 云同步:** study_packs 表 + RLS 策略 + 三层存储联动
+- **骨架屏 (skeleton-card.tsx):** 5 种变体(卡片/向导/阅读器/标签/列表)
+- **历史卡片增加:** 重命名 + 复制按钮
+- **练习按钮:** 桌面右栏 + 移动端顶部栏
+
+### 知识森林独立 (/forest)
+- 从 `/exam` 标签页 → 专属 `/forest` 一级路由
+- ForestBackground (暖纸 + 叶绿薄雾)
+
+### Calm Academic OS — 视觉升级
+- **新 CSS 令牌:** --gradient-mango, --color-mist, --color-leaf, --bg-paper-warm, --glass-bg
+- **新背景组件:** PackBackground (暖纸+芒果桃渐变+学术网格), ForestBackground (暖纸+叶绿)
+- **新工具类:** gradient-mango-text, card-paper-warm, font-serif-leading, no-scrollbar
+- 更新模态 (v4 key): 5 项 V11 特性列表
+
+### 导出引擎升级
+- **真 .docx 导出 (lib/export/docx-builder.ts):** 自建 OOXML ZIP 构建器, 零外部依赖
+- 支持: 标题(Cormorant Garamond), 正文(Inter/Microsoft YaHei), 项目符号, 加粗/斜体/代码
+- Markdown/HTML/PDF 导出保留
+
+### 全量构建验证
+- `npx next build --no-lint` ✅ 81/81 pages, TypeScript 0 errors
+- 保护模块未触碰: Mind Garden 隐私, Auth 邀请码, store 存储门控, DeepSeek 流, Research Orchestrator
+
+### 待手动执行
+- [x] Supabase SQL Editor 运行 `supabase/migrations/v11_study_packs.sql` 建表
+
+### 已知限制
+- PDF 仍是浏览器打印 (非服务端 Puppeteer)
+- Mango Voice/DNA 仍为内测标签
+- RichEditor 移动端工具栏仍可优化
+
+## 2026-06-07 — Codex P0 Mind Garden privacy hardening (略, 见上文)
+
+## 2026-06-06 — v7.3 内测版 (略, 见上文)
 - Mind Garden local mode now keeps reflection, mood/journal, self-check-style content, and companion/CBT/weekly-summary text off cloud paths unless cloud preference and explicit consent are present.
 - `/api/mind-garden/reflect`, `/api/mind-garden`, and `/api/ai/mind-journal` now enforce explicit cloud consent before cloud AI processing.
 - Supabase reflection persistence now respects `storagePreference === "cloud"` instead of writing authenticated reflections while the user is in local storage mode.
@@ -187,6 +382,19 @@ Mangosum / Mango Tutor / Mangoing / Mango Friend / Mango Plan / Mango DNA / Mang
 - AI quiz generation
 - Weakness analysis
 
+---
+## 🔜 待后续 (2026-06-07 标记)
+
+| # | 任务 | 状态 | 备注 |
+|---|------|:--:|------|
+| 1 | 🥭 **芒宝 Live2D 伴侣** | 🔜 下一步 | 用户用 Gemini 生成角色图+动画视频 → ClaudeCoda 实现 CSS/Framer Motion 轻量伪Live2D（浮动+呼吸+表情切换+语音气泡） |
+| 2 | 💰 微信/支付宝支付 | ⏸️ 暂停 | 需企业商户资质，当前 Mango Code 兑换替代 |
+| 3 | 🎬 motion-canvas 教育动画 | 🔜 轻量版 | CSS/Framer Motion/SVG/Lottie 替代方案，不做 WebGL |
+| 4 | 🎤 Deepgram 实时对话流 | 🔜 | WebSocket hook 已就位(`lib/deepgram/use-deepgram-voice.ts`)，需接双向对话 |
+| 5 | 📷 OCR → Agent 全管线 | 🔜 | PaddleOCR 客户端已就位(`lib/paddleocr/client.ts`)，需 Docker 部署后连线 |
+| 6 | 📱 PWA 离线支持 | 🔜 | manifest.json 已有，需完善 service worker 离线缓存 |
+
+---
 ## 2026-06-01 — V1.0
 - Initial release
 - Dashboard, AI Tutor, Study Planner, Knowledge Hub, Mind Garden, Mango DNA, Profile

@@ -1,18 +1,43 @@
 {
+  "id": "com.mango.learningos",
   "name": "Mango Learning OS",
   "short_name": "Mango",
-  "description": "你的个人学习操作系统",
+  "description": "AI原生学习操作系统 — Agent · 学习包 · 笔记 · 心灵花园 · 把焦虑变成准备",
   "start_url": "/hub",
+  "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen", "minimal-ui"],
   "background_color": "#F7F4EF",
   "theme_color": "#C58B74",
   "orientation": "portrait-primary",
-  "categories": ["education", "productivity"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["education", "productivity", "lifestyle"],
+  "iarc_rating_id": "e44e8a0b-82a0-4c32-b1b3-7d20c1d68e8f",
   "icons": [
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
   ],
-  "screenshots": [],
-  "prefer_related_applications": false
+  "screenshots": [
+    { "src": "/screenshot-hub.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "今日学习驾驶舱" },
+    { "src": "/screenshot-agent.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "AI Agent 执行结果" },
+    { "src": "/screenshot-pack.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "学习包生成" }
+  ],
+  "shortcuts": [
+    { "name": "今日", "short_name": "今日", "description": "学习驾驶舱", "url": "/hub", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "学习包", "short_name": "学习包", "description": "AI生成讲义", "url": "/pack", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "AI导师", "short_name": "导师", "description": "智能Agent", "url": "/agent", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "笔记", "short_name": "笔记", "description": "NotebookLM风格", "url": "/notes", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] }
+  ],
+  "share_target": {
+    "action": "/agent",
+    "method": "GET",
+    "params": { "title": "title", "text": "text", "url": "url" }
+  },
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {},
+  "handle_links": "preferred",
+  "launch_handler": { "client_mode": ["navigate-existing", "auto"] }
 }

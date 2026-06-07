@@ -11,18 +11,13 @@ import { useStore } from "@/lib/store";
 import { MagicCard } from "@/components/hub/magic-card";
 import { MangoOnboarding, shouldShowOnboarding } from "@/components/onboarding/MangoOnboarding";
 import { CognitiveFlows } from "@/components/hub/cognitive-flows";
+import { cn } from "@/lib/utils";
 import { AmbientOrbs, FloatingParticles } from "@/components/ui/ambient-orbs";
 import { PageTransition } from "@/components/layout/page-transition";
 import { getRecentStudyPacks, type StudyPackSession } from "@/lib/study-pack-store";
 import { useSubjects } from "@/lib/subjects";
-import {
-  ActionCard,
-  FloatingCommandBar,
-  LearningStatCard,
-  MissionHero,
-  MobileShell,
-  PrimaryMobileButton,
-} from "@/components/mobile/premium-mobile";
+import { buildLearningIdentity } from "@/lib/agent/learning-memory";
+import { getMistakesDue } from "@/lib/agent/mistake-bank";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub V10.1 — Study Cockpit
@@ -48,6 +43,60 @@ function Section({ children, delay = 0 }: { children: React.ReactNode; delay?: n
     >
       {children}
     </motion.section>
+  );
+}
+
+function ReviewSection() {
+  const [recommendations, setRecommendations] = React.useState<string[]>([]);
+  const [mistakesDue, setMistakesDue] = React.useState(0);
+
+  React.useEffect(() => {
+    try {
+      const identity = buildLearningIdentity();
+      setRecommendations(identity.recentRecommendations ?? []);
+      const due = getMistakesDue();
+      setMistakesDue(due.length);
+    } catch { /* guest mode, no data */ }
+  }, []);
+
+  if (recommendations.length === 0 && mistakesDue === 0) return null;
+
+  return (
+    <Section delay={0.12}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-title">今日复习建议</h2>
+        {mistakesDue > 0 && (
+          <Link href="/agent?view=tasks" className="text-small text-primary hover:underline flex items-center gap-1">
+            复习错题 <ArrowRight className="size-3" />
+          </Link>
+        )}
+      </div>
+      <div className="flex flex-col gap-2">
+        {mistakesDue > 0 && (
+          <Link href="/agent?view=tasks"
+            className="card-card p-4 flex items-center gap-4 group hover:shadow-md transition-all">
+            <div className="size-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+              <Target className="size-5 text-amber-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium group-hover:text-primary transition-colors">
+                你有 <span className="text-amber-600 font-bold">{mistakesDue}</span> 道错题待复习
+              </p>
+              <p className="text-caption">基于间隔重复，现在是最佳复习时间</p>
+            </div>
+            <ArrowRight className="size-4 text-fg-muted/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+          </Link>
+        )}
+        {recommendations.slice(0, 2).map((rec, i) => (
+          <div key={i} className="card-card p-3 flex items-start gap-3">
+            <span className="text-sm mt-0.5">💡</span>
+            <div className="flex flex-col gap-0.5">
+              <p className="text-sm">{rec}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Section>
   );
 }
 
@@ -91,86 +140,7 @@ export default function HubPage() {
 
   return (
     <PageTransition>
-    <div className="md:hidden">
-      <MobileShell>
-        <MissionHero
-          eyebrow={dateStr}
-          title={`${greeting}，进入学习任务台`}
-          description="把今天的课程、复习、提问和情绪恢复，收束成可执行的下一步。"
-          icon={Sparkles}
-          meta={
-            <>
-              <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">{stats?.streakDays ?? 0} 天 streak</span>
-              <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">{doneToday}/{totalToday} tasks</span>
-              <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">{dueCards} flashcards</span>
-            </>
-          }
-          action={
-            <PrimaryMobileButton href="/exam">
-              <BookOpen className="mr-2 size-4" />
-              生成学习包
-            </PrimaryMobileButton>
-          }
-        />
-
-        <FloatingCommandBar placeholder="让芒宝解释、规划、复习..." href="/agent" />
-
-        <section className="grid grid-cols-3 gap-3">
-          <LearningStatCard icon={Target} label="Missions" value={`${doneToday}/${totalToday}`} sub="今日任务" href="/planner" />
-          <LearningStatCard icon={Layers} label="Review" value={`${dueCards}`} sub="到期闪卡" href="/exam" />
-          <LearningStatCard icon={Clock} label="Focus" value={`${stats?.minutesToday ?? 0}`} sub="分钟" href="/profile" />
-        </section>
-
-        {recentPacks.length > 0 && (
-          <section className="mango-glass-card p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-white">继续学习</h2>
-              <Link href="/exam" className="text-xs font-medium text-amber-200">查看全部</Link>
-            </div>
-            <div className="space-y-2">
-              {recentPacks.slice(0, 2).map((pack) => (
-                <Link key={pack.id} href="/exam" className="flex items-center gap-3 rounded-2xl bg-white/[0.055] p-3">
-                  <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/18 text-amber-200">
-                    <FileText className="size-5" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-semibold text-white">{pack.courseName}</span>
-                    <span className="mt-0.5 block text-xs text-white/42">Quality {pack.qualityScore} · {new Date(pack.createdAt).toLocaleDateString("zh-CN")}</span>
-                  </span>
-                  <ArrowRight className="size-4 text-white/35" />
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section>
-          <div className="mb-3 flex items-end justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100/45">Next actions</p>
-              <h2 className="mt-1 text-lg font-semibold text-white">Mission shortcuts</h2>
-            </div>
-            <button type="button" onClick={() => setMagicOpen(true)} className="text-xs font-semibold text-amber-200">
-              魔法
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <ActionCard icon={BookOpen} title="Generate" description="课程输入、资料分析、生成复习讲义" href="/exam" badge="DOCX" />
-            <ActionCard icon={Bot} title="Agent" description="讲解概念、生成练习、保存知识" href="/agent" />
-            <ActionCard icon={Heart} title="Mind Garden" description="本地优先的情绪恢复与复盘" href="/grow" />
-            <ActionCard icon={Sparkles} title="Ask Mango" description="快速整理一个学习问题" onClick={() => setMagicOpen(true)} />
-          </div>
-        </section>
-
-        <section className="grid grid-cols-2 gap-3">
-          <ActionCard icon={FileText} title="Notes" description="导入、整理、复习笔记" href="/exam?tab=notes" />
-          <ActionCard icon={Layers} title="Forest" description="知识森林和学习路径" href="/exam?tab=forest" />
-        </section>
-
-      </MobileShell>
-    </div>
-
-    <div className="hidden flex-col gap-10 pb-24 max-w-2xl mx-auto md:flex">
+    <div className="flex flex-col gap-10 pb-24 max-w-2xl mx-auto">
       {/* ═══ 1. HERO + STUDY PACK CTA ═══ */}
       <section className="relative pt-4 md:pt-10">
         <motion.div
@@ -197,10 +167,10 @@ export default function HubPage() {
               </div>
 
               {/* Primary CTA: Study Pack */}
-              <Link href="/exam"
+              <Link href="/pack"
                 className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-primary to-primary/90 text-primary-on px-6 py-3.5 text-sm font-semibold hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 self-start pressable">
                 <BookOpen className="size-5" />
-                生成期末学习包
+                生成学习包
                 <ArrowRight className="size-4" />
               </Link>
               <p className="text-caption -mt-2">
@@ -216,11 +186,11 @@ export default function HubPage() {
         <Section delay={0.05}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-title">继续学习</h2>
-            <Link href="/exam" className="text-small text-primary hover:underline">查看全部</Link>
+            <Link href="/pack" className="text-small text-primary hover:underline">查看全部</Link>
           </div>
           <div className="flex flex-col gap-2">
             {recentPacks.slice(0, 2).map(pack => (
-              <Link key={pack.id} href="/exam"
+              <Link key={pack.id} href="/pack"
                 className="card-card hover-lift p-4 flex items-center gap-4 group">
                 <div className="size-10 rounded-xl bg-primary-subtle flex items-center justify-center shrink-0">
                   <FileText className="size-5 text-primary" />
@@ -244,7 +214,7 @@ export default function HubPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { icon: Target, label: "待办任务", value: `${doneToday}/${totalToday}`, sub: "已完成", href: "/planner" },
-            { icon: Layers, label: "闪卡复习", value: `${dueCards} 张`, sub: dueCards > 0 ? "待复习" : "全部完成", href: "/exam" },
+            { icon: Layers, label: "闪卡复习", value: `${dueCards} 张`, sub: dueCards > 0 ? "待复习" : "全部完成", href: "/pack" },
             { icon: Clock, label: "今日学习", value: `${stats?.minutesToday ?? 0} 分钟`, sub: `目标 ${stats?.minutesGoal ?? 180} 分钟`, href: "/profile" },
           ].map((s) => (
             <Link key={s.label} href={s.href} className="card-card hover-lift p-4 flex items-start justify-between group">
@@ -266,7 +236,7 @@ export default function HubPage() {
         <h2 className="text-title mb-4">快速入口</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { icon: BookOpen, label: "学习包", sub: "生成复习讲义", href: "/exam" },
+            { icon: BookOpen, label: "学习包", sub: "生成复习讲义", href: "/pack" },
             { icon: Bot, label: "导师", sub: "AI 对话学习", href: "/agent" },
             { icon: Heart, label: "花园", sub: "情绪支持", href: "/grow" },
             { icon: Sparkles, label: "Ask Mango", sub: "快速提问", onClick: () => setMagicOpen(true) },
@@ -288,17 +258,20 @@ export default function HubPage() {
         </div>
       </Section>
 
-      {/* ═══ 5. COGNITIVE FLOWS (Daily real content) ═══ */}
-      <Section delay={0.12}>
+      {/* ═══ 5. TODAY'S REVIEW PLAN ═══ */}
+      <ReviewSection />
+
+      {/* ═══ 6. COGNITIVE FLOWS (Daily real content) ═══ */}
+      <Section delay={0.14}>
         <CognitiveFlows />
       </Section>
 
-      {/* ═══ 6. SUBJECTS ═══ */}
+      {/* ═══ 7. SUBJECTS ═══ */}
       <SubjectsSection />
-    </div>
 
-    {/* ═══ Magic Card Modal — single instance ═══ */}
-    <MagicCard open={magicOpen} onClose={() => setMagicOpen(false)} />
+      {/* ═══ Magic Card Modal ═══ */}
+      <MagicCard open={magicOpen} onClose={() => setMagicOpen(false)} />
+    </div>
     </PageTransition>
   );
 }

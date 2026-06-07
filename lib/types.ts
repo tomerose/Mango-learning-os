@@ -58,6 +58,7 @@ export interface Note {
   subject: SubjectId;
   body: string;
   tags: string[];
+  template?: string; // note template: cornell|concept|lecture|exam|reading|mistake
   updatedLabel: string;
 }
 

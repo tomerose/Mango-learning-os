@@ -1,22 +1,20 @@
 // ═══════════════════════════════════════════════════════════════
-// OCR API — Image-to-text extraction pipeline
-// Accepts base64 image → returns extracted text
-// Backend: PaddleOCR (via Python subprocess) or Tesseract fallback
+// OCR API — Image-to-text via PaddleOCR
+// Reference: github.com/PaddlePaddle/PaddleOCR
+// Try hosted API first, fallback to local placeholder
 // ═══════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { createRateLimiter } from "@/lib/rate-limit";
+import { resolveSession } from "@/lib/auth/session";
+import { guard } from "@/lib/plan/guard";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
-
-const limiter = createRateLimiter({ requests: 10, window: 60000 });
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
-  const clientId = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  if (!limiter.check(clientId)) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
-  }
+  const session = await resolveSession(req);
+  const blocked = guard({ plan: session.plan }, "canUseOCR");
+  if (blocked) return blocked;
 
   let body: { image?: string; url?: string };
   try { body = await req.json(); } catch {
@@ -28,28 +26,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "image (base64) or url required" }, { status: 400 });
   }
 
+  // ── Try PaddleOCR hosted API ──
   try {
-    // For now: return placeholder. PaddleOCR integration requires:
-    // 1. pip install paddlepaddle paddleocr
-    // 2. Python subprocess call to run OCR
-    // 3. Results fed to knowledge engine
-
-    // The architecture is ready — PaddleOCR can be added by:
-    // const { execSync } = require('child_process');
-    // const result = execSync(`python -c "from paddleocr import PaddleOCR; ..."`);
-
-    return NextResponse.json({
-      extracted: true,
-      text: image
-        ? "(Image received. Install PaddleOCR for production extraction: pip install paddlepaddle paddleocr)"
-        : "(URL received. Content will be fetched and extracted.)",
-      method: image ? "image-ocr" : "url-fetch",
-      ready: false, // Set to true when PaddleOCR is installed
-      installGuide: "pip install paddlepaddle paddleocr",
+    const ocrRes = await fetch("https://www.paddleocr.com/api/ocr", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ file: image ?? url }),
+      signal: AbortSignal.timeout(15000),
     });
-  } catch (err) {
-    return NextResponse.json({
-      error: err instanceof Error ? err.message : "OCR failed",
-    }, { status: 500 });
-  }
+    if (ocrRes.ok) {
+      const data = await ocrRes.json();
+      const text = data?.result?.map((r: { text: string }) => r.text).join("\n") ?? data?.text ?? "";
+      if (text) {
+        return NextResponse.json({ success: true, text, method: "paddleocr-api" });
+      }
+    }
+  } catch { /* hosted API unavailable */ }
+
+  // ── Fallback: PaddleOCR.js browser-side hint ──
+  return NextResponse.json({
+    success: false,
+    ready: false,
+    message: "PaddleOCR 服务暂未连接。可通过以下方式启用：",
+    options: [
+      "1. PaddleOCR Docker: docker run -p 8866:8866 paddlecloud/paddleocr:latest",
+      "2. 浏览器端: 使用 PaddleOCR.js CDN（自动加载）",
+      "3. pip install paddlepaddle paddleocr（本地部署）",
+    ],
+    browserFallback: "请在前端直接使用 PaddleOCR.js 进行浏览器端 OCR",
+    reference: "https://github.com/PaddlePaddle/PaddleOCR",
+  }, { status: 503 });
 }

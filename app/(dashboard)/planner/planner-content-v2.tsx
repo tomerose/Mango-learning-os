@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarCheck, Plus, Sparkles, Layers, Target, GraduationCap } from "lucide-react";
+import { CalendarCheck, Plus, Sparkles, Layers, Target, GraduationCap, Brain, CheckCircle2, AlertTriangle, TrendingUp, Lightbulb } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,10 @@ import { useSubjects } from "@/lib/subjects";
 import { FlashcardsTab } from "@/components/knowledge-hub/flashcards-tab";
 import { ExamWorkspace } from "@/components/exam/exam-workspace";
 import type { SubjectId, Priority } from "@/lib/types";
+import { buildLearningIdentity, loadMemory } from "@/lib/agent/learning-memory";
+import { getMistakeStats } from "@/lib/agent/mistake-bank";
+import { loadStudyPacksSync } from "@/lib/study-pack-store";
+import type { LearningIdentity } from "@/lib/agent/types";
 
 const PRIORITIES: { id: Priority; label: string }[] = [
   { id: "high", label: "高" }, { id: "medium", label: "中" }, { id: "low", label: "低" },
@@ -71,6 +75,7 @@ export function PlannerContent() {
         <TabsTrigger value="plan"><Sparkles className="size-3.5 mr-1" />智能计划</TabsTrigger>
         <TabsTrigger value="exam"><GraduationCap className="size-3.5 mr-1" />考试备战</TabsTrigger>
         <TabsTrigger value="flashcards"><Layers className="size-3.5 mr-1" />闪卡复习</TabsTrigger>
+        <TabsTrigger value="identity"><Brain className="size-3.5 mr-1" />学习身份</TabsTrigger>
       </TabsList>
 
       {/* ── Tasks Tab ── */}
@@ -158,6 +163,125 @@ export function PlannerContent() {
       <TabsContent value="flashcards" className="mt-4">
         <FlashcardsTab />
       </TabsContent>
+
+      {/* ── Identity Tab (学习身份 merged from /dna) ── */}
+      <TabsContent value="identity" className="mt-4">
+        <IdentityTab />
+      </TabsContent>
     </Tabs>
+  );
+}
+
+// ── Learning Identity Tab (merged from /dna) ──────────────────
+
+const IDENTITY_PRESETS = [
+  { id: "exam_sprint", name: "期末冲刺", icon: "⚡", desc: "高强度备考 · 重点突破", style: "concise", examFocus: true },
+  { id: "deep_learner", name: "深度学习者", icon: "🧠", desc: "概念优先 · 跨学科连接", style: "detailed", examFocus: false },
+  { id: "english_ielts", name: "英语/IELTS", icon: "🗣️", desc: "词汇积累 · 口语写作", style: "example-heavy", examFocus: true },
+  { id: "ai_builder", name: "AI 构建者", icon: "🤖", desc: "项目驱动 · 源码阅读", style: "visual", examFocus: false },
+];
+
+function IdentityTab() {
+  const [identity, setIdentity] = React.useState<LearningIdentity | null>(null);
+  const [mistakeStats, setMistakeStats] = React.useState({ total: 0, mastered: 0, due: 0 });
+  const [presetId, setPresetId] = React.useState(() => {
+    try { return localStorage.getItem("mango-identity-preset") || "deep_learner"; } catch { return "deep_learner"; }
+  });
+  const [saved, setSaved] = React.useState(false);
+
+  React.useEffect(() => {
+    try { setIdentity(buildLearningIdentity()); setMistakeStats(getMistakeStats()); } catch {}
+  }, []);
+
+  function selectPreset(id: string) {
+    setPresetId(id); localStorage.setItem("mango-identity-preset", id);
+    setSaved(true); setTimeout(() => setSaved(false), 1500);
+  }
+
+  const preset = IDENTITY_PRESETS.find(p => p.id === presetId);
+  const memory = React.useMemo(() => { try { return loadMemory(); } catch { return null; } }, []);
+  const masteryRate = mistakeStats.total > 0 ? Math.round((mistakeStats.mastered / mistakeStats.total) * 100) : 0;
+
+  if (!identity) {
+    return <div className="text-center py-12 text-fg-muted text-sm">登录后查看学习身份</div>;
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { label: "学习包", val: identity.assetCounts.studyPacks },
+          { label: "笔记", val: identity.assetCounts.notes },
+          { label: "错题掌握", val: `${masteryRate}%` },
+        ].map(s => (
+          <div key={s.label} className="card-card p-3 text-center">
+            <p className="text-lg font-bold">{s.val}</p>
+            <p className="text-[10px] text-fg-muted">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Strengths & Weaknesses */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="rounded-xl bg-emerald-50/50 p-3">
+          <span className="text-[10px] font-medium text-emerald-700 flex items-center gap-1"><CheckCircle2 className="size-3" />优势</span>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {identity.strengths.length > 0 ? identity.strengths.slice(0, 4).map(s => (
+              <span key={s} className="text-[10px] rounded-full px-2 py-0.5 bg-emerald-100 text-emerald-700">{s}</span>
+            )) : <span className="text-[10px] text-fg-muted">积累中</span>}
+          </div>
+        </div>
+        <div className="rounded-xl bg-amber-50/50 p-3">
+          <span className="text-[10px] font-medium text-amber-700 flex items-center gap-1"><AlertTriangle className="size-3" />待攻克</span>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {identity.weakPoints.filter(w=>w.priority==="high").length > 0
+              ? identity.weakPoints.filter(w=>w.priority==="high").slice(0,4).map(w => (
+                <span key={w.topic} className="text-[10px] rounded-full px-2 py-0.5 bg-amber-100 text-amber-700">{w.topic}</span>
+              )) : <span className="text-[10px] text-fg-muted">暂无</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* Presets */}
+      <div className="card-card p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold flex items-center gap-1.5"><Brain className="size-3.5 text-primary" />学习风格</h3>
+          {saved && <span className="text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full">已保存</span>}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {IDENTITY_PRESETS.map(p => (
+            <button key={p.id} onClick={() => selectPreset(p.id)}
+              className={`flex flex-col gap-1 p-2.5 rounded-xl border text-left text-xs transition-all ${
+                presetId === p.id ? "border-primary bg-primary-subtle" : "border-border hover:border-primary/20"
+              }`}>
+              <span className="text-base">{p.icon}</span>
+              <p className="font-semibold">{p.name}</p>
+              <p className="text-[10px] text-fg-muted/60">{p.desc}</p>
+            </button>
+          ))}
+        </div>
+        {preset && (
+          <div className="grid grid-cols-2 gap-1.5 mt-3 bg-bg-subtle rounded-lg p-2.5 text-[10px]">
+            <span className="text-fg-muted/50">Agent风格: <strong className="text-fg">{preset.style}</strong></span>
+            <span className="text-fg-muted/50">侧重: <strong className="text-fg">{preset.examFocus ? "考试" : "理解"}</strong></span>
+          </div>
+        )}
+      </div>
+
+      {/* Recommendations */}
+      {identity.recentRecommendations.length > 0 && (
+        <div className="card-card p-4">
+          <h3 className="text-sm font-semibold flex items-center gap-1.5 mb-2"><Lightbulb className="size-3.5 text-primary" />建议</h3>
+          <div className="flex flex-col gap-1.5">
+            {identity.recentRecommendations.map((r, i) => (
+              <div key={i} className="text-xs text-fg-muted/70 flex items-start gap-1.5">
+                <span className="text-amber-500 shrink-0">💡</span> {r}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

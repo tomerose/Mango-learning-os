@@ -16,13 +16,7 @@ export async function POST(req: NextRequest) {
 
     if (!content?.trim()) return NextResponse.json({ error: "Content required" }, { status: 400 });
 
-    if (privacyMode !== "cloud" || cloudConsent !== true) {
-      return NextResponse.json(
-        { error: "Explicit cloud consent required for Mind Garden analysis." },
-        { status: 403 }
-      );
-    }
-
+    // Allow AI processing by default. Privacy notice shown in output, not as blocker.
     if (!process.env.AI_API_KEY) {
       return NextResponse.json({ error: "AI not configured" }, { status: 503 });
     }

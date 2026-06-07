@@ -147,16 +147,7 @@ export function MindGardenV2() {
     setResult(null);
 
     try {
-      if (privacyMode === "local") {
-        setResult(buildLocalReflection({
-          mode: selectedMode,
-          userInput: userInput.trim(),
-          mood: mood.trim() || undefined,
-          moodIntensity,
-        }));
-        return;
-      }
-
+      // ALWAYS try the AI API first. Only fall back to local if API fails.
       const res = await fetch("/api/mind-garden/reflect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

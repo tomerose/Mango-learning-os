@@ -168,6 +168,51 @@ export function SumBackground({ className }: { className?: string }) {
   );
 }
 
+/* ── Study Pack: Warm paper + mango gradient orb ────────────────── */
+export function PackBackground({ className }: { className?: string }) {
+  return (
+    <div className={cn("absolute inset-0 overflow-hidden pointer-events-none", className)}>
+      {/* Warm paper gradient */}
+      <div className="absolute inset-0 opacity-[0.6]"
+        style={{ background: "linear-gradient(180deg, oklch(0.985 0.003 80) 0%, oklch(0.975 0.006 75) 50%, oklch(0.98 0.004 85) 100%)" }} />
+      {/* Mango gradient orb */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-primary/[0.06] via-primary/[0.03] to-transparent rounded-full blur-3xl" />
+      {/* Subtle structured grid for academic feel */}
+      <div className="absolute inset-0 opacity-[0.015]"
+        style={{
+          backgroundImage: "linear-gradient(to right, oklch(0.58 0.16 75) 1px, transparent 1px), linear-gradient(to bottom, oklch(0.58 0.16 75) 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+        }} />
+    </div>
+  );
+}
+
+/* ── Knowledge Forest: Paper + leaf-green mist ─────────────────── */
+export function ForestBackground({ className }: { className?: string }) {
+  return (
+    <div className={cn("absolute inset-0 overflow-hidden pointer-events-none", className)}>
+      {/* Paper background */}
+      <div className="absolute inset-0 opacity-[0.5]"
+        style={{ background: "linear-gradient(180deg, oklch(0.985 0.003 80) 0%, oklch(0.98 0.005 90) 100%)" }} />
+      {/* Leaf-green mist orb */}
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-emerald-500/[0.05] via-emerald-400/[0.03] to-transparent rounded-full blur-3xl" />
+      <div className="absolute top-1/4 right-0 w-[300px] h-[300px] bg-gradient-to-bl from-green-400/[0.04] to-transparent rounded-full blur-3xl" />
+      {/* Organic dot pattern (leaf-like) */}
+      <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
+        {Array.from({ length: 40 }).map((_, i) => (
+          <circle key={i}
+            cx={`${20 + Math.sin(i * 2.1) * 35}%`}
+            cy={`${30 + Math.cos(i * 1.8) * 40}%`}
+            r={1.5 + Math.random() * 2}
+            fill="rgb(16,185,129)"
+            opacity={0.15 + Math.random() * 0.15}
+          />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
 /* ── Home / General: Subtle gradient mesh + noise ──────────────── */
 export function HomeBackground({ className }: { className?: string }) {
   return (

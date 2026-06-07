@@ -1,10 +1,9 @@
 // ─────────────────────────────────────────────────────────────
-// MangoOS V10.1 Navigation
-// Home | Study Pack | Tutor | Garden | More
+// MangoOS Navigation — Today | Pack | Agent | Profile
 // ─────────────────────────────────────────────────────────────
 import {
-  Sparkles, BookOpen, Bot, Heart, GraduationCap,
-  CalendarCheck, Mic, User, Trees, Network, FileText,
+  Sun, Package, Bot, Trees, Heart,
+  CalendarCheck, Mic, User, FileText,
   type LucideIcon,
 } from "lucide-react";
 
@@ -15,132 +14,34 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   description: string;
-  /** "primary" = always visible | "secondary" = More drawer | "beta" = labeled */
   tier: "primary" | "secondary" | "beta";
 }
 
 export const navItemsV2: NavItem[] = [
-  // ── Primary (bottom nav + sidebar top) ──────────────────
-  {
-    id: "hub",
-    label: "Today",
-    shortLabel: "Today",
-    href: "/hub",
-    icon: Sparkles,
-    description: "学习驾驶舱 · 今日任务 · 继续学习",
-    tier: "primary",
-  },
-  {
-    id: "exam",
-    label: "Generate",
-    shortLabel: "Generate",
-    href: "/exam",
-    icon: BookOpen,
-    description: "Study Pack · 资料输入 · 导出文档",
-    tier: "primary",
-  },
-  {
-    id: "agent",
-    label: "Agent",
-    shortLabel: "Agent",
-    href: "/agent",
-    icon: Bot,
-    description: "执行工作台 · 对话 · 讲解 · 练习",
-    tier: "primary",
-  },
-  {
-    id: "profile",
-    label: "Profile",
-    shortLabel: "Profile",
-    href: "/profile",
-    icon: User,
-    description: "Learning Identity · XP · 数据与隐私",
-    tier: "primary",
-  },
-  // ── Secondary (More drawer + sidebar) ────────────────────
-  {
-    id: "notes",
-    label: "Notes",
-    shortLabel: "Notes",
-    href: "/exam?tab=notes",
-    icon: FileText,
-    description: "笔记 · 导入 · 编辑",
-    tier: "secondary",
-  },
-  {
-    id: "forest",
-    label: "Forest",
-    shortLabel: "Forest",
-    href: "/exam?tab=forest",
-    icon: Trees,
-    description: "知识森林 · 学习路径",
-    tier: "secondary",
-  },
-  {
-    id: "graph",
-    label: "Graph",
-    shortLabel: "Graph",
-    href: "/exam?tab=graph",
-    icon: Network,
-    description: "知识网络 · 关系图谱",
-    tier: "secondary",
-  },
-  {
-    id: "planner",
-    label: "Planner",
-    shortLabel: "Planner",
-    href: "/planner",
-    icon: CalendarCheck,
-    description: "计划生成 · 任务管理",
-    tier: "secondary",
-  },
-  {
-    id: "grow",
-    label: "Grow",
-    shortLabel: "Grow",
-    href: "/grow",
-    icon: Heart,
-    description: "Mind Garden · 情绪支持 · 隐私优先",
-    tier: "secondary",
-  },
-  // ── Beta (More drawer only) ──────────────────────────────
-  {
-    id: "voice",
-    label: "Mango Voice",
-    shortLabel: "Voice",
-    href: "/voice",
-    icon: Mic,
-    description: "语音对话 · 内测中",
-    tier: "beta",
-  },
-  {
-    id: "dna",
-    label: "Mango DNA",
-    shortLabel: "DNA",
-    href: "/dna",
-    icon: GraduationCap,
-    description: "AI 人格画像 · 即将上线",
-    tier: "beta",
-  },
+  // ── Primary 4 (bottom nav) ─────────────────────────────────
+  { id: "hub", label: "今日", shortLabel: "今日", href: "/hub", icon: Sun, description: "学习驾驶舱 · 继续学习 · 快速入口", tier: "primary" },
+  { id: "pack", label: "学习包", shortLabel: "学习包", href: "/pack", icon: Package, description: "AI 生成复习讲义 · 导出", tier: "primary" },
+  { id: "agent", label: "导师", shortLabel: "导师", href: "/agent", icon: Bot, description: "AI Agent · 任务执行 · 智能工具", tier: "primary" },
+  { id: "profile", label: "我的", shortLabel: "我的", href: "/profile", icon: User, description: "计划 · 成就 · 配额 · 设置", tier: "primary" },
+  // ── Secondary (More drawer) ────────────────────────────────
+  { id: "notes", label: "笔记", shortLabel: "笔记", href: "/notes", icon: FileText, description: "结构化笔记 · 6种模板 · 导入", tier: "secondary" },
+  { id: "forest", label: "知识森林", shortLabel: "森林", href: "/forest", icon: Trees, description: "知识网络 · 笔记关联 · 学习计划", tier: "secondary" },
+  { id: "grow", label: "花园", shortLabel: "花园", href: "/grow", icon: Heart, description: "心灵花园 Pro · 10种模式 · 自我关怀", tier: "secondary" },
+  { id: "planner", label: "学习计划", shortLabel: "计划", href: "/planner", icon: CalendarCheck, description: "任务管理 · 学习身份 · 闪卡 · 考试", tier: "secondary" },
+  // ── Beta ───────────────────────────────────────────────────
+  { id: "voice", label: "Mango Voice", shortLabel: "Voice", href: "/voice", icon: Mic, description: "语音对话 · 内测中", tier: "beta" },
 ];
 
-/** Primary items for bottom mobile nav (first 4 + More) */
+/** Primary items for bottom mobile nav */
 export const mobileNavItemsV2: NavItem[] = navItemsV2.filter(n => n.tier === "primary");
 
 /** Secondary + Beta items for More drawer */
 export const moreNavItems: NavItem[] = navItemsV2.filter(n => n.tier !== "primary");
 
 export const redirectMapV2: Record<string, string> = {
-  "/dashboard": "/hub",
-  "/ai-tutor": "/agent",
-  "/study-planner": "/planner",
-  "/knowledge-hub": "/agent",
-  "/exam-mode": "/exam",
-  "/exam-master": "/exam",
-  "/mind-garden": "/grow",
-  "/mango-dna": "/dna",
-  "/analytics": "/hub",
-  "/projects": "/grow",
-  "/mind": "/grow",
+  "/dashboard": "/hub", "/ai-tutor": "/agent", "/study-planner": "/planner",
+  "/knowledge-hub": "/agent", "/exam": "/pack", "/exam-mode": "/pack",
+  "/exam-master": "/pack", "/mind-garden": "/grow", "/mango-dna": "/planner", "/dna": "/planner",
+  "/analytics": "/hub", "/projects": "/grow", "/mind": "/grow",
   "/knowledge-tree": "/agent",
 };
