@@ -4,7 +4,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
 import { StoreProvider } from "@/lib/store";
 import { SubjectProvider } from "@/lib/subjects";
-import { UpdateModal } from "@/components/update-modal";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { MangoboCompanion } from "@/components/mangobo/mangobo-companion";
 import { PWAInstallPrompt } from "@/components/ui/pwa-install";
@@ -14,7 +13,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <SubjectProvider>
     <StoreProvider>
       <TooltipProvider delayDuration={300}>
-      <UpdateModal />
 
       {/* ── DESKTOP ── */}
       <div className="hidden md:flex min-h-screen bg-background">

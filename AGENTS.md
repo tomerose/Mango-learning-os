@@ -119,3 +119,27 @@ After any agent completes work:
 
 Next.js 15.5 (App Router) · React 19 · TypeScript 5.8 · Tailwind CSS 4.1
 shadcn/ui (New York) · Supabase (PostgreSQL + RLS) · DeepSeek AI · Vercel
+
+---
+
+## Regression Prevention (added 2026-06-07 after V14 feature-loss incident)
+
+### Root Cause of V14 Regression
+`claude/v10-study-pack` had all V12-V14 features but was **never merged to main**.
+The UI redesign branch was created from `main` (missing features), merged back, and deployed — losing features.
+
+### Hard Rules to Prevent Recurrence
+
+1. **Single source of truth**: `main` is the ONLY deployable branch. No feature silos.
+2. **Merge immediately**: Feature branches must merge to `main` before any other branch is created from `main`.
+3. **Never branch from stale main**: `git pull origin main` before creating any branch.
+4. **Protected files**: Do NOT delete or overwrite:
+   - `app/api/**` (20+ routes)
+   - `lib/agent/**`, `lib/ai/**`, `lib/auth/**`, `lib/plan/**`, `lib/quota/**`, `lib/mango-code/**`
+   - `components/profile/*` (all 9 components)
+   - `components/mobile/premium-mobile.tsx`
+   - `app/globals.css` (design token section)
+5. **Build gate**: `npm run build` must pass with 0 errors before any push.
+6. **Version token**: `lib/version.ts` → `APP_VERSION` is the single version source.
+7. **No update modal on startup**: User preference. UpdateModal is disabled.
+8. **Post-deploy smoke test**: After deploy, curl `/hub`, `/agent`, `/pack`, `/profile`, `/grow` — all must return 200.
