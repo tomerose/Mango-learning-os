@@ -20,6 +20,10 @@ import { buildLearningIdentity } from "@/lib/agent/learning-memory";
 import { getMistakesDue } from "@/lib/agent/mistake-bank";
 import { MobileShell, MissionHero, FloatingCommandBar, ActionCard, LearningStatCard, PrimaryMobileButton } from "@/components/mobile/premium-mobile";
 import { MangoTodayEntry } from "@/components/hub/mango-today-entry";
+import { ExperienceCards } from "@/components/hub/experience-cards";
+import { VersionBadge } from "@/components/hub/version-badge";
+import { VisionCard } from "@/components/hub/vision-card";
+import { ExperimentLog } from "@/components/hub/experiment-log";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub V10.1 — Study Cockpit
@@ -159,6 +163,11 @@ export default function HubPage() {
           {/* ═══ MANGO TODAY ENTRY ═══ */}
           <MangoTodayEntry />
 
+          {/* ═══ EXPERIENCE CARDS (V14.7.3) ═══ */}
+          <section className="px-1">
+            <ExperienceCards />
+          </section>
+
           {/* 3-column stat grid */}
           <div className="grid grid-cols-3 gap-2 px-1">
             <LearningStatCard
@@ -215,6 +224,14 @@ export default function HubPage() {
           {/* Secondary modules */}
           <ReviewSection />
           <CognitiveFlows />
+
+          {/* ═══ V14.7.3: Version + Vision + Experiment Log ═══ */}
+          <section className="px-1 space-y-3">
+            <VersionBadge />
+            <VisionCard />
+            <ExperimentLog />
+          </section>
+
           <SubjectsSection />
         </MobileShell>
 
@@ -266,6 +283,11 @@ export default function HubPage() {
             </div>
           </motion.div>
         </section>
+
+        {/* ═══ V14.7.3: EXPERIENCE CARDS ═══ */}
+        <Section delay={0.03}>
+          <ExperienceCards />
+        </Section>
 
         {/* ═══ 2. CONTINUE WHERE YOU LEFT OFF ═══ */}
         {recentPacks.length > 0 && (
@@ -354,6 +376,15 @@ export default function HubPage() {
 
         {/* ═══ 7. SUBJECTS ═══ */}
         <SubjectsSection />
+
+        {/* ═══ V14.7.3: Version + Vision + Experiment Log ═══ */}
+        <Section delay={0.16}>
+          <div className="flex flex-col gap-4">
+            <VersionBadge />
+            <VisionCard />
+            <ExperimentLog />
+          </div>
+        </Section>
 
         {/* ═══ Magic Card Modal ═══ */}
         <MagicCard open={magicOpen} onClose={() => setMagicOpen(false)} />
