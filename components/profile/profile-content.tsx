@@ -13,6 +13,8 @@ import { LearningAssets } from "./learning-assets";
 import { PrivacySection } from "./privacy-section";
 import { WeeklyUpdateSection } from "./weekly-update-section";
 import { BillingSection } from "./billing-section";
+import { MobileShell, ProfileIdentityCard, LearningStatCard } from "@/components/mobile/premium-mobile";
+import { Flame, Zap, Target, CheckCircle2, User } from "lucide-react";
 
 type Tab = "overview" | "billing" | "privacy";
 
@@ -59,6 +61,9 @@ export function ProfileContent() {
   const features = PLAN_FEATURES[plan];
   const totalTasksDone = tasks.filter(t => t.done).length;
   const totalNotes = notes.length;
+  const xpInLevel = stats.totalXp - stats.xpForCurrentLevel;
+  const xpNeeded = stats.xpToNextLevel - stats.xpForCurrentLevel;
+  const xpProgress = xpNeeded > 0 ? Math.round((xpInLevel / xpNeeded) * 100) : 100;
 
   // Learning asset counts
   const assetCounts = React.useMemo(() => {
@@ -78,78 +83,194 @@ export function ProfileContent() {
   }, [totalNotes]);
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Header */}
-      <ProfileHeader
-        plan={plan}
-        planName={planInfo.name}
-        planBadge={planInfo.badge}
-        mode={mode}
-        totalXp={stats.totalXp}
-        level={stats.level}
-        streakDays={stats.streakDays}
-      />
+    <>
+      {/* ──────────── Mobile: Cinematic UI ──────────── */}
+      <div className="md:hidden">
+        <MobileShell stage="dark">
+          <ProfileIdentityCard
+            avatar={
+              <div className="grid size-14 shrink-0 place-items-center rounded-full bg-gradient-to-br from-amber-300 to-primary ring-2 ring-white/20">
+                <User className="size-6 text-white" />
+              </div>
+            }
+            title="Mango 学习者"
+            subtitle={planInfo.name}
+            level={`Lv.${stats.level}`}
+            progress={xpProgress}
+          />
 
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-bg-muted rounded-xl">
-        {[
-          { id: "overview" as Tab, label: "概览", icon: "📊" },
-          { id: "billing" as Tab, label: "计划", icon: "💎" },
-          { id: "privacy" as Tab, label: "隐私", icon: "🔒" },
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
-              activeTab === tab.id
-                ? "bg-surface shadow-sm text-fg"
-                : "text-fg-muted hover:text-fg"
-            }`}
-          >
-            <span className="hidden sm:inline mr-1.5">{tab.icon}</span>
-            {tab.label}
-          </button>
-        ))}
+          {/* Stat Grid — 2×2 */}
+          <div className="grid grid-cols-2 gap-3">
+            <LearningStatCard
+              icon={Flame}
+              label="连续学习"
+              value={`${stats.streakDays}天`}
+              sub="保持下去"
+            />
+            <LearningStatCard
+              icon={Zap}
+              label="总经验"
+              value={stats.totalXp.toLocaleString()}
+              sub={`Lv.${stats.level}`}
+            />
+            <LearningStatCard
+              icon={Target}
+              label="今日专注"
+              value={`${stats.minutesToday}分钟`}
+              sub={`目标${stats.minutesGoal}分钟`}
+            />
+            <LearningStatCard
+              icon={CheckCircle2}
+              label="完成任务"
+              value={`${stats.tasksDoneToday}/${stats.tasksTotalToday}`}
+              sub="今日进度"
+            />
+          </div>
+
+          {/* Tabs */}
+          <div className="flex gap-1 p-1 bg-white/6 rounded-2xl backdrop-blur-xl">
+            {[
+              { id: "overview" as Tab, label: "概览", icon: "📊" },
+              { id: "billing" as Tab, label: "计划", icon: "💎" },
+              { id: "privacy" as Tab, label: "隐私", icon: "🔒" },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? "bg-white/12 text-white shadow-sm"
+                    : "text-white/50 hover:text-white/80"
+                }`}
+              >
+                <span className="mr-1.5">{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === "overview" && (
+            <div className="flex flex-col gap-4">
+              <div className="mango-glass-card p-4">
+                <PlanCard
+                  plan={plan}
+                  planInfo={planInfo}
+                  features={features}
+                  expiresAt={planExpiresAt}
+                />
+              </div>
+              <div className="mango-glass-card p-4">
+                <QuotaDisplay
+                  plan={plan}
+                  agentTasks={quota.agentTasks}
+                  studyPacks={quota.studyPacks}
+                />
+              </div>
+              <div className="mango-glass-card p-4">
+                <MangoCodeRedeem onUpgrade={handlePlanUpgrade} currentPlan={plan} />
+              </div>
+              <div className="mango-glass-card p-4">
+                <LearningAssets counts={assetCounts} />
+              </div>
+              <div className="mango-glass-card p-4">
+                <WeeklyUpdateSection />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "billing" && (
+            <div className="mango-paper-card p-4">
+              <BillingSection
+                currentPlan={plan}
+                planExpiresAt={planExpiresAt}
+                onUpgrade={handlePlanUpgrade}
+              />
+            </div>
+          )}
+
+          {activeTab === "privacy" && (
+            <div className="mango-paper-card p-4">
+              <PrivacySection />
+            </div>
+          )}
+        </MobileShell>
       </div>
 
-      {/* Tab Content */}
-      {activeTab === "overview" && (
-        <div className="flex flex-col gap-5">
-          {/* Plan Card */}
-          <PlanCard
-            plan={plan}
-            planInfo={planInfo}
-            features={features}
-            expiresAt={planExpiresAt}
-          />
-
-          {/* Quota Display */}
-          <QuotaDisplay
-            plan={plan}
-            agentTasks={quota.agentTasks}
-            studyPacks={quota.studyPacks}
-          />
-
-          {/* Mango Code Redemption */}
-          <MangoCodeRedeem onUpgrade={handlePlanUpgrade} currentPlan={plan} />
-
-          {/* Learning Assets */}
-          <LearningAssets counts={assetCounts} />
-
-          {/* Weekly Update */}
-          <WeeklyUpdateSection />
-        </div>
-      )}
-
-      {activeTab === "billing" && (
-        <BillingSection
-          currentPlan={plan}
-          planExpiresAt={planExpiresAt}
-          onUpgrade={handlePlanUpgrade}
+      {/* ──────────── Desktop: Original Layout (unchanged) ──────────── */}
+      <div className="hidden md:flex flex-col gap-5">
+        {/* Header */}
+        <ProfileHeader
+          plan={plan}
+          planName={planInfo.name}
+          planBadge={planInfo.badge}
+          mode={mode}
+          totalXp={stats.totalXp}
+          level={stats.level}
+          streakDays={stats.streakDays}
         />
-      )}
 
-      {activeTab === "privacy" && <PrivacySection />}
-    </div>
+        {/* Tabs */}
+        <div className="flex gap-1 p-1 bg-bg-muted rounded-xl">
+          {[
+            { id: "overview" as Tab, label: "概览", icon: "📊" },
+            { id: "billing" as Tab, label: "计划", icon: "💎" },
+            { id: "privacy" as Tab, label: "隐私", icon: "🔒" },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                activeTab === tab.id
+                  ? "bg-surface shadow-sm text-fg"
+                  : "text-fg-muted hover:text-fg"
+              }`}
+            >
+              <span className="hidden sm:inline mr-1.5">{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "overview" && (
+          <div className="flex flex-col gap-5">
+            {/* Plan Card */}
+            <PlanCard
+              plan={plan}
+              planInfo={planInfo}
+              features={features}
+              expiresAt={planExpiresAt}
+            />
+
+            {/* Quota Display */}
+            <QuotaDisplay
+              plan={plan}
+              agentTasks={quota.agentTasks}
+              studyPacks={quota.studyPacks}
+            />
+
+            {/* Mango Code Redemption */}
+            <MangoCodeRedeem onUpgrade={handlePlanUpgrade} currentPlan={plan} />
+
+            {/* Learning Assets */}
+            <LearningAssets counts={assetCounts} />
+
+            {/* Weekly Update */}
+            <WeeklyUpdateSection />
+          </div>
+        )}
+
+        {activeTab === "billing" && (
+          <BillingSection
+            currentPlan={plan}
+            planExpiresAt={planExpiresAt}
+            onUpgrade={handlePlanUpgrade}
+          />
+        )}
+
+        {activeTab === "privacy" && <PrivacySection />}
+      </div>
+    </>
   );
 }
