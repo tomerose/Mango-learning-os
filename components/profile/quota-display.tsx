@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Zap, Package, Clock } from "lucide-react";
@@ -25,7 +25,7 @@ export function QuotaDisplay({ plan, agentTasks, studyPacks }: Props) {
           <Zap className="size-4 text-amber-500" />
           今日配额
         </h2>
-        <span className="text-[11px] text-fg-muted/50 flex items-center gap-1">
+        <span className="text-[11px] text-fg-muted/80 flex items-center gap-1">
           <Clock className="size-3" />
           北京时间 00:00 重置
         </span>
@@ -79,7 +79,7 @@ export function QuotaDisplay({ plan, agentTasks, studyPacks }: Props) {
       {/* Empty state for guest */}
       {plan === "guest" && (
         <div className="mt-4 pt-4 border-t border-border">
-          <p className="text-[12px] text-fg-muted/60 text-center">
+          <p className="text-[12px] text-fg-muted/90 text-center">
             游客模式无配额限制展示。登录后查看每日使用情况。
           </p>
         </div>

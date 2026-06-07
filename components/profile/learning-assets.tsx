@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Package, Bot, FileText, AlertTriangle, Layers, RefreshCw } from "lucide-react";
@@ -32,8 +32,8 @@ export function LearningAssets({ counts }: Props) {
 
       {Object.values(counts).every(v => v === 0) ? (
         <div className="text-center py-3">
-          <p className="text-[13px] text-fg-muted/60">还没有学习资产</p>
-          <p className="text-[11px] text-fg-muted/40 mt-0.5">
+          <p className="text-[13px] text-fg-muted/90">还没有学习资产</p>
+          <p className="text-[11px] text-fg-subtle/90 mt-0.5">
             创建学习包、完成 Agent 任务后将在此显示
           </p>
         </div>
@@ -46,7 +46,7 @@ export function LearningAssets({ counts }: Props) {
                 <p className="text-[18px] font-semibold tabular-nums leading-tight">
                   {counts[key]}
                 </p>
-                <p className="text-[11px] text-fg-muted/60">{label}</p>
+                <p className="text-[11px] text-fg-muted/90">{label}</p>
               </div>
             </div>
           ))}

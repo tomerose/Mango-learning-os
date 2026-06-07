@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -89,7 +89,7 @@ export function ProUpgradeAnimation({ show, onComplete, planName = "Pro" }: Prop
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="text-xs text-fg-muted/50"
+            className="text-xs text-fg-muted/80"
           >
             OCR · 深度研究 · 高级导出 · 长期记忆已解锁
           </motion.p>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import {
@@ -338,7 +338,7 @@ export function RichEditor({
                     }
                   }}
                   placeholder="添加标签…"
-                  className="text-[10px] bg-transparent border-none outline-none w-20 text-fg-muted placeholder:text-fg-muted/40"
+                  className="text-[10px] bg-transparent border-none outline-none w-20 text-fg-muted placeholder:text-fg-subtle/90"
                 />
                 {newTag.trim() && (
                   <button onClick={() => { addTag(newTag); setNewTag(""); }}
@@ -355,7 +355,7 @@ export function RichEditor({
             <span className="text-[11px] text-fg-muted w-14 shrink-0 flex items-center gap-1">
               <Clock className="size-3" /> 日期
             </span>
-            <span className="text-[11px] text-fg-muted/60">
+            <span className="text-[11px] text-fg-muted/90">
               {new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })}
             </span>
           </div>
@@ -384,7 +384,7 @@ export function RichEditor({
         ) : (
           <div
             className="px-4 py-4 text-sm leading-relaxed prose prose-sm max-w-none min-h-[300px]"
-            dangerouslySetInnerHTML={{ __html: renderPreview(body) || '<p class="text-fg-muted/40 italic">暂无内容</p>' }}
+            dangerouslySetInnerHTML={{ __html: renderPreview(body) || '<p class="text-fg-subtle/90 italic">暂无内容</p>' }}
           />
         )}
       </div>
@@ -403,11 +403,11 @@ export function RichEditor({
               AI 充实内容
             </button>
           )}
-          <span className="text-[10px] text-fg-muted/50">
+          <span className="text-[10px] text-fg-muted/80">
             支持 Markdown · 快捷键: Ctrl+B 粗体, Ctrl+I 斜体, Ctrl+K 链接
           </span>
         </div>
-        <span className="text-[10px] text-fg-muted/50">
+        <span className="text-[10px] text-fg-muted/80">
           {body.length} 字符
         </span>
       </div>

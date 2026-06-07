@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { X, Sparkles, ChevronRight } from "lucide-react";
@@ -80,7 +80,7 @@ export function UpdateModal() {
                 <p className="text-[20px] font-bold tracking-tight">Mango 更新</p>
                 <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full">{VERSION}</span>
               </div>
-              <p className="text-fg-muted/50 text-[12px] mt-0.5 font-medium">计划 · 配额 · 兑换 · 控制中心</p>
+              <p className="text-fg-muted/80 text-[12px] mt-0.5 font-medium">计划 · 配额 · 兑换 · 控制中心</p>
             </div>
           </div>
         </div>
@@ -95,7 +95,7 @@ export function UpdateModal() {
                 <span className="text-xl shrink-0">{item.emoji}</span>
                 <div className="min-w-0">
                   <p className="text-[14px] font-semibold">{item.title}</p>
-                  <p className="text-fg-muted/60 text-[11px] leading-snug">{item.desc}</p>
+                  <p className="text-fg-muted/90 text-[11px] leading-snug">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -112,7 +112,7 @@ export function UpdateModal() {
                 <span className="text-xl shrink-0">{item.emoji}</span>
                 <div className="min-w-0">
                   <p className="text-[14px] font-semibold">{item.title}</p>
-                  <p className="text-fg-muted/60 text-[11px] leading-snug">{item.desc}</p>
+                  <p className="text-fg-muted/90 text-[11px] leading-snug">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -121,7 +121,7 @@ export function UpdateModal() {
 
         {/* Fixed */}
         <div className="px-5 pt-2 pb-1">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-fg-muted/50 mb-2">Fixed · 修复</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-fg-muted/80 mb-2">Fixed · 修复</p>
           <div className="flex flex-col gap-1">
             {FIXES.map((item, i) => (
               <div key={i}
@@ -129,7 +129,7 @@ export function UpdateModal() {
                 <span className="text-xl shrink-0">{item.emoji}</span>
                 <div className="min-w-0">
                   <p className="text-[14px] font-semibold">{item.title}</p>
-                  <p className="text-fg-muted/60 text-[11px] leading-snug">{item.desc}</p>
+                  <p className="text-fg-muted/90 text-[11px] leading-snug">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -141,7 +141,7 @@ export function UpdateModal() {
           <Button onClick={dismiss} className="w-full rounded-2xl h-12 text-[15px] font-semibold shadow-md shadow-primary/20 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600">
             开始学习 <ChevronRight className="size-4 ml-1" />
           </Button>
-          <p className="text-center text-[10px] text-fg-muted/30 mt-3 font-medium tracking-wide">
+          <p className="text-center text-[10px] text-fg-subtle/80 mt-3 font-medium tracking-wide">
             第三自习室出品 · Mango V12
           </p>
         </div>

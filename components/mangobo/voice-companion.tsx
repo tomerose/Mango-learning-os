@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -123,7 +123,7 @@ export function MangoboVoiceCompanion() {
               </motion.div>
               <div>
                 <p className="text-sm font-semibold font-serif">芒宝</p>
-                <p className="text-[10px] text-fg-muted/60">AI 学习伴侣 · 随时陪伴</p>
+                <p className="text-[10px] text-fg-muted/90">AI 学习伴侣 · 随时陪伴</p>
               </div>
             </div>
 
@@ -161,7 +161,7 @@ export function MangoboVoiceCompanion() {
               <button
                 onClick={() => setIsListening(!isListening)}
                 className={cn("size-8 rounded-lg flex items-center justify-center transition-colors shrink-0",
-                  isListening ? "bg-red-100 text-red-500" : "text-fg-muted/50 hover:text-fg-muted"
+                  isListening ? "bg-red-100 text-red-500" : "text-fg-muted/80 hover:text-fg-muted"
                 )}
               >
                 <Mic className="size-4" />

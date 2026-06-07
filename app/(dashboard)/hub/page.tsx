@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion } from "framer-motion";
@@ -86,7 +86,7 @@ function ReviewSection() {
               </p>
               <p className="text-caption">基于间隔重复，现在是最佳复习时间</p>
             </div>
-            <ArrowRight className="size-4 text-fg-muted/30 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            <ArrowRight className="size-4 text-fg-subtle/80 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
           </Link>
         )}
         {recommendations.slice(0, 2).map((rec, i) => (

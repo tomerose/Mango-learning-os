@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -241,7 +241,7 @@ export function PackPractice({ generatedHandout, onClose }: PackPracticeProps) {
   if (cards.length === 0) {
     return (
       <div className="card-card p-8 flex flex-col items-center gap-4 text-center">
-        <Brain className="size-10 text-fg-muted/30" />
+        <Brain className="size-10 text-fg-subtle/80" />
         <div>
           <p className="text-base font-medium font-serif">无可提取的闪卡</p>
           <p className="text-sm text-fg-muted mt-1">当前讲义的考点/公式/概念不足以生成闪卡。请尝试更详细的课程信息重新生成。</p>
@@ -298,7 +298,7 @@ export function PackPractice({ generatedHandout, onClose }: PackPracticeProps) {
         <span className="text-xs font-medium text-fg-muted shrink-0">
           {stats.reviewed}/{stats.total}
         </span>
-        <span className="text-[10px] text-fg-muted/50 shrink-0 flex items-center gap-1">
+        <span className="text-[10px] text-fg-muted/80 shrink-0 flex items-center gap-1">
           <Flame className="size-3 text-primary" fill="currentColor" />{stats.streak}
         </span>
       </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -36,6 +36,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [codeError, setCodeError] = React.useState<string | null>(null);
   const [codeSuccess, setCodeSuccess] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
+  const [guestLoading, setGuestLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [notice, setNotice] = React.useState<string | null>(null);
   const [captchaOk, setCaptchaOk] = React.useState(false);
@@ -79,6 +80,8 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   function continueAsGuest() {
+    if (guestLoading) return;
+    setGuestLoading(true);
     // Guest does NOT need invite code — direct entry
     try { document.cookie = "mango_guest=1;path=/;max-age=" + 60 * 60 * 24 * 30; } catch {}
     window.location.href = "/api/guest";
@@ -153,7 +156,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <h1 className="text-[22px] font-medium leading-tight tracking-tight">
               把混乱变成清晰成果
             </h1>
-            <p className="text-fg-muted/60 text-[13px] mt-1.5 leading-relaxed">
+            <p className="text-fg-muted/90 text-[13px] mt-1.5 leading-relaxed">
               登录后保存你的学习成果、研究记录和 Mango Library。
             </p>
           </div>
@@ -165,7 +168,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <p className="text-[15px] font-medium text-fg">
               {isLogin ? "登录到 Mango" : "注册 Mango"}
             </p>
-            <p className="text-[12px] text-fg-muted/60 leading-relaxed">
+            <p className="text-[12px] text-fg-muted/90 leading-relaxed">
               输入邀请码以继续。{isLogin ? "已有账号请使用登录邀请码。" : "新用户请使用注册邀请码。"}
             </p>
           </div>
@@ -174,7 +177,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           <div className="flex flex-col gap-2">
             <div className="relative">
               <div className="absolute top-1/2 left-3.5 -translate-y-1/2">
-                <Key className="size-4 text-fg-muted/40" />
+                <Key className="size-4 text-fg-subtle/90" />
               </div>
               <Input
                 value={inviteCode}
@@ -214,17 +217,26 @@ export function AuthForm({ mode }: AuthFormProps) {
           <button
             type="button"
             onClick={continueAsGuest}
-            className="w-full py-2.5 rounded-xl border border-dashed border-border hover:border-primary/30 bg-bg-subtle/50 hover:bg-primary-subtle/30 transition-all duration-200 group"
+            disabled={guestLoading}
+            className="w-full py-2.5 rounded-xl border border-dashed border-border hover:border-primary/30 bg-bg-subtle/50 hover:bg-primary-subtle/30 transition-all duration-200 group disabled:opacity-50"
           >
             <span className="text-[13px] text-fg-muted group-hover:text-primary font-medium flex items-center justify-center gap-1.5">
+              {guestLoading ? <Loader2 className="size-3.5 animate-spin" /> : null}
               以游客身份体验
-              <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+              {!guestLoading && <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />}
             </span>
           </button>
+
+          {/* Supabase not configured notice */}
+          {!configured && (
+            <p className="text-[11px] text-amber-600/80 bg-amber-50/60 rounded-lg px-3 py-2 text-center leading-relaxed">
+              ⚠️ 云端功能未配置。游客模式可用，登录功能需配置 Supabase 环境变量。
+            </p>
+          )}
         </div>
 
         {/* Auth mode switcher */}
-        <p className="text-[13px] text-fg-muted/60">
+        <p className="text-[13px] text-fg-muted/90">
           {isLogin ? "还没有账号？" : "已有账号？"}{" "}
           <Link
             href={isLogin ? "/signup" : "/login"}
@@ -235,7 +247,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
 
         {/* Footer */}
-        <p className="text-[10px] text-fg-muted/30 tracking-widest uppercase">
+        <p className="text-[10px] text-fg-subtle/80 tracking-widest uppercase">
           第三自习室出品
         </p>
       </div>
@@ -265,7 +277,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             <h2 className="text-[18px] font-serif font-medium">
               {isLogin ? "欢迎回来" : "创建账号"}
             </h2>
-            <p className="text-[12px] text-fg-muted/60 mt-0.5">
+            <p className="text-[12px] text-fg-muted/90 mt-0.5">
               {isLogin ? "继续你的学习旅程" : "开始你的学习旅程"}
             </p>
           </div>
@@ -316,7 +328,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-fg-muted/40 hover:text-fg-muted transition-colors"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-fg-subtle/90 hover:text-fg-muted transition-colors"
                 >
                   {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </button>
@@ -364,7 +376,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
           {/* ── Social Login ── */}
           <div className="border-t border-border/30 pt-4 mt-1">
-            <p className="text-[10px] text-fg-muted/40 text-center mb-3">或使用第三方账号</p>
+            <p className="text-[10px] text-fg-subtle/90 text-center mb-3">或使用第三方账号</p>
             <div className="grid grid-cols-3 gap-2">
               <SocialButton provider="google" label="Google" onClick={() => handleSocialLogin("google")} />
               <SocialButton provider="github" label="GitHub" onClick={() => handleSocialLogin("github")} />
@@ -377,13 +389,13 @@ export function AuthForm({ mode }: AuthFormProps) {
         <button
           type="button"
           onClick={() => setStep("code")}
-          className="text-[12px] text-fg-muted/50 hover:text-fg-muted transition-colors"
+          className="text-[12px] text-fg-muted/80 hover:text-fg-muted transition-colors"
         >
           ← 返回重新输入邀请码
         </button>
 
         {/* Footer */}
-        <p className="text-[10px] text-fg-muted/30 tracking-widest uppercase">
+        <p className="text-[10px] text-fg-subtle/80 tracking-widest uppercase">
           第三自习室出品
         </p>
       </div>
@@ -398,7 +410,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       </div>
       <div>
         <h2 className="text-[22px] font-serif font-medium">注册成功</h2>
-        <p className="text-[14px] text-fg-muted/60 mt-2 leading-relaxed">
+        <p className="text-[14px] text-fg-muted/90 mt-2 leading-relaxed">
           请查看你的邮箱确认链接。<br />
           确认后即可开始使用 Mango Learning OS。
         </p>

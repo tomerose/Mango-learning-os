@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import {
@@ -52,7 +52,7 @@ export function PrivacySection() {
               <span className="text-primary font-medium">第三自习室</span>出品的 AI 原生学习操作系统。
             </p>
             <p>我们相信学习不应该是孤独的、焦虑的。通过 AI Agent、结构化学习包、知识森林和心灵花园，我们致力于让每一位学习者都能「把焦虑变成准备」。</p>
-            <p className="text-[11px] text-fg-muted/50">内测版（V0.1）· 2026年6月</p>
+            <p className="text-[11px] text-fg-muted/80">内测版（V0.1）· 2026年6月</p>
           </div>
 
           {/* Contact */}
@@ -104,7 +104,7 @@ export function PrivacySection() {
               {storagePref === "local" ? <Eye className="size-3.5" /> : <EyeOff className="size-3.5" />}
               {storagePref === "local" ? "本地存储" : "云端存储"}
             </p>
-            <p className="text-[11px] text-fg-muted/60 mt-0.5">
+            <p className="text-[11px] text-fg-muted/90 mt-0.5">
               {storagePref === "local" ? "数据保存在当前浏览器，换设备无法同步" : "数据保存在 Supabase 云端，任意设备登录后自动同步"}
             </p>
           </div>
@@ -159,7 +159,7 @@ export function PrivacySection() {
               <AlertTriangle className="size-4 shrink-0 mt-0.5" />
               <div><p className="font-medium">确认删除</p><p className="mt-0.5 opacity-80">此操作将清除所有学习数据且不可恢复。账号本身不会被删除。</p></div>
             </div>
-            <p className="text-[12px] text-fg-muted/60">输入 <span className="font-mono font-medium text-fg">删除我的数据</span> 以确认：</p>
+            <p className="text-[12px] text-fg-muted/90">输入 <span className="font-mono font-medium text-fg">删除我的数据</span> 以确认：</p>
             <input type="text" value={confirmText} onChange={e => setConfirmText(e.target.value)} placeholder="删除我的数据" className="w-full h-10 rounded-lg border border-border px-3 text-[13px] bg-bg-subtle focus:outline-none focus:border-red-300" />
             {error && <p className="text-[12px] text-red-500">{error}</p>}
             <div className="flex gap-2">
@@ -186,8 +186,8 @@ export function PrivacySection() {
 function ContactItem({ icon: Icon, label, value }: { icon: typeof Mail; label: string; value: string }) {
   return (
     <div className="flex items-center gap-2 text-[12px]">
-      <Icon className="size-3.5 text-fg-muted/40 shrink-0" />
-      <span className="text-fg-muted/50">{label}:</span>
+      <Icon className="size-3.5 text-fg-subtle/90 shrink-0" />
+      <span className="text-fg-muted/80">{label}:</span>
       <span className="font-medium text-fg truncate">{value}</span>
     </div>
   );

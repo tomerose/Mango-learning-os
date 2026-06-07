@@ -1,4 +1,4 @@
-export const metadata = {
+﻿export const metadata = {
   title: "隐私政策 · Mango Learning OS",
   description: "Mango Learning OS 隐私政策 — 数据所有权、存储方式、AI调用、用户权利",
 };
@@ -8,7 +8,7 @@ export default function PrivacyPolicyPage() {
     <div className="min-h-screen bg-bg">
       <div className="max-w-2xl mx-auto px-5 py-12 sm:py-16">
         <h1 className="text-display font-serif mb-2">隐私政策</h1>
-        <p className="text-sm text-fg-muted/60 mb-8">最后更新：2026年6月 · 第三自习室出品</p>
+        <p className="text-sm text-fg-muted/90 mb-8">最后更新：2026年6月 · 第三自习室出品</p>
 
         <div className="prose prose-sm max-w-none space-y-6 text-[14px] leading-relaxed text-fg-muted/80">
           <section>
@@ -79,7 +79,7 @@ export default function PrivacyPolicyPage() {
           </section>
         </div>
 
-        <p className="text-[11px] text-fg-muted/30 mt-12 text-center">
+        <p className="text-[11px] text-fg-subtle/80 mt-12 text-center">
           Mango Learning OS 内测版（V0.1）· 第三自习室出品 · 把焦虑变成准备
         </p>
       </div>

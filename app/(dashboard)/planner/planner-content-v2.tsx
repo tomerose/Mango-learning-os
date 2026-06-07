@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { CalendarCheck, Plus, Sparkles, Layers, Target, GraduationCap, Brain, CheckCircle2, AlertTriangle, TrendingUp, Lightbulb } from "lucide-react";
@@ -257,14 +257,14 @@ function IdentityTab() {
               }`}>
               <span className="text-base">{p.icon}</span>
               <p className="font-semibold">{p.name}</p>
-              <p className="text-[10px] text-fg-muted/60">{p.desc}</p>
+              <p className="text-[10px] text-fg-muted/90">{p.desc}</p>
             </button>
           ))}
         </div>
         {preset && (
           <div className="grid grid-cols-2 gap-1.5 mt-3 bg-bg-subtle rounded-lg p-2.5 text-[10px]">
-            <span className="text-fg-muted/50">Agent风格: <strong className="text-fg">{preset.style}</strong></span>
-            <span className="text-fg-muted/50">侧重: <strong className="text-fg">{preset.examFocus ? "考试" : "理解"}</strong></span>
+            <span className="text-fg-muted/80">Agent风格: <strong className="text-fg">{preset.style}</strong></span>
+            <span className="text-fg-muted/80">侧重: <strong className="text-fg">{preset.examFocus ? "考试" : "理解"}</strong></span>
           </div>
         )}
       </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -35,7 +35,7 @@ export function AnimeAvatar({ userId, size = 48, className }: Props) {
       {url ? (
         <img src={url} alt="avatar" className="w-full h-full object-cover" />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-fg-muted/30">
+        <div className="w-full h-full flex items-center justify-center text-fg-subtle/80">
           🥭
         </div>
       )}

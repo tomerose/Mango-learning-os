@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Crown, Shield, Sparkles, Check, Clock, Gift, ArrowRight } from "lucide-react";
@@ -43,7 +43,7 @@ export function BillingSection({ currentPlan, planExpiresAt, onUpgrade }: Props)
       {/* Plan comparison */}
       <div className="card-card p-5 sm:p-6">
         <h2 className="text-[15px] font-semibold mb-1">选择计划</h2>
-        <p className="text-[12px] text-fg-muted/60 mb-4">选择最适合你的学习计划</p>
+        <p className="text-[12px] text-fg-muted/90 mb-4">选择最适合你的学习计划</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {tiers.map(({ tier, icon: Icon, gradient, price, priceLabel, highlights }) => {
@@ -80,7 +80,7 @@ export function BillingSection({ currentPlan, planExpiresAt, onUpgrade }: Props)
                 {/* Price */}
                 <div className="mb-3">
                   <p className="text-[22px] font-bold font-serif">{price}</p>
-                  <p className="text-[11px] text-fg-muted/60">{priceLabel}</p>
+                  <p className="text-[11px] text-fg-muted/90">{priceLabel}</p>
                 </div>
 
                 {/* Features */}
@@ -95,7 +95,7 @@ export function BillingSection({ currentPlan, planExpiresAt, onUpgrade }: Props)
 
                 {/* Action */}
                 {isCurrent ? (
-                  <div className="py-2 text-center text-[12px] text-fg-muted/50 font-medium">
+                  <div className="py-2 text-center text-[12px] text-fg-muted/80 font-medium">
                     当前使用中
                   </div>
                 ) : isUpgrade ? (
@@ -110,7 +110,7 @@ export function BillingSection({ currentPlan, planExpiresAt, onUpgrade }: Props)
                     使用 Mango Code 升级
                   </div>
                 ) : (
-                  <div className="py-2 text-center text-[12px] text-fg-muted/40">
+                  <div className="py-2 text-center text-[12px] text-fg-subtle/90">
                     {tier === "admin" ? "管理员专用" : ""}
                   </div>
                 )}

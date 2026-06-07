@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Save, Loader2, Tags, X } from "lucide-react";
@@ -146,7 +146,7 @@ export function JournalEditor() {
                 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer
                 [&::-webkit-slider-thumb]:shadow-sm"
             />
-            <div className="flex justify-between text-[10px] text-fg-muted/50">
+            <div className="flex justify-between text-[10px] text-fg-muted/80">
               <span>Calm</span>
               <span>Max</span>
             </div>
@@ -173,7 +173,7 @@ export function JournalEditor() {
                 [&::-webkit-slider-thumb]:bg-emerald-500 [&::-webkit-slider-thumb]:cursor-pointer
                 [&::-webkit-slider-thumb]:shadow-sm"
             />
-            <div className="flex justify-between text-[10px] text-fg-muted/50">
+            <div className="flex justify-between text-[10px] text-fg-muted/80">
               <span>Low</span>
               <span>High</span>
             </div>

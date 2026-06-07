@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Gift, Loader2, Check, AlertCircle, ArrowRight, Sparkles } from "lucide-react";
@@ -85,7 +85,7 @@ export function MangoCodeRedeem({ onUpgrade, currentPlan }: Props) {
 
       {isGuest ? (
         <div className="text-center py-3">
-          <p className="text-[13px] text-fg-muted/60">登录后可兑换 Mango Code 升级计划</p>
+          <p className="text-[13px] text-fg-muted/90">登录后可兑换 Mango Code 升级计划</p>
           <a
             href="/login"
             className="inline-flex items-center gap-1.5 mt-2 text-[13px] text-primary font-medium hover:underline"
@@ -95,7 +95,7 @@ export function MangoCodeRedeem({ onUpgrade, currentPlan }: Props) {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          <p className="text-[12px] text-fg-muted/60">
+          <p className="text-[12px] text-fg-muted/90">
             输入 Mango Code 兑换码，升级你的学习计划。
           </p>
 
@@ -113,7 +113,7 @@ export function MangoCodeRedeem({ onUpgrade, currentPlan }: Props) {
               />
               {validating && (
                 <div className="absolute top-1/2 right-3 -translate-y-1/2">
-                  <Loader2 className="size-3.5 animate-spin text-fg-muted/40" />
+                  <Loader2 className="size-3.5 animate-spin text-fg-subtle/90" />
                 </div>
               )}
               {result?.success && !validating && (

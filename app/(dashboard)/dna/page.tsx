@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion } from "framer-motion";
@@ -53,7 +53,7 @@ function PresetSelector() {
         </h2>
         {saved && <span className="text-[10px] text-green-600 font-medium bg-green-50 px-2 py-0.5 rounded-full">已保存</span>}
       </div>
-      <p className="text-xs text-fg-muted/60">
+      <p className="text-xs text-fg-muted/90">
         选择预设影响 Mango Agent 讲解风格、Study Pack 结构深度和推荐内容。
       </p>
       <div className="grid grid-cols-2 gap-2">
@@ -64,7 +64,7 @@ function PresetSelector() {
             }`}>
             <span className="text-lg">{p.icon}</span>
             <p className="font-semibold">{p.name}</p>
-            <p className="text-[10px] text-fg-muted/60">{p.desc}</p>
+            <p className="text-[10px] text-fg-muted/90">{p.desc}</p>
           </button>
         ))}
       </div>
@@ -76,7 +76,7 @@ function PresetSelector() {
           { label: "讲解重点", val: preset?.examFocus ? "考点+技巧" : "概念+推导" },
         ].map((item, i) => (
           <div key={i} className="flex flex-col gap-0.5">
-            <span className="text-fg-muted/40">{item.label}</span>
+            <span className="text-fg-subtle/90">{item.label}</span>
             <span className="font-medium">{item.val}</span>
           </div>
         ))}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Sparkles, ArrowRight } from "lucide-react";
@@ -25,7 +25,7 @@ export function WeeklyUpdateSection() {
           <Sparkles className="size-4 text-amber-500" />
           <h2 className="text-[15px] font-semibold">本周更新</h2>
         </div>
-        <span className="text-[10px] font-medium text-fg-muted/50 bg-bg-muted px-2 py-0.5 rounded-full">
+        <span className="text-[10px] font-medium text-fg-muted/80 bg-bg-muted px-2 py-0.5 rounded-full">
           {VERSION}
         </span>
       </div>
@@ -44,7 +44,7 @@ export function WeeklyUpdateSection() {
             </span>
             <div>
               <p className="text-[13px] font-medium">{item.label}</p>
-              <p className="text-[11px] text-fg-muted/60 mt-0.5">{item.desc}</p>
+              <p className="text-[11px] text-fg-muted/90 mt-0.5">{item.desc}</p>
             </div>
           </div>
         ))}
@@ -53,7 +53,7 @@ export function WeeklyUpdateSection() {
       {UPDATES.length > 3 && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="mt-3 w-full py-2 text-[12px] text-fg-muted/60 hover:text-fg-muted transition-colors flex items-center justify-center gap-1"
+          className="mt-3 w-full py-2 text-[12px] text-fg-muted/90 hover:text-fg-muted transition-colors flex items-center justify-center gap-1"
         >
           {expanded ? "收起" : `查看全部 ${UPDATES.length} 项更新`}
           <ArrowRight className={`size-3 transition-transform ${expanded ? "rotate-90" : ""}`} />

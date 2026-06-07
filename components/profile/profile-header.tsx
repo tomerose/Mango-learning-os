@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Flame, Trophy, Sparkles, Shield } from "lucide-react";
@@ -40,7 +40,7 @@ export function ProfileHeader({ plan, planName, planBadge, mode, totalXp, level,
             </span>
           </div>
 
-          <p className="text-[12px] text-fg-muted/60 mt-0.5">
+          <p className="text-[12px] text-fg-muted/90 mt-0.5">
             {mode === "cloud"
               ? `${planName} · 云端同步已启用`
               : "游客模式 · 数据存于本地"}
@@ -51,7 +51,7 @@ export function ProfileHeader({ plan, planName, planBadge, mode, totalXp, level,
             <div className="flex items-center gap-1.5">
               <Trophy className="size-3.5 text-amber-500" />
               <span className="text-[12px] font-medium tabular-nums">{totalXp}</span>
-              <span className="text-[10px] text-fg-muted/50">XP</span>
+              <span className="text-[10px] text-fg-muted/80">XP</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Sparkles className="size-3.5 text-amber-500" />
@@ -60,14 +60,14 @@ export function ProfileHeader({ plan, planName, planBadge, mode, totalXp, level,
             <div className="flex items-center gap-1.5">
               <Flame className="size-3.5 text-orange-500" />
               <span className="text-[12px] font-medium tabular-nums">{streakDays}</span>
-              <span className="text-[10px] text-fg-muted/50">天</span>
+              <span className="text-[10px] text-fg-muted/80">天</span>
             </div>
           </div>
         </div>
 
         {/* Plan badge on desktop */}
         <div className="hidden sm:flex flex-col items-center gap-1 bg-bg-subtle rounded-2xl px-4 py-3 shrink-0">
-          <span className="text-[10px] text-fg-muted/50 font-medium uppercase">Current Plan</span>
+          <span className="text-[10px] text-fg-muted/80 font-medium uppercase">Current Plan</span>
           <span className={`text-[13px] font-semibold ${
             plan === "pro" || plan === "admin" ? "gradient-mango-text" : ""
           }`}>

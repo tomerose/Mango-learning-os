@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Zap, Clock, ArrowRight } from "lucide-react";
@@ -27,11 +27,11 @@ export function QuotaExhausted({ type, current, max, resetAt, className = "" }: 
       <h3 className="text-[16px] font-serif font-medium mb-1">
         今日{label}已达上限
       </h3>
-      <p className="text-[13px] text-fg-muted/60 mb-1">
+      <p className="text-[13px] text-fg-muted/90 mb-1">
         已使用 {current}/{max} 次
       </p>
 
-      <div className="flex items-center justify-center gap-1.5 text-[12px] text-fg-muted/50 mb-4">
+      <div className="flex items-center justify-center gap-1.5 text-[12px] text-fg-muted/80 mb-4">
         <Clock className="size-3" />
         <span>
           {hoursLeft > 0

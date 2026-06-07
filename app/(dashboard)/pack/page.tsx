@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -163,7 +163,7 @@ function ProgressTimeline({ currentStep }: { currentStep: number }) {
               "size-7 rounded-full flex items-center justify-center shrink-0 transition-all",
               isDone && "bg-emerald-100 text-emerald-600",
               isActive && "bg-primary text-primary-foreground",
-              isPending && "bg-bg-muted text-fg-muted/40",
+              isPending && "bg-bg-muted text-fg-subtle/90",
             )}>
               {isDone ? <CheckCircle2 className="size-4" /> :
                isActive ? <Loader2 className="size-4 animate-spin" /> :
@@ -173,7 +173,7 @@ function ProgressTimeline({ currentStep }: { currentStep: number }) {
               "text-xs font-medium transition-colors",
               isDone && "text-emerald-600",
               isActive && "text-primary",
-              isPending && "text-fg-muted/40",
+              isPending && "text-fg-subtle/90",
             )}>{step.label}</span>
           </div>
         );
@@ -479,7 +479,7 @@ export default function PackPage() {
                           <span className="text-[10px] rounded-full px-2 py-0.5 bg-primary-subtle text-primary font-medium">
                             {pack.qualityScore}分
                           </span>
-                          <span className="text-[10px] text-fg-muted/50 ml-auto">
+                          <span className="text-[10px] text-fg-muted/80 ml-auto">
                             {pack.status === "complete" ? "已完成" : "草稿"}
                           </span>
                         </div>
@@ -625,7 +625,7 @@ export default function PackPage() {
                         <Button onClick={() => setStep("practicing")} variant="secondary" className="gap-2 w-full rounded-xl" size="sm">
                           <Brain className="size-3.5" /> 闪卡练习
                         </Button>
-                        <p className="text-[9px] text-fg-muted/50 text-center">导出为 {exportFormat === "docx" ? "HTML 格式 Word 文档" : exportFormat === "pdf" ? "浏览器打印 PDF" : "纯文本 Markdown"}</p>
+                        <p className="text-[9px] text-fg-muted/80 text-center">导出为 {exportFormat === "docx" ? "HTML 格式 Word 文档" : exportFormat === "pdf" ? "浏览器打印 PDF" : "纯文本 Markdown"}</p>
                       </div>
                     </>
                   )}

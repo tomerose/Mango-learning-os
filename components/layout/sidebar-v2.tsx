@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import Link from "next/link";
@@ -78,7 +78,7 @@ export function SidebarV2() {
 
         {/* Divider + Beta label */}
         {!collapsed && <div className="my-2 border-t border-border/30" />}
-        {!collapsed && <p className="text-[9px] text-fg-muted/40 px-3 pb-1 uppercase tracking-widest font-medium">内测</p>}
+        {!collapsed && <p className="text-[9px] text-fg-subtle/90 px-3 pb-1 uppercase tracking-widest font-medium">内测</p>}
 
         {/* Beta items */}
         {navItemsV2.filter(n => n.tier === "beta").map((item) => {
@@ -87,7 +87,7 @@ export function SidebarV2() {
             <Link key={item.id} href={item.href}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150 opacity-50 hover:opacity-80",
-                isActive ? "bg-bg-muted text-fg" : "text-fg-muted/50 hover:bg-bg-muted hover:text-fg",
+                isActive ? "bg-bg-muted text-fg" : "text-fg-muted/80 hover:bg-bg-muted hover:text-fg",
                 collapsed && "justify-center px-2",
               )}>
               <item.icon className="size-5 shrink-0" strokeWidth={1.5} />

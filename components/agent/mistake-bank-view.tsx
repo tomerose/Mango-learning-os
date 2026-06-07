@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -87,7 +87,7 @@ export function MistakeBankView() {
       {/* Mistake cards */}
       {filtered.length === 0 ? (
         <div className="card-card p-8 flex flex-col items-center gap-4 text-center">
-          <Target className="size-10 text-fg-muted/30" />
+          <Target className="size-10 text-fg-subtle/80" />
           <div>
             <p className="text-base font-medium font-serif">暂无错题</p>
             <p className="text-sm text-fg-muted mt-1">通过 Agent 任务、测验或手动添加错题来开始积累。</p>
@@ -111,7 +111,7 @@ export function MistakeBankView() {
                       <span className="text-[9px] text-fg-muted">复习 {mistake.reviewCount} 次</span>
                     </div>
                   </div>
-                  <ChevronRight className={cn("size-4 text-fg-muted/50 mt-1 transition-transform", isExpanded && "rotate-90")} />
+                  <ChevronRight className={cn("size-4 text-fg-muted/80 mt-1 transition-transform", isExpanded && "rotate-90")} />
                 </button>
 
                 <AnimatePresence>

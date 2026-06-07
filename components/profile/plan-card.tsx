@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Crown, Shield, Sparkles, Check, ArrowRight, Clock } from "lucide-react";
@@ -51,7 +51,7 @@ export function PlanCard({ plan, planInfo, features, expiresAt }: Props) {
         </span>
       </div>
 
-      <p className="text-[13px] text-fg-muted/60 mb-4">{planInfo.description}</p>
+      <p className="text-[13px] text-fg-muted/90 mb-4">{planInfo.description}</p>
 
       {/* Expiry notice */}
       {expiresAt && (
@@ -76,7 +76,7 @@ export function PlanCard({ plan, planInfo, features, expiresAt }: Props) {
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[12px] transition-all ${
                 enabled
                   ? "bg-bg-subtle text-fg"
-                  : "bg-bg-muted/50 text-fg-muted/40 line-through decoration-fg-muted/20"
+                  : "bg-bg-muted/50 text-fg-subtle/90 line-through decoration-fg-muted/20"
               }`}
             >
               <span className="text-sm">{icon}</span>
@@ -96,7 +96,7 @@ export function PlanCard({ plan, planInfo, features, expiresAt }: Props) {
           >
             <div>
               <p className="text-[13px] font-medium text-primary">注册解锁全部功能</p>
-              <p className="text-[11px] text-fg-muted/60">登录后可使用 Agent、学习包等功能</p>
+              <p className="text-[11px] text-fg-muted/90">登录后可使用 Agent、学习包等功能</p>
             </div>
             <ArrowRight className="size-4 text-primary transition-transform group-hover:translate-x-0.5" />
           </a>
@@ -108,7 +108,7 @@ export function PlanCard({ plan, planInfo, features, expiresAt }: Props) {
           <div className="flex items-center justify-between w-full px-4 py-3 rounded-xl bg-amber-50/50 hover:bg-amber-50 transition-colors group">
             <div>
               <p className="text-[13px] font-medium text-amber-700">升级到 Pro 专业版</p>
-              <p className="text-[11px] text-fg-muted/60">解锁 OCR、深度研究、PDF 导出等高级功能</p>
+              <p className="text-[11px] text-fg-muted/90">解锁 OCR、深度研究、PDF 导出等高级功能</p>
             </div>
             <ArrowRight className="size-4 text-amber-500 transition-transform group-hover:translate-x-0.5" />
           </div>

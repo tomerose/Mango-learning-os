@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -272,7 +272,7 @@ export function MindGardenV2() {
             />
 
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-fg-muted/50">Ctrl+Enter 发送</span>
+              <span className="text-[10px] text-fg-muted/80">Ctrl+Enter 发送</span>
               <Button onClick={handleSubmit} disabled={loading || !userInput.trim()} className="gap-2">
                 {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
                 {MODES.find(m => m.key === selectedMode)?.name ?? "开始"}
@@ -367,7 +367,7 @@ export function MindGardenV2() {
               )}
 
               {/* Privacy Note */}
-              <div className="flex items-center gap-2 text-[10px] text-fg-muted/60 pt-2 border-t border-border/30">
+              <div className="flex items-center gap-2 text-[10px] text-fg-muted/90 pt-2 border-t border-border/30">
                 {privacyMode === "local" ? <Lock className="size-3" /> : <Globe className="size-3" />}
                 {result.output.privacyNote}
               </div>
@@ -410,7 +410,7 @@ export function MindGardenV2() {
       )}
 
       {/* Safety footer */}
-      <div className="flex items-center justify-between text-[10px] text-fg-muted/50 pt-2">
+      <div className="flex items-center justify-between text-[10px] text-fg-muted/80 pt-2">
         <span>⚠ Mind Garden 提供自助心理健康工具，不提供医疗诊断或治疗</span>
         <a href="tel:010-82951332" className="hover:text-fg-muted transition-colors flex items-center gap-1">
           <Shield className="size-3" /> 24h心理热线: 010-82951332

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -168,7 +168,7 @@ export default function NotesPage() {
         {view === "list" && (
           <motion.div key="list" initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} className="flex flex-col gap-4">
             <div className="relative">
-              <Search className="size-4 absolute top-1/2 left-3.5 -translate-y-1/2 text-fg-muted/40" />
+              <Search className="size-4 absolute top-1/2 left-3.5 -translate-y-1/2 text-fg-subtle/90" />
               <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="搜索笔记…" className="pl-10 h-11 rounded-xl" />
             </div>
             {filtered.length === 0 ? (
@@ -272,7 +272,7 @@ export default function NotesPage() {
             className="card-card p-5 sm:p-6 flex flex-col gap-4">
             <div>
               <h2 className="text-xl font-serif font-semibold">{detailNote.title || "无标题"}</h2>
-              <p className="text-xs text-fg-muted/60 mt-1">
+              <p className="text-xs text-fg-muted/90 mt-1">
                 {detailNote.subject} · {detailNote.updatedLabel}
                 {(detailNote as Note & { template?: string }).template && (
                   <Badge variant="secondary" className="ml-2 text-[9px]">
@@ -317,7 +317,7 @@ function NoteCard({ note, onClick, onEdit, onDelete }: {
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate">{note.title || "无标题"}</p>
-          <p className="text-[10px] text-fg-muted/50 mt-0.5">{note.subject} · {note.updatedLabel}</p>
+          <p className="text-[10px] text-fg-muted/80 mt-0.5">{note.subject} · {note.updatedLabel}</p>
         </div>
         <Badge variant="outline" className="text-[9px] shrink-0">{tplName || "自由"}</Badge>
       </div>
@@ -335,7 +335,7 @@ function EmptyState({ hasSearch, onCreate }: { hasSearch: boolean; onCreate: () 
     <div className="text-center py-16 card-card">
       <FileText className="size-12 text-fg-muted/15 mx-auto mb-4" />
       <p className="text-sm font-medium text-fg-muted">{hasSearch ? "没有匹配的笔记" : "还没有笔记"}</p>
-      <p className="text-xs text-fg-muted/50 mt-1 mb-4">{hasSearch ? "试试其他关键词" : "选择模板，用 AI 增强你的笔记"}</p>
+      <p className="text-xs text-fg-muted/80 mt-1 mb-4">{hasSearch ? "试试其他关键词" : "选择模板，用 AI 增强你的笔记"}</p>
       {!hasSearch && <Button onClick={onCreate} className="rounded-xl gap-1.5"><Plus className="size-3.5" />新建笔记</Button>}
     </div>
   );

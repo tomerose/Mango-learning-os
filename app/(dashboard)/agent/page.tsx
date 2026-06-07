@@ -69,6 +69,10 @@ function AgentPageInner() {
   const [copied, setCopied] = React.useState(false);
   const [intentType, setIntentType] = React.useState<string>("");
   const [tabHint, setTabHint] = React.useState<string>(""); // V14.7.1: tab=knowledge hint
+  const [proMode, setProMode] = React.useState(false); // V14.7.2: Pro research pipeline active
+  const [researchStages, setResearchStages] = React.useState<any[]>([]); // V14.7.2: pipeline stages
+  const [researchSources, setResearchSources] = React.useState<any[]>([]); // V14.7.2: research result sources
+  const [networkAvailable, setNetworkAvailable] = React.useState(true); // V14.7.2: network status
   const [plan] = React.useState(() => {
     try { return localStorage.getItem("mango-user-plan") || "standard"; } catch { return "standard"; }
   });
@@ -159,6 +163,18 @@ function AgentPageInner() {
       }
       const data = await res.json();
       const a: AgentArtifact = data.artifact;
+      // V14.7.2: Capture research pipeline data
+      setProMode(data.proMode === true);
+      if (data.researchPipeline) {
+        const rp = data.researchPipeline;
+        for (const s of rp.stages ?? []) addEvent(s.status === "done" ? "tool_end" : "thinking", s.detail || s.label, "web_research" as AgentToolName);
+        setResearchStages(rp.stages ?? []);
+        setResearchSources(rp.sources ?? []);
+        setNetworkAvailable(rp.networkAvailable !== false);
+      } else {
+        setResearchStages([]);
+        setResearchSources([]);
+      }
       if (a) {
         for (const ev of a.timeline ?? []) addEvent(ev.type === "error" ? "error" : ev.status === "running" ? "thinking" : "tool_end", ev.message, ev.toolName);
         addEvent("output", a.artifactSummary || "生成完成");
@@ -213,7 +229,7 @@ function AgentPageInner() {
               <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                 {TASK_TEMPLATES.map(tpl => (
                   <motion.button key={tpl.id} whileTap={{ scale: 0.98 }} onClick={() => startFromTemplate(tpl.id)} className="card-card p-4 flex flex-col gap-3 text-left hover:shadow-md transition-all group">
-                    <div className="flex items-start justify-between"><span className="text-2xl">{tpl.icon}</span><ArrowRight className="size-4 text-fg-muted/30 group-hover:text-primary transition-all" /></div>
+                    <div className="flex items-start justify-between"><span className="text-2xl">{tpl.icon}</span><ArrowRight className="size-4 text-fg-subtle/80 group-hover:text-primary transition-all" /></div>
                     <div><p className="text-sm font-semibold font-serif">{tpl.title}</p><p className="text-xs text-fg-muted">{tpl.description}</p></div>
                     <div className="flex flex-wrap gap-1 mt-auto">{tpl.suggestedTools.slice(0, 3).map(t => <span key={t} className="text-[9px] rounded-full px-2 py-0.5 bg-bg-muted text-fg-muted">{getToolInfo(t)?.label ?? t}</span>)}</div>
                   </motion.button>
@@ -244,20 +260,18 @@ function AgentPageInner() {
                 <motion.div animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }} transition={{ duration: 2, repeat: Infinity }} className="size-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-400/20"><span className="text-2xl">🥭</span></motion.div>
                 <div><p className="text-base font-semibold font-serif">{timeline.length <= 2 ? "Agent 分析任务中…" : "正在执行…"}</p><p className="text-xs text-fg-muted">{composeInput.slice(0, 60)}</p></div>
               </div>
-              <div className="text-xs text-fg-muted/60 bg-bg-subtle rounded-xl p-3">
-                {timeline.length <= 2 && "🧠 正在理解需求，规划执行方案…"}
-                {timeline.length > 2 && timeline.length < 5 && "🔧 调用工具处理任务…"}
-                {timeline.length >= 5 && "📝 整理结果，生成结构化输出…"}
-                {plan === "guest" && <span className="block mt-2 text-amber-500/70">⚠️ 游客模式使用本地演示，登录后可获得完整 AI 能力。</span>}
-              </div>
-              <div className="flex flex-col gap-1.5">
+              <div className="text-xs text-fg-muted/90 bg-bg-subtle rounded-xl p-3 space-y-1.5 max-h-48 overflow-y-auto">
                 {timeline.map((ev, i) => (
-                  <motion.div key={ev.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.08 }} className={cn("flex items-center gap-3 py-2.5 px-3 rounded-lg text-sm", ev.status === "error" ? "bg-red-50 text-red-600" : ev.type === "output" ? "bg-emerald-50 text-emerald-700 font-medium" : "text-fg-muted")}>
-                    {ev.status === "done" ? <CheckCircle2 className="size-4 text-emerald-500 shrink-0" /> : ev.status === "error" ? <AlertTriangle className="size-4 shrink-0" /> : <Loader2 className="size-4 animate-spin shrink-0" />}
-                    <span>{ev.message}</span>
-                    {ev.toolName && <Badge variant="secondary" className="text-[9px] ml-auto">{getToolInfo(ev.toolName)?.label ?? ev.toolName}</Badge>}
-                  </motion.div>
+                  <div key={ev.id} className="flex items-start gap-2">
+                    {ev.status === "done" ? <CheckCircle2 className="size-3 text-emerald-500 mt-0.5 shrink-0" /> :
+                     ev.type === "error" ? <AlertTriangle className="size-3 text-red-400 mt-0.5 shrink-0" /> :
+                     <Loader2 className="size-3 animate-spin text-amber-400 mt-0.5 shrink-0" />}
+                    <span className={ev.type === "error" ? "text-red-500" : "text-fg-muted/90"}>{ev.message}</span>
+                    {ev.toolName && <span className="text-[9px] text-fg-subtle/90 ml-auto shrink-0">{getToolInfo(ev.toolName)?.label ?? ev.toolName}</span>}
+                  </div>
                 ))}
+                {timeline.length === 0 && "🧠 正在理解需求，规划执行方案…"}
+                {plan === "guest" && <p className="mt-2 text-amber-500/80">⚠️ 游客模式使用本地演示，登录后可获得完整 AI 能力。</p>}
               </div>
             </motion.div>
           )}
@@ -284,6 +298,34 @@ function AgentPageInner() {
                   intentType={(intentType || artifact.taskType || "general") as IntentType}
                   generatedAt={artifact.createdAt || new Date().toISOString()}
                 />
+                {/* V14.7.2: Pro/Standard mode label + research sources */}
+                {proMode && researchSources.length > 0 && (
+                  <div className="card-card p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5">Pro Research</span>
+                      <span className="text-[10px] text-fg-muted/90">{researchSources.length} 条来源 · 联网研究已执行</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {researchSources.slice(0, 8).map((s: any, i: number) => (
+                        <a key={i} href={s.url || "#"} target="_blank" rel="noopener noreferrer"
+                          className="flex items-start gap-2 rounded-xl bg-bg-subtle hover:bg-primary-subtle/50 p-2.5 transition-colors group">
+                          <span className="shrink-0 mt-0.5 text-[10px] font-bold text-fg-subtle/90 bg-white/60 rounded px-1 py-0.5">{s.platform || s.source || "web"}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-fg group-hover:text-primary truncate">{s.title || "未命名来源"}</p>
+                            {s.snippet && <p className="text-[10px] text-fg-muted/90 mt-0.5 line-clamp-2">{s.snippet}</p>}
+                          </div>
+                          <ExternalLink className="size-3 text-fg-subtle/90 group-hover:text-primary shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {!proMode && artifact && (
+                  <p className="text-[10px] text-fg-muted/90 text-center">Standard 轻量模式：本次未执行完整联网研究。升级 Pro 可获得多源研究 + 证据支撑 + 更高内容质量。</p>
+                )}
+                {!networkAvailable && (
+                  <p className="text-[10px] text-amber-600/80 bg-amber-50/60 rounded-lg px-3 py-1.5 text-center">⚠️ 网络不可用，本次生成未使用实时搜索。内容基于 AI 知识生成。</p>
+                )}
                 <OutcomeActionsBar
                   onCopy={() => { navigator.clipboard.writeText(artifact.artifactMarkdown || "").then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {}); }}
                   copied={copied}
@@ -345,7 +387,7 @@ function AgentPageInner() {
                 <div className="card-card p-8 text-center">
                   <AlertTriangle className="size-10 text-amber-400 mx-auto mb-3" />
                   <p className="text-sm font-medium">生成未完成</p>
-                  <p className="text-xs text-fg-muted/60 mt-1">{timeline.find(e => e.type === "error")?.message || "请返回重试或检查 AI 服务配置"}</p>
+                  <p className="text-xs text-fg-muted/90 mt-1">{timeline.find(e => e.type === "error")?.message || "请返回重试或检查 AI 服务配置"}</p>
                   <div className="flex items-center justify-center gap-2 mt-4">
                     <Button onClick={executeTask} className="rounded-xl gap-1.5"><RotateCcw className="size-3.5" />重试</Button>
                     <Button variant="outline" onClick={() => setView("templates")} className="rounded-xl">返回模板</Button>
@@ -358,9 +400,9 @@ function AgentPageInner() {
           {/* ═══ HISTORY ═══ */}
           {view === "tasks" && (
             <motion.div key="tasks" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
-              <div className="relative"><Search className="size-4 absolute top-1/2 left-3.5 -translate-y-1/2 text-fg-muted/40" /><Input placeholder="搜索历史…" className="pl-10 h-11 rounded-xl" /></div>
+              <div className="relative"><Search className="size-4 absolute top-1/2 left-3.5 -translate-y-1/2 text-fg-subtle/90" /><Input placeholder="搜索历史…" className="pl-10 h-11 rounded-xl" /></div>
               {artifactHistory.length === 0 ? (
-                <div className="card-card p-8 text-center"><Bot className="size-10 text-fg-muted/20 mx-auto mb-3" /><p className="text-sm font-medium text-fg-muted">暂无执行记录</p><p className="text-xs text-fg-muted/50 mt-1">完成 Agent 任务后自动保存</p></div>
+                <div className="card-card p-8 text-center"><Bot className="size-10 text-fg-muted/20 mx-auto mb-3" /><p className="text-sm font-medium text-fg-muted">暂无执行记录</p><p className="text-xs text-fg-muted/80 mt-1">完成 Agent 任务后自动保存</p></div>
               ) : (
                 <div className="flex flex-col gap-2">
                   {artifactHistory.map(a => (

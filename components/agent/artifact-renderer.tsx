@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion } from "framer-motion";
@@ -77,7 +77,7 @@ export function ArtifactRenderer({ artifact, onClose, onRegenerate, onSave, onEx
                 {artifact.status === "completed" ? "完成" : artifact.status === "partial" ? "部分" : "失败"}
               </Badge>
             </div>
-            <p className="text-xs text-fg-muted/60 mt-0.5">
+            <p className="text-xs text-fg-muted/90 mt-0.5">
               {taskInfo.label} · {new Date(artifact.createdAt).toLocaleTimeString("zh-CN")}
             </p>
           </div>
@@ -148,7 +148,7 @@ export function ArtifactRenderer({ artifact, onClose, onRegenerate, onSave, onEx
         ) : (
           <div className="prose prose-sm max-w-none text-sm leading-relaxed whitespace-pre-wrap text-fg-muted/80">
             {artifact.artifactMarkdown || (
-              <p className="text-fg-muted/40 italic">内容生成中或生成失败。请点击「重新生成」尝试。</p>
+              <p className="text-fg-subtle/90 italic">内容生成中或生成失败。请点击「重新生成」尝试。</p>
             )}
           </div>
         )}

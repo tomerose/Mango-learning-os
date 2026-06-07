@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -397,7 +397,7 @@ export function ExamReviewTab() {
                     <button onClick={() => {
                       deleteStudyPack(pack.id);
                       setRecentPacks(getRecentStudyPacks(5));
-                    }} className="text-fg-muted/40 hover:text-destructive opacity-0 group-hover:opacity-100 transition-all shrink-0 p-1">
+                    }} className="text-fg-subtle/90 hover:text-destructive opacity-0 group-hover:opacity-100 transition-all shrink-0 p-1">
                       <Trash2 className="size-3" />
                     </button>
                   </div>
@@ -421,9 +421,9 @@ export function ExamReviewTab() {
           <div className="flex flex-col gap-2 text-xs text-fg-muted max-w-md">
             <div className="flex items-center gap-2"><CheckCircle2 className="size-3 text-emerald-500" /> 查询扩展</div>
             <div className="flex items-center gap-2"><Loader2 className="size-3 animate-spin" /> 多源搜索 (Web + GitHub + Academic)</div>
-            <div className="flex items-center gap-2 text-fg-muted/40">源排序与去重</div>
-            <div className="flex items-center gap-2 text-fg-muted/40">AI 生成讲义 (18个section)</div>
-            <div className="flex items-center gap-2 text-fg-muted/40">质量检查与导出准备</div>
+            <div className="flex items-center gap-2 text-fg-subtle/90">源排序与去重</div>
+            <div className="flex items-center gap-2 text-fg-subtle/90">AI 生成讲义 (18个section)</div>
+            <div className="flex items-center gap-2 text-fg-subtle/90">质量检查与导出准备</div>
           </div>
         </motion.div>
       )}
@@ -500,7 +500,7 @@ export function ExamReviewTab() {
                       </div>
                       <p className="text-xs font-medium line-clamp-2 group-hover:text-primary transition-colors">{s.title}</p>
                       <p className="text-[10px] text-fg-muted mt-1 line-clamp-2">{s.summary}</p>
-                      <div className="flex items-center gap-1 mt-2 text-[10px] text-fg-muted/60">
+                      <div className="flex items-center gap-1 mt-2 text-[10px] text-fg-muted/90">
                         <Tag className="size-2.5" />
                         相关度 {Math.round(s.relevanceScore * 100)}% · 可信度 {Math.round(s.reliabilityScore * 100)}%
                       </div>
