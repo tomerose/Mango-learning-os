@@ -1,6 +1,19 @@
 # MangoLearningOS — Update Log
 
-## 2026-06-07 — V14.3: Production Outcome Engine (Current)
+## 2026-06-07 — V14.4: Membership Tier System (Current)
+- **Build:** 94 pages, 0 TS errors
+- **Membership config:** lib/plan/plan-config.ts — tier meta, 21-item comparison matrix, quality config
+- **PlanGate:** ProFeatureLock shows upgrade prompt instead of errors for Standard users
+- **PlanCompare:** compact onboarding cards + full comparison table in profile
+- **TierModeLabel:** shows current mode (Standard/Pro/Guest) on hub
+- **Onboarding upgrade:** plan selection stage with Standard vs Pro Studio cards
+- **Quality differentiation:** Standard 4096 tokens/4 sources/60pt vs Pro 8192 tokens/8 sources/75pt+repair
+- **Export:** Standard MD/DOCX vs Pro MD/DOCX/PDF
+- **Storage:** Standard local 50 vs Pro cloud 500
+- **Auth fixes:** guest no longer needs invite code, redirect /dashboard→/hub, session isGuest fix
+- **New files:** plan-config.ts, plan-gate.tsx, plan-compare.tsx, v14_4_plan_fields.sql
+
+## 2026-06-07 — V14.3: Production Outcome Engine
 - **Build:** 94 pages, 0 TS errors
 - **Source Pipeline:** Wikipedia + DuckDuckGo + Dictionary API 真实检索 · Pro 8来源/Standard 4来源
 - **Material Parser:** TXT/MD/PDF/DOCX 上传解析 + 主题提取 + 上下文注入
