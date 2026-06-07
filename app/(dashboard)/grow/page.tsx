@@ -4,6 +4,7 @@ import * as React from "react";
 import { Heart, MessageCircle, Sprout, Feather, Flower } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { JournalEditor } from "@/components/mind/journal-editor";
 import { MoodTracker } from "@/components/mind/mood-tracker";
 import { CbtReframer } from "@/components/mind/cbt-reframer";
@@ -34,6 +35,7 @@ export default function GrowPage() {
               icon={Flower}
             />
             <section className="mango-paper-card p-3">
+              <ErrorBoundary>
               <Tabs value={tab} onValueChange={setTab}>
                 <TabsList className="w-full justify-start">
                   <TabsTrigger value="mind-garden"><Flower className="size-3.5 mr-1" />Pro</TabsTrigger>
@@ -59,12 +61,14 @@ export default function GrowPage() {
                   <AiCompanionChat />
                 </TabsContent>
               </Tabs>
+              </ErrorBoundary>
             </section>
           </MobileShell>
         </div>
 
         <div className="hidden md:block">
         <PageShell title="心灵花园" description="反思 · 情绪 · 成长 · 陪伴">
+          <ErrorBoundary>
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList className="w-full max-w-xl">
               <TabsTrigger value="mind-garden"><Flower className="size-3.5 mr-1" />心灵花园 Pro</TabsTrigger>
@@ -90,6 +94,7 @@ export default function GrowPage() {
               <AiCompanionChat />
             </TabsContent>
           </Tabs>
+          </ErrorBoundary>
         </PageShell>
         </div>
       </div>
