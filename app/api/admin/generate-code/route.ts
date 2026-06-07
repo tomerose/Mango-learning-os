@@ -8,8 +8,16 @@ import type { GenerateCodeRequest } from "@/lib/mango-code/types";
 export async function POST(req: NextRequest) {
   const session = await resolveSession(req);
 
+  // V14.7.5: DEV_FORCE_PLAN override (development only)
+  let effectivePlan = session.plan;
+  const devForcePlan = process.env.DEV_FORCE_PLAN;
+  const isDev = process.env.NODE_ENV === "development";
+  if (isDev && devForcePlan && ["pro", "admin"].includes(devForcePlan)) {
+    effectivePlan = devForcePlan as typeof session.plan;
+  }
+
   // Admin gate — server-side, not bypassable
-  if (session.plan !== "admin") {
+  if (effectivePlan !== "admin") {
     return NextResponse.json(
       { error: "需要管理员权限", code: "ADMIN_REQUIRED" },
       { status: 403 },

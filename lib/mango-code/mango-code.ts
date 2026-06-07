@@ -169,6 +169,22 @@ export function listCodes(): MangoCode[] {
   return loadCodes().sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
+/** Get a single code by its code string. */
+export function getCodeByCode(code: string): MangoCode | undefined {
+  return loadCodes().find(c => c.code === code.toUpperCase().trim());
+}
+
+/** Update a code's status (disable/enable/revoke). */
+export function updateCodeStatus(code: string, status: "active" | "disabled" | "revoked"): boolean {
+  const codes = loadCodes();
+  const entry = codes.find(c => c.code === code.toUpperCase().trim());
+  if (!entry) return false;
+  entry.status = status;
+  entry.updatedAt = new Date().toISOString();
+  saveCodes(codes);
+  return true;
+}
+
 /** Check if a code is valid (for pre-validation UI). */
 export function validateCode(code: string): { valid: boolean; planGranted?: PlanTier; error?: string } {
   const codes = loadCodes();
