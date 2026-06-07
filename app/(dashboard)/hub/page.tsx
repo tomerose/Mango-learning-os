@@ -24,6 +24,7 @@ import { ExperienceCards } from "@/components/hub/experience-cards";
 import { VersionBadge } from "@/components/hub/version-badge";
 import { VisionCard } from "@/components/hub/vision-card";
 import { ExperimentLog } from "@/components/hub/experiment-log";
+import { FeedbackEntry } from "@/components/hub/feedback-entry";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub V10.1 — Study Cockpit
@@ -230,6 +231,7 @@ export default function HubPage() {
             <VersionBadge />
             <VisionCard />
             <ExperimentLog />
+            <FeedbackEntry />
           </section>
 
           <SubjectsSection />
@@ -383,6 +385,7 @@ export default function HubPage() {
             <VersionBadge />
             <VisionCard />
             <ExperimentLog />
+            <FeedbackEntry />
           </div>
         </Section>
 
