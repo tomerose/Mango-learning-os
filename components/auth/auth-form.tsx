@@ -150,11 +150,11 @@ export function AuthForm({ mode }: AuthFormProps) {
             <span className="text-2xl">🥭</span>
           </div>
           <div>
-            <h1 className="text-[22px] font-serif font-medium leading-tight tracking-tight">
-              Mango Learning OS
+            <h1 className="text-[22px] font-medium leading-tight tracking-tight">
+              把混乱变成清晰成果
             </h1>
-            <p className="text-fg-muted/60 text-[13px] mt-1 font-medium">
-              第三自习室出品 · 把焦虑变成准备
+            <p className="text-fg-muted/60 text-[13px] mt-1.5 leading-relaxed">
+              登录后保存你的学习成果、研究记录和 Mango Library。
             </p>
           </div>
         </div>

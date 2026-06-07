@@ -19,8 +19,7 @@ import { useSubjects } from "@/lib/subjects";
 import { buildLearningIdentity } from "@/lib/agent/learning-memory";
 import { getMistakesDue } from "@/lib/agent/mistake-bank";
 import { MobileShell, MissionHero, FloatingCommandBar, ActionCard, LearningStatCard, PrimaryMobileButton } from "@/components/mobile/premium-mobile";
-import { TierModeLabel } from "@/components/gates/plan-gate";
-import { usePlanTier } from "@/lib/plan/use-plan";
+import { MangoTodayEntry } from "@/components/hub/mango-today-entry";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub V10.1 — Study Cockpit
@@ -127,7 +126,6 @@ export default function HubPage() {
   const [showOnboarding, setShowOnboarding] = React.useState(false);
   const [recentPacks, setRecentPacks] = React.useState<StudyPackSession[]>([]);
   const { stats, tasks, flashcards } = useStore();
-  const planTier = usePlanTier();
 
   React.useEffect(() => { setShowOnboarding(shouldShowOnboarding()); }, []);
   React.useEffect(() => { setRecentPacks(getRecentStudyPacks(3)); }, []);
@@ -158,34 +156,8 @@ export default function HubPage() {
 
           <FloatingCommandBar placeholder="告诉 Mango 你想学什么..." href="/agent" />
 
-          <div className="flex items-center justify-center">
-            <TierModeLabel tier={planTier} />
-          </div>
-
-          {/* ═══ 4 OUTCOME CTAs ═══ */}
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100/40 mt-1">快速产出</p>
-          <div className="grid grid-cols-2 gap-2">
-            <ActionCard
-              icon={BookOpen} title="生成复习讲义"
-              description="输入课程名→AI生成完整讲义→导出"
-              href="/pack"
-            />
-            <ActionCard
-              icon={FileText} title="整理一份资料"
-              description="拖入文档→结构化笔记→闪卡"
-              href="/agent?tab=knowledge"
-            />
-            <ActionCard
-              icon={Target} title="训练一类题"
-              description="错题分析→同类题→训练计划"
-              href="/agent"
-            />
-            <ActionCard
-              icon={Layers} title="规划今天学习"
-              description="设定目标→生成任务→开始执行"
-              href="/planner"
-            />
-          </div>
+          {/* ═══ MANGO TODAY ENTRY ═══ */}
+          <MangoTodayEntry />
 
           {/* 3-column stat grid */}
           <div className="grid grid-cols-3 gap-2 px-1">
