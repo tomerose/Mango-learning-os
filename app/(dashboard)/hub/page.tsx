@@ -147,28 +147,38 @@ export default function HubPage() {
       <div className="md:hidden">
         <MobileShell>
           <MissionHero
-            eyebrow={dateStr}
-            title={`${greeting}，今天想学什么？`}
-            description="AI 驱动的学习操作系统"
+            eyebrow={`${dateStr} · 连续 ${stats?.streakDays ?? 0} 天`}
+            title="今天你要交付什么？"
+            description="不是聊天，不是看数据 — MangoOS 帮你生成可保存、可导出、可复习的学习成果。"
             icon={Sparkles}
-            meta={
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs">🔥 {stats?.streakDays ?? 0} 天</span>
-                <span className="rounded-full bg-white/10 px-3 py-1 text-xs">🎯 {doneToday}/{totalToday} 任务</span>
-                {dueCards > 0 && <span className="rounded-full bg-white/10 px-3 py-1 text-xs">📚 {dueCards} 闪卡</span>}
-              </div>
-            }
-            action={
-              <Link href="/pack"
-                className="inline-flex items-center gap-3 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-on w-full justify-center">
-                <BookOpen className="size-5" />
-                生成学习包
-                <ArrowRight className="size-4" />
-              </Link>
-            }
           />
 
-          <FloatingCommandBar placeholder="Ask Mango anything..." />
+          <FloatingCommandBar placeholder="告诉 Mango 你想学什么..." href="/agent" />
+
+          {/* ═══ 4 OUTCOME CTAs ═══ */}
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100/40">快速产出</p>
+          <div className="grid grid-cols-2 gap-2">
+            <ActionCard
+              icon={BookOpen} title="生成复习讲义"
+              description="输入课程名→AI生成完整讲义→导出"
+              href="/pack"
+            />
+            <ActionCard
+              icon={FileText} title="整理一份资料"
+              description="拖入文档→结构化笔记→闪卡"
+              href="/agent?tab=knowledge"
+            />
+            <ActionCard
+              icon={Target} title="训练一类题"
+              description="错题分析→同类题→训练计划"
+              href="/agent"
+            />
+            <ActionCard
+              icon={Layers} title="规划今天学习"
+              description="设定目标→生成任务→开始执行"
+              href="/planner"
+            />
+          </div>
 
           {/* 3-column stat grid */}
           <div className="grid grid-cols-3 gap-2 px-1">

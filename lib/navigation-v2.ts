@@ -3,7 +3,7 @@
 // ─────────────────────────────────────────────────────────────
 import {
   Sun, Package, Bot, Trees, Heart,
-  CalendarCheck, Mic, User, FileText,
+  CalendarCheck, Mic, User, FileText, Library,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +25,7 @@ export const navItemsV2: NavItem[] = [
   { id: "profile", label: "我的", shortLabel: "我的", href: "/profile", icon: User, description: "计划 · 成就 · 配额 · 设置", tier: "primary" },
   // ── Secondary (More drawer) ────────────────────────────────
   { id: "notes", label: "笔记", shortLabel: "笔记", href: "/notes", icon: FileText, description: "结构化笔记 · 6种模板 · 导入", tier: "secondary" },
+  { id: "library", label: "成品库", shortLabel: "成品库", href: "/library", icon: Library, description: "Artifact Studio · 查看 · 编辑 · 导出", tier: "secondary" },
   { id: "forest", label: "知识森林", shortLabel: "森林", href: "/forest", icon: Trees, description: "知识网络 · 笔记关联 · 学习计划", tier: "secondary" },
   { id: "grow", label: "花园", shortLabel: "花园", href: "/grow", icon: Heart, description: "心灵花园 Pro · 10种模式 · 自我关怀", tier: "secondary" },
   { id: "planner", label: "学习计划", shortLabel: "计划", href: "/planner", icon: CalendarCheck, description: "任务管理 · 学习身份 · 闪卡 · 考试", tier: "secondary" },
