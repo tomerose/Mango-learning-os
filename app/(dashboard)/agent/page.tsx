@@ -151,20 +151,26 @@ function AgentPageInner() {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ intent: composeInput, files: composeFiles.filter(f => !f.value.startsWith("⚠️") && !f.value.startsWith("文件")).map(f => ({ name: f.label ?? f.value, text: f.value ?? "" })) }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        const a: AgentArtifact = data.artifact;
-        if (a) {
-          for (const ev of a.timeline ?? []) addEvent(ev.type === "error" ? "error" : ev.status === "running" ? "thinking" : "tool_end", ev.message, ev.toolName);
-          addEvent("output", a.artifactSummary || "生成完成");
-          setArtifact(a);
-          const hist = loadArtifactHistory(); hist.unshift(a); saveArtifactHistory(hist.slice(0, 30)); setArtifactHistory(hist.slice(0, 30));
-          const task: AgentTask = { id: taskId, title: a.artifactTitle || composeInput.slice(0, 40), intent: composeInput, status: "completed", inputs: [{ type: "text", value: composeInput }, ...composeFiles], timeline: events, toolsUsed: a.toolsUsed, outputs: [{ id: `out-${Date.now()}`, type: "summary", title: a.artifactTitle, content: { summary: a.artifactSummary, markdown: a.artifactMarkdown }, linkedIds: [], editable: true, saved: true }], sources: a.sources.map(s => s.title), qualityScore: a.qualityScore, createdAt: iso, updatedAt: iso, completedAt: iso };
-          setActiveTask(task); const all = [task, ...tasks]; setTasks(all); saveTasks(all); setView("result"); return;
-        }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        addEvent("error", (errData as any).error || (errData as any).retryHint || `请求失败 (${res.status})`);
+        setView("result");
+        return;
       }
-    } catch {}
-    addEvent("error", "AI 服务暂不可用。请检查 AI_API_KEY 配置后重试。");
+      const data = await res.json();
+      const a: AgentArtifact = data.artifact;
+      if (a) {
+        for (const ev of a.timeline ?? []) addEvent(ev.type === "error" ? "error" : ev.status === "running" ? "thinking" : "tool_end", ev.message, ev.toolName);
+        addEvent("output", a.artifactSummary || "生成完成");
+        setArtifact(a);
+        const hist = loadArtifactHistory(); hist.unshift(a); saveArtifactHistory(hist.slice(0, 30)); setArtifactHistory(hist.slice(0, 30));
+        const task: AgentTask = { id: taskId, title: a.artifactTitle || composeInput.slice(0, 40), intent: composeInput, status: "completed", inputs: [{ type: "text", value: composeInput }, ...composeFiles], timeline: events, toolsUsed: a.toolsUsed, outputs: [{ id: `out-${Date.now()}`, type: "summary", title: a.artifactTitle, content: { summary: a.artifactSummary, markdown: a.artifactMarkdown }, linkedIds: [], editable: true, saved: true }], sources: a.sources.map(s => s.title), qualityScore: a.qualityScore, createdAt: iso, updatedAt: iso, completedAt: iso };
+        setActiveTask(task); const all = [task, ...tasks]; setTasks(all); saveTasks(all); setView("result"); return;
+      }
+      addEvent("error", "生成返回为空，请重试。");
+    } catch (err) {
+      addEvent("error", `网络请求失败: ${err instanceof Error ? err.message : "请检查网络连接后重试"}`);
+    }
     setView("result");
   }
 
@@ -214,7 +220,11 @@ function AgentPageInner() {
                 ))}
               </div>
               <div id="agent-compose" className="card-card p-5 flex flex-col gap-3 mt-4 scroll-mt-20">
-                <div className="flex items-center gap-2"><MessageSquare className="size-4 text-primary" /><span className="text-sm font-medium font-serif">自由描述任务</span></div>
+                <div className="flex items-center gap-2"><MessageSquare className="size-4 text-primary" /><span className="text-sm font-medium font-serif">自由描述任务</span>
+                {plan === "guest" && <span className="text-[10px] rounded-full bg-amber-50 text-amber-600 px-2 py-0.5 font-medium">游客演示</span>}
+                {plan === "standard" && <span className="text-[10px] rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium">Standard</span>}
+                {plan === "pro" && <span className="text-[10px] rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 font-medium">Pro</span>}
+                </div>
                 <Textarea value={composeInput} onChange={e => setComposeInput(e.target.value)} placeholder="用自然语言描述你想做的事…" className="text-sm min-h-24 rounded-xl" />
                 {tabHint && <p className="text-xs text-primary/70 bg-primary-subtle rounded-xl px-3 py-2">{tabHint}</p>}
                 <div className="flex items-center gap-2">
@@ -238,6 +248,7 @@ function AgentPageInner() {
                 {timeline.length <= 2 && "🧠 正在理解需求，规划执行方案…"}
                 {timeline.length > 2 && timeline.length < 5 && "🔧 调用工具处理任务…"}
                 {timeline.length >= 5 && "📝 整理结果，生成结构化输出…"}
+                {plan === "guest" && <span className="block mt-2 text-amber-500/70">⚠️ 游客模式使用本地演示，登录后可获得完整 AI 能力。</span>}
               </div>
               <div className="flex flex-col gap-1.5">
                 {timeline.map((ev, i) => (
@@ -318,8 +329,13 @@ function AgentPageInner() {
                       storageMode: "local", owner: "user", planTier: plan as any,
                       createdAt: now, updatedAt: now,
                     };
-                    await saveArtifact(libArtifact);
-                    setSavedToLibrary(true);
+                    try {
+                      await saveArtifact(libArtifact);
+                      setSavedToLibrary(true);
+                    } catch {
+                      setSavedToLibrary(false);
+                      alert("保存失败，请重试。如持续失败请检查浏览器存储空间。");
+                    }
                   }}
                   saved={savedToLibrary}
                   onContinue={() => { setComposeInput(artifact.artifactTitle || composeInput); setView("templates"); }}
@@ -329,8 +345,11 @@ function AgentPageInner() {
                 <div className="card-card p-8 text-center">
                   <AlertTriangle className="size-10 text-amber-400 mx-auto mb-3" />
                   <p className="text-sm font-medium">生成未完成</p>
-                  <p className="text-xs text-fg-muted/60 mt-1">请返回重试或检查 AI 服务配置</p>
-                  <Button onClick={() => setView("templates")} className="mt-4 rounded-xl">返回模板</Button>
+                  <p className="text-xs text-fg-muted/60 mt-1">{timeline.find(e => e.type === "error")?.message || "请返回重试或检查 AI 服务配置"}</p>
+                  <div className="flex items-center justify-center gap-2 mt-4">
+                    <Button onClick={executeTask} className="rounded-xl gap-1.5"><RotateCcw className="size-3.5" />重试</Button>
+                    <Button variant="outline" onClick={() => setView("templates")} className="rounded-xl">返回模板</Button>
+                  </div>
                 </div>
               )}
             </motion.div>

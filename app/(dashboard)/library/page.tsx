@@ -7,10 +7,10 @@ import {
   Search, Filter, Download, Edit3, Trash2, Copy,
   FileText, BookOpen, Brain, Target, Sparkles,
   Archive, RotateCcw, Layers, Calendar,
-  Library, ChevronRight, CalendarCheck, Layers3, HelpCircle,
+  Library, ChevronRight, CalendarCheck, Layers3, HelpCircle, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MobileShell, MissionHero, EmptyState, SkeletonState } from "@/components/mobile/premium-mobile";
+import { MobileShell, MissionHero, EmptyState, SkeletonState, ErrorState } from "@/components/mobile/premium-mobile";
 import { listArtifacts, deleteArtifact, getArtifact } from "@/lib/artifact/artifact-store";
 import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "@/lib/artifact/types";
 import type { ArtifactMeta } from "@/lib/artifact/artifact-store";
@@ -45,6 +45,7 @@ export default function LibraryPage() {
   const store = useStore();
   const [artifacts, setArtifacts] = React.useState<ArtifactMeta[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(false);
   const [search, setSearch] = React.useState("");
   const [typeFilter, setTypeFilter] = React.useState<ArtifactType | "all">("all");
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
@@ -58,13 +59,18 @@ export default function LibraryPage() {
 
   async function loadArtifacts() {
     setLoading(true);
-    const result = await listArtifacts({
-      types: typeFilter !== "all" ? [typeFilter] : undefined,
-      search: search || undefined,
-      sortBy: "updatedAt",
-      sortDir: "desc",
-    });
-    setArtifacts(result);
+    setError(false);
+    try {
+      const result = await listArtifacts({
+        types: typeFilter !== "all" ? [typeFilter] : undefined,
+        search: search || undefined,
+        sortBy: "updatedAt",
+        sortDir: "desc",
+      });
+      setArtifacts(result);
+    } catch {
+      setError(true);
+    }
     setLoading(false);
   }
 
@@ -217,6 +223,12 @@ export default function LibraryPage() {
         {/* List */}
         {loading ? (
           <SkeletonState rows={4} />
+        ) : error ? (
+          <ErrorState
+            title="加载失败"
+            description="无法读取学习成品数据，请刷新页面重试。"
+            action={<button onClick={() => { setError(false); loadArtifacts(); }} className="rounded-full bg-red-400/15 text-red-300 px-4 py-2 text-xs font-semibold">重新加载</button>}
+          />
         ) : displayItems.length === 0 ? (
           <EmptyState
             title="还没有学习成品"
@@ -390,6 +402,13 @@ export default function LibraryPage() {
 
       {loading ? (
         <div className="text-sm text-fg-muted">加载中…</div>
+      ) : error ? (
+        <div className="text-center py-16">
+          <AlertTriangle className="size-8 text-amber-400 mx-auto mb-3" />
+          <p className="text-lg font-semibold">加载失败</p>
+          <p className="text-sm text-fg-muted mt-2">无法读取学习成品数据。</p>
+          <button onClick={() => { setError(false); loadArtifacts(); }} className="mt-4 rounded-xl bg-primary text-primary-on px-4 py-2 text-sm font-semibold">重新加载</button>
+        </div>
       ) : displayItems.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-lg font-semibold">还没有学习成品</p>
