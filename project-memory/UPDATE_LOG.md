@@ -1,4 +1,16 @@
-# MangoLearningOS — Update Log
+﻿
+## 2026-06-08 — V14.7.1: Real Use Verification Patch
+- **Build:** 94 pages, 0 TS errors
+- **7 fixes applied** — Agent flow stability verified end-to-end
+- **daily_plan routing fix:** /planner → /agent (Mango Today intents all route to Agent for AI generation)
+- **OutcomeDocument integration:** Agent result now renders as structured document with collapsible sections instead of raw markdown
+- **Save-to-Library sections:** Artifact sections now parsed from markdown ## headers and persisted correctly
+- **File upload filtering:** Error files (empty/unsupported) no longer sent to Agent API
+- **	ab=knowledge support:** Agent page shows upload hint when routed from material_organize intent
+- **HTML export improvement:** Basic markdown→HTML conversion (h1-h3, strong, em, code, li)
+- **officeparser dependency:** Added + fixed parseOfficeAsync→parseOffice API
+- **10 real-use scenarios verified** — see MangoOS_V14.7.1_Real_Use_Verification_Report.md
+- **Core flow confirmed stable:** Mango Today → Agent → document result → save → Library reopen → export → mobile# MangoLearningOS — Update Log
 
 ## 2026-06-07 — V14.4: Membership Tier System (Current)
 - **Build:** 94 pages, 0 TS errors

@@ -1,4 +1,21 @@
-# MangoLearningOS — Bugfix History
+﻿
+## 2026-06-08 — V14.7.1 Real Use Verification Fixes
+
+**Audit:** 8 bugs found during real-use flow verification
+
+**Fixed (7/8):**
+- HIGH: Mango Today daily_plan intent routed to /planner which doesn't handle AI generation → fixed route to /agent
+- HIGH: Agent result displayed as raw markdown instead of document-style → integrated OutcomeDocument with section parsing
+- HIGH: Save-to-Library sections were always empty array → parse markdown ## headers into ArtifactSection[]
+- MEDIUM: Error files (empty/unsupported) sent to Agent API → filter out files with error values
+- MEDIUM: 	ab=knowledge URL param from material_organize intent ignored → show upload hint in Agent
+- MEDIUM: HTML export only did \n→<br> → basic markdown→HTML conversion
+- LOW: officeparser parseOfficeAsync doesn't exist in installed version → changed to parseOffice
+
+**Known (1/8):**
+- MEDIUM: Duplicate copy/export buttons in ArtifactRenderer + OutcomeActionsBar. Both preserved (ArtifactRenderer copy has better UX, OutcomeActionsBar export has MD/HTML split). Recommend merge in next iteration.
+
+**Build:** 94 pages, 0 TS errors confirmed# MangoLearningOS — Bugfix History
 
 ## 2026-06-07 — V14.5 Comprehensive Audit Fixes
 
