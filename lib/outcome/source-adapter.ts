@@ -43,17 +43,39 @@ async function searchWikipedia(query: string, max: number = 3): Promise<Artifact
   }
 }
 
-async function searchDuckDuckGo(query: string, max: number = 3): Promise<ArtifactSource[]> {
+/** V14.7.5: Chinese Wikipedia — critical for Chinese-language search results */
+async function searchWikipediaZH(query: string, max: number = 3): Promise<ArtifactSource[]> {
   try {
-    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+    const url = `https://zh.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=${max}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!res.ok) return [];
     const data = await res.json();
+    const results = data?.query?.search ?? [];
+    return results.map((r: any) => ({
+      id: `zhwp_${r.pageid}`,
+      title: r.title,
+      url: `https://zh.wikipedia.org/wiki/${encodeURIComponent(r.title)}`,
+      platform: "wikipedia-zh" as const,
+      relevance: 0.9,
+      reliability: "high" as const,
+      excerpt: r.snippet?.replace(/<[^>]+>/g, "").slice(0, 300) ?? "",
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** V14.7.5: Enhanced DuckDuckGo search — better Chinese support */
+async function searchDuckDuckGoV2(query: string, max: number = 3): Promise<ArtifactSource[]> {
+  try {
+    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return [];
+    const data = await res.json();
     const sources: ArtifactSource[] = [];
-    // Abstract
-    if (data.AbstractText) {
+    if (data.AbstractText && data.AbstractText.length > 20) {
       sources.push({
-        id: `ddg_abstract_${Date.now()}`,
+        id: `ddg_abs_${Date.now()}`,
         title: data.Heading || query,
         url: data.AbstractURL || `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
         platform: "duckduckgo" as const,
@@ -62,7 +84,6 @@ async function searchDuckDuckGo(query: string, max: number = 3): Promise<Artifac
         excerpt: data.AbstractText.slice(0, 300),
       });
     }
-    // Related topics
     for (const topic of (data.RelatedTopics ?? []).slice(0, max - sources.length)) {
       if (topic.Text) {
         sources.push({
@@ -81,6 +102,8 @@ async function searchDuckDuckGo(query: string, max: number = 3): Promise<Artifac
     return [];
   }
 }
+
+// searchDuckDuckGoV2 above replaces this — kept for reference, removed duplicate
 
 async function searchDictionary(word: string): Promise<ArtifactSource[]> {
   try {
@@ -116,10 +139,15 @@ export async function searchSources(query: SourceQuery): Promise<SourceResult> {
   if (platforms.includes("wikipedia")) {
     searched.push("wikipedia");
     tasks.push(searchWikipedia(query.query, maxPer));
+    // V14.7.5: Also search Chinese Wikipedia for better CN results
+    if (/[一-鿿]/.test(query.query)) {
+      searched.push("wikipedia-zh");
+      tasks.push(searchWikipediaZH(query.query, maxPer));
+    }
   }
   if (platforms.includes("duckduckgo")) {
     searched.push("duckduckgo");
-    tasks.push(searchDuckDuckGo(query.query, maxPer));
+    tasks.push(searchDuckDuckGoV2(query.query, maxPer));
   }
   if (platforms.includes("dictionary") && /^[a-zA-Z\s-]+$/.test(query.query)) {
     searched.push("dictionary");
