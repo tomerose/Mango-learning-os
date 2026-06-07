@@ -1,10 +1,12 @@
 // POST /api/mango-code/redeem — Redeem a Mango Code
 // Anti-double-spend: atomic check-then-update
-// Supports validateOnly mode for client-side live validation
+// V14.7.5: Now updates Supabase profiles.plan on successful redemption
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 import { resolveSession } from "@/lib/auth/session";
 import { redeemCode, validateCode } from "@/lib/mango-code/mango-code";
 import { getPlanInfo } from "@/lib/plan/types";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export async function POST(req: NextRequest) {
   const session = await resolveSession(req);
@@ -45,7 +47,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── Actual redemption ──
+    // ── Actual redemption (atomic: marks code used + returns plan) ──
     const result = redeemCode(code.trim(), session.userId!);
 
     if (!result.success) {
@@ -62,13 +64,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get updated plan info
+    // ── V14.7.5: Update profiles.plan in Supabase ──
+    let dbUpdated = false;
+    if (isSupabaseConfigured()) {
+      try {
+        const supabase = createServerClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          { cookies: { getAll: () => [], setAll: () => {} } },
+        );
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({
+            plan: result.newPlan,
+            plan_expires_at: result.planExpiresAt ?? null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", session.userId);
+
+        dbUpdated = !updateError;
+      } catch {
+        // Supabase unreachable — code is already consumed, plan stored locally
+      }
+    }
+
     const planInfo = getPlanInfo(result.newPlan!, result.planExpiresAt);
 
     return NextResponse.json({
       success: true,
-      message: `成功兑换 ${planInfo.name}！`,
+      message: `成功兑换 ${planInfo.name}！${result.planExpiresAt ? `有效期至 ${new Date(result.planExpiresAt).toLocaleDateString("zh-CN")}` : "永久有效"}`,
       plan: planInfo,
+      dbUpdated,
     });
   } catch (err) {
     return NextResponse.json(
