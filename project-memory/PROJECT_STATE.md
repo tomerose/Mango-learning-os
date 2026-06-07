@@ -1,6 +1,6 @@
 # MangoLearningOS — Project State
 
-**Updated:** 2026-06-07 | **Version:** mobile premium cinematic UI pass | **Branch:** `ui/mobile-premium-cinematic-redesign`
+**Updated:** 2026-06-07 | **Version:** V14.3 Production Outcome Engine | **Branch:** `main`
 
 ## Stack (v7)
 Next.js 15.5 (App Router) · React 19 · TypeScript 5.8 · Tailwind CSS 4.1
