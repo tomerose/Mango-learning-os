@@ -102,12 +102,12 @@ function SectionBlock({ section, defaultOpen }: { section: OutcomeSection; defau
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/[0.02] transition-colors"
       >
-        <span className="text-sm font-medium text-white/80">{section.title}</span>
-        {open ? <ChevronUp className="size-4 text-white/25" /> : <ChevronDown className="size-4 text-white/25" />}
+        <span className="text-sm font-medium text-white/90">{section.title}</span>
+        {open ? <ChevronUp className="size-4 text-white/45" /> : <ChevronDown className="size-4 text-white/45" />}
       </button>
       {open && (
         <div className="px-4 pb-4">
-          <div className="text-sm leading-7 text-white/55 whitespace-pre-wrap">{section.content}</div>
+          <div className="text-sm leading-7 text-white/80 whitespace-pre-wrap font-sans">{section.content}</div>
         </div>
       )}
     </div>

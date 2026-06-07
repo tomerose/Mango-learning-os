@@ -203,20 +203,69 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── STANDARD PATH: Lightweight generation ──────────────────
+    const isGuest = session.plan === "guest";
+
+    // ── GUEST PATH: No search, local demo ─────────────────────────
+    if (isGuest) {
+      const guestArtifact: AgentArtifact = await generateArtifact({
+        id: taskId, intent: intent.trim(), plan: "guest", taskType, files: files ?? [],
+        toolsUsed: ["summary_generator" as AgentToolName],
+      });
+      guestArtifact.updatedAt = new Date().toISOString();
+      return NextResponse.json({
+        success: guestArtifact.status !== "failed",
+        artifact: guestArtifact,
+        message: "游客模式使用本地演示。登录后可获得联网研究 + 完整 AI 能力。",
+        proMode: false,
+        guestMode: true,
+      });
+    }
+
+    // ── STANDARD PATH: Light search + generation ──────────────────
+    const stdStages: PipelineStageStatus[] = [];
     const timeline: Array<{ id?: string; tool: string; status: string; message: string; timestamp: string }> = [];
     const addTimeline = (tool: string, status: string, message: string) => {
       timeline.push({ tool, status, message, timestamp: new Date().toISOString() });
     };
 
-    addTimeline("brain", "running", `Agent 分析中 → 任务类型: ${taskType}`);
+    addTimeline("brain", "running", `Agent 分析中 → Standard 轻量研究模式 · 任务类型: ${taskType}`);
+
+    // Standard: light search (2 queries, max 3 results)
+    let stdSources: any[] = [];
+    let stdNetworkAvailable = true;
+    try {
+      stdStages.push({ name: "search", label: "联网搜索资料", status: "running", detail: "Standard 轻量搜索..." });
+      const stdQueries = generateResearchQueries(intent.trim(), taskType).slice(0, 2);
+      const collectorResult = await collectSources(stdQueries, false);
+      stdSources = collectorResult.sources.map(s => ({
+        id: s.id, title: s.title, url: s.url, platform: s.platform, snippet: s.snippet,
+        relevanceScore: 60, credibilityScore: 50, compositeScore: 55,
+      }));
+      stdNetworkAvailable = collectorResult.networkAvailable;
+      stdStages[0].status = "done";
+      stdStages[0].detail = stdNetworkAvailable
+        ? `Standard 轻量搜索完成 · ${stdSources.length} 条来源`
+        : "网络不可用，使用离线知识生成";
+      addTimeline("web_research", "done", `Standard 搜索: ${stdSources.length} 条来源`);
+    } catch {
+      stdStages.push({ name: "search", label: "联网搜索", status: "failed", detail: "搜索失败，继续生成" });
+    }
+
+    // Build search-augmented intent for Standard
+    const stdSourceContext = stdSources.slice(0, 3).map(s =>
+      `### [${s.platform}] ${s.title}\n> ${s.snippet}\n`
+    ).join("\n");
+    const stdAugmentedIntent = stdSources.length > 0
+      ? `## 任务\n${intent}\n\n## 搜索到的参考资料\n${stdSourceContext}\n\n请基于以上资料生成内容。如资料不足，请标注。`
+      : intent;
 
     const stdTools: AgentToolName[] = ["summary_generator" as AgentToolName];
     if (/exam|复习|冲刺|test/i.test(intent)) stdTools.push("study_pack_generator" as AgentToolName);
+    if (stdSources.length > 0) stdTools.push("web_research" as AgentToolName);
 
     const stdArtifact: AgentArtifact = await generateArtifact({
       id: taskId,
-      intent: intent.trim(),
+      intent: stdAugmentedIntent.slice(0, 4000),
       plan: session.plan,
       taskType,
       files: files ?? [],
@@ -224,20 +273,27 @@ export async function POST(req: NextRequest) {
     });
 
     stdArtifact.updatedAt = new Date().toISOString();
+    if (stdSources.length > 0) (stdArtifact as any).researchSources = stdSources;
 
     if (stdArtifact.status === "failed") {
       addTimeline("brain", "error", "生成未完全成功");
     } else {
-      addTimeline("brain", "done", `生成完成，质量分: ${stdArtifact.qualityScore}/100`);
+      addTimeline("brain", "done", `Standard 生成完成 · 质量分: ${stdArtifact.qualityScore}/100 · ${stdSources.length} 条来源`);
     }
 
     return NextResponse.json({
       success: stdArtifact.status !== "failed",
       artifact: stdArtifact,
       message: stdArtifact.status === "completed"
-        ? `「${stdArtifact.artifactTitle || intent.slice(0, 30)}」已生成`
+        ? `「${stdArtifact.artifactTitle || intent.slice(0, 30)}」已生成 · Standard 轻量模式`
         : "生成部分完成",
       proMode: false,
+      standardMode: true,
+      researchPipeline: stdSources.length > 0 ? {
+        stages: stdStages,
+        sources: stdSources,
+        networkAvailable: stdNetworkAvailable,
+      } : undefined,
     });
   } catch (err) {
     return NextResponse.json(

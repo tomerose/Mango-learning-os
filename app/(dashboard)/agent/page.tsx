@@ -298,12 +298,18 @@ function AgentPageInner() {
                   intentType={(intentType || artifact.taskType || "general") as IntentType}
                   generatedAt={artifact.createdAt || new Date().toISOString()}
                 />
-                {/* V14.7.2: Pro/Standard mode label + research sources */}
-                {proMode && researchSources.length > 0 && (
+                {/* V14.7.4: Pro/Standard/Guest mode label + research sources */}
+                {researchSources.length > 0 && (
                   <div className="card-card p-4 space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5">Pro Research</span>
-                      <span className="text-[10px] text-fg-muted/90">{researchSources.length} 条来源 · 联网研究已执行</span>
+                      {proMode ? (
+                        <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5">Pro Research</span>
+                      ) : (
+                        <span className="text-[10px] font-semibold rounded-full bg-slate-100 text-slate-600 px-2 py-0.5">Standard 搜索</span>
+                      )}
+                      <span className="text-[10px] text-fg-muted/90">{researchSources.length} 条来源 · {
+                        proMode ? "完整联网研究已执行" : "轻量联网搜索已完成"
+                      }</span>
                     </div>
                     <div className="space-y-1.5">
                       {researchSources.slice(0, 8).map((s: any, i: number) => (
@@ -320,11 +326,11 @@ function AgentPageInner() {
                     </div>
                   </div>
                 )}
-                {!proMode && artifact && (
-                  <p className="text-[10px] text-fg-muted/90 text-center">Standard 轻量模式：本次未执行完整联网研究。升级 Pro 可获得多源研究 + 证据支撑 + 更高内容质量。</p>
+                {!proMode && artifact && researchSources.length === 0 && (
+                  <p className="text-[11px] text-fg-muted/90 text-center bg-bg-subtle rounded-xl px-3 py-2">Standard 轻量模式：本次搜索未获得可用来源。升级 Pro 可获得多源研究 + 证据支撑。</p>
                 )}
                 {!networkAvailable && (
-                  <p className="text-[10px] text-amber-600/80 bg-amber-50/60 rounded-lg px-3 py-1.5 text-center">⚠️ 网络不可用，本次生成未使用实时搜索。内容基于 AI 知识生成。</p>
+                  <p className="text-[11px] text-amber-600/80 bg-amber-50/60 rounded-lg px-3 py-1.5 text-center">⚠️ 网络不可用，本次生成未使用实时搜索。内容基于 AI 知识生成。</p>
                 )}
                 <OutcomeActionsBar
                   onCopy={() => { navigator.clipboard.writeText(artifact.artifactMarkdown || "").then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {}); }}
