@@ -7,7 +7,7 @@ import {
   Search, Filter, ArrowUpDown, Download, Edit3, Trash2, Copy,
   FileText, BookOpen, Brain, Target, Sparkles, ExternalLink,
   Archive, RotateCcw, Layers, Calendar, MoreHorizontal,
-  Library, ChevronRight,
+  Library, ChevronRight, CalendarCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MobileShell, MissionHero, EmptyState, SkeletonState } from "@/components/mobile/premium-mobile";
@@ -15,6 +15,8 @@ import { listArtifacts, deleteArtifact, getArtifact } from "@/lib/artifact/artif
 import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "@/lib/artifact/types";
 import type { ArtifactMeta } from "@/lib/artifact/artifact-store";
 import { SAMPLE_ARTIFACTS } from "@/lib/artifact/samples";
+import { artifactToPlan, planToStoreTasks } from "@/lib/outcome/planner-bridge";
+import { useStore } from "@/lib/store";
 
 // ── Helper ──────────────────────────────────────────────────────
 const TYPE_ICONS: Record<string, React.ElementType> = {
@@ -38,6 +40,7 @@ function formatDate(iso: string) {
 // ── Page ────────────────────────────────────────────────────────
 
 export default function LibraryPage() {
+  const store = useStore();
   const [artifacts, setArtifacts] = React.useState<ArtifactMeta[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [search, setSearch] = React.useState("");
@@ -45,6 +48,7 @@ export default function LibraryPage() {
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [selectedArtifact, setSelectedArtifact] = React.useState<any>(null);
   const [showSamples, setShowSamples] = React.useState(false);
+  const [planGenerated, setPlanGenerated] = React.useState(false);
 
   React.useEffect(() => {
     loadArtifacts();
@@ -80,6 +84,15 @@ export default function LibraryPage() {
     setSelectedId(null);
     setSelectedArtifact(null);
     loadArtifacts();
+  }
+
+  function handleConvertToPlan() {
+    if (!selectedArtifact || planGenerated) return;
+    const plan = artifactToPlan(selectedArtifact, 5);
+    const tasks = planToStoreTasks(plan, selectedArtifact.subject ?? "ai");
+    tasks.forEach(t => store.addTask(t));
+    setPlanGenerated(true);
+    setTimeout(() => setPlanGenerated(false), 3000);
   }
 
   const displayItems = showSamples
@@ -221,6 +234,13 @@ export default function LibraryPage() {
                         >
                           <RotateCcw className="size-3" />继续生成
                         </Link>
+                        <button
+                          onClick={handleConvertToPlan}
+                          disabled={planGenerated}
+                          className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55 disabled:opacity-40"
+                        >
+                          <CalendarCheck className="size-3" />{planGenerated ? "已添加" : "拆成计划"}
+                        </button>
                         <button
                           onClick={() => {/* TODO: export */}}
                           className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55"
