@@ -7,6 +7,7 @@ import {
   Calendar, BookOpen, FileText, Lightbulb, RotateCcw,
   ArrowRight, Sparkles,
 } from "lucide-react";
+import { createIntentPayload, type IntentType } from "@/lib/today/intent-router";
 
 // ── Intent types ───────────────────────────────────────────────
 
@@ -90,43 +91,32 @@ export function MangoTodayEntry() {
 
   function handleIntentSelect(intent: (typeof INTENTIONS)[number]) {
     setSelectedIntent(intent.id);
-    const entry: TodayEntry = {
-      type: intent.id,
-      userGoal: intent.prompt,
-      recommendedRoute: intent.route,
-      suggestedPrompt: intent.prompt,
-      createdAt: new Date().toISOString(),
-    };
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entry)); } catch {}
+    const payload = createIntentPayload(input || intent.prompt, "mango_today");
+    payload.type = intent.id;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch {}
     setSaved(true);
   }
 
   function handleGo() {
     const intent = INTENTIONS.find(i => i.id === selectedIntent);
     if (intent) {
-      const entry: TodayEntry = {
-        type: intent.id,
-        userGoal: input || intent.prompt,
-        recommendedRoute: intent.route,
-        suggestedPrompt: input || intent.prompt,
-        createdAt: new Date().toISOString(),
-      };
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entry)); } catch {}
-      router.push(intent.route);
+      const payload = createIntentPayload(input || intent.prompt, "mango_today");
+      payload.type = intent.id;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch {}
+      const q = encodeURIComponent(payload.suggestedPrompt);
+      const t = encodeURIComponent(payload.type);
+      router.push(`${intent.route}?q=${q}&intent=${t}&intentId=${payload.id}`);
     }
   }
 
   function handleCustomGo() {
     if (!input.trim()) return;
-    const entry: TodayEntry = {
-      type: "daily_plan",
-      userGoal: input.trim(),
-      recommendedRoute: "/agent",
-      suggestedPrompt: input.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entry)); } catch {}
-    router.push(`/agent?q=${encodeURIComponent(input.trim())}`);
+    const payload = createIntentPayload(input.trim(), "custom_input");
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch {}
+    // Route with structured intent
+    const q = encodeURIComponent(payload.suggestedPrompt);
+    const t = encodeURIComponent(payload.type);
+    router.push(`${payload.recommendedRoute}?q=${q}&intent=${t}&intentId=${payload.id}`);
   }
 
   return (
