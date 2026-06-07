@@ -143,7 +143,7 @@ export function ActionCard({
   const content = (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      className="mango-glass-card group flex min-h-[132px] flex-col justify-between p-4 text-left"
+      className="mango-glass-card group relative flex min-h-[132px] flex-col justify-between p-4 text-left"
     >
       <div className="flex items-start justify-between gap-3">
         <span className="grid size-10 place-items-center rounded-2xl bg-primary/18 text-amber-200">

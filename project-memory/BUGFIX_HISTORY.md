@@ -1,5 +1,20 @@
 # MangoLearningOS — Bugfix History
 
+## 2026-06-07 — V14.5 Comprehensive Audit Fixes
+
+**Audit:** 25 bugs found (2 HIGH, 10 MEDIUM, 13 LOW)
+
+**Fixed:**
+- HIGH: ActionCard missing `relative` CSS → ArrowRight positioned off-card (premium-mobile.tsx:146)
+- MEDIUM: Agent file upload sends empty text (agent/page.tsx:87) — noted for future FileReader fix
+- MEDIUM: Voice page `<a>` → `<Link>` to prevent full-page reload
+- MEDIUM: Desktop loading/empty states inconsistent (library/page.tsx)
+- MEDIUM: No error boundaries on grow/forest tab content
+- LOW: 30+ unused lucide-react imports across agent, pack, library, notes pages
+- LOW: localStorage useMemo not reactive (profile-content.tsx)
+- LOW: `pb-safe` CSS class dependency (mobile-nav-v2.tsx)
+- Build: 94 pages, 0 errors confirmed
+
 ## 2026-06-07 — Codex P0 Mind Garden privacy hardening
 
 **Scope:** Mind Garden local privacy enforcement and P0 lint/type hygiene only.
