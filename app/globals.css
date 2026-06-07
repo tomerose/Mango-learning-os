@@ -279,7 +279,7 @@ body {
   .text-title { font-size: 1.375rem !important; }
 
   /* ── Touch & Tap ── */
-  button, a[role="button"], [data-slot="tabs-trigger"], a { min-height: 44px; touch-action: manipulation; }
+  button, a[role="button"], [data-slot="tabs-trigger"], a { min-height: 48px; touch-action: manipulation; }
 
   /* ── Cards ── */
   .card-card, .card-floating, .card-hero, .card-paper { padding: 1rem; }

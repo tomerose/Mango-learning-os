@@ -95,6 +95,28 @@ export default function LibraryPage() {
     setTimeout(() => setPlanGenerated(false), 3000);
   }
 
+  function handleCopy() {
+    if (!selectedArtifact) return;
+    const text = selectedArtifact.content || selectedArtifact.sections?.map((s: any) => `## ${s.title}\n\n${s.content}`).join("\n\n") || "";
+    navigator.clipboard.writeText(text).then(() => {
+      setPlanGenerated(true);
+      setTimeout(() => setPlanGenerated(false), 1500);
+    }).catch(() => {});
+  }
+
+  function handleExport(format: string) {
+    if (!selectedArtifact) return;
+    const title = selectedArtifact.title || "artifact";
+    const content = selectedArtifact.content || selectedArtifact.sections?.map((s: any) => `## ${s.title}\n\n${s.content}`).join("\n\n") || "";
+    const blob = new Blob([content], { type: format === "html" ? "text/html" : "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title}.${format === "html" ? "html" : "md"}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const displayItems = showSamples
     ? SAMPLE_ARTIFACTS.map(a => ({
         id: a.id, type: a.type, title: a.title, summary: a.summary,
@@ -214,6 +236,20 @@ export default function LibraryPage() {
                   {/* Expanded detail */}
                   {isSelected && selectedArtifact && (
                     <div className="mt-4 pt-4 border-t border-white/8 space-y-3">
+                      {/* Sources */}
+                      {selectedArtifact.sources?.length > 0 && (
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-white/30">来源</p>
+                          {selectedArtifact.sources.map((src: any, i: number) => (
+                            <div key={i} className="flex items-center gap-2 rounded-xl bg-white/[0.04] px-3 py-1.5">
+                              <span className={src.reliability === "high" ? "text-emerald-300" : src.reliability === "medium" ? "text-amber-300" : "text-white/30"}>●</span>
+                              <span className="text-[11px] text-white/55 truncate">{src.title}</span>
+                              <span className="text-[9px] text-white/20 ml-auto">{src.platform}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
                       {/* Sections preview */}
                       {selectedArtifact.sections?.length > 0 && (
                         <div className="space-y-2">
@@ -242,16 +278,16 @@ export default function LibraryPage() {
                           <CalendarCheck className="size-3" />{planGenerated ? "已添加" : "拆成计划"}
                         </button>
                         <button
-                          onClick={() => {/* TODO: export */}}
-                          className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55"
+                          onClick={() => handleExport("md")}
+                          className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
                         >
-                          <Download className="size-3" />导出
+                          <Download className="size-3" />导出 MD
                         </button>
                         <button
-                          onClick={() => {/* TODO: copy */}}
-                          className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55"
+                          onClick={handleCopy}
+                          className="inline-flex items-center gap-1 rounded-full bg-white/8 px-3 py-1.5 text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors"
                         >
-                          <Copy className="size-3" />复制
+                          <Copy className="size-3" />{planGenerated && selectedArtifact ? "已复制" : "复制"}
                         </button>
                         <button
                           onClick={() => handleDelete(selectedArtifact.id)}
