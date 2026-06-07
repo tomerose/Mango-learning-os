@@ -1,6 +1,6 @@
 // Mango Learning OS — Service Worker
 // Enables PWA install + basic offline caching for core assets.
-const CACHE = "mango-v2";
+const CACHE = "mango-v3";
 
 self.addEventListener("install", (e) => {
   self.skipWaiting();
