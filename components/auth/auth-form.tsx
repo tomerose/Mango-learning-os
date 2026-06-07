@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { SimpleCaptcha } from "@/components/auth/captcha";
 
 const LOGIN_CODE = "tokentome222";
-const GUEST_CODE = "sillyfind2025";
+const SIGNUP_CODE = "sillyfind2025";
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -45,11 +45,10 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   function verifyCode(code: string) {
     setInviteCode(code);
-    const requiredCode = isLogin ? LOGIN_CODE : GUEST_CODE;
+    const requiredCode = isLogin ? LOGIN_CODE : SIGNUP_CODE;
     if (code.trim() === requiredCode) {
       setCodeVerified(true);
       setCodeError(null);
-      // Auto-advance after brief success animation
       setCodeSuccess(true);
       setTimeout(() => {
         setStep("auth");
@@ -65,7 +64,8 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   async function handleSocialLogin(provider: string) {
-    if (!configured || !codeVerified) return;
+    if (!configured) return;
+    if (provider === "qq") { setError("QQ 登录即将上线"); return; }
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
@@ -79,16 +79,16 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   function continueAsGuest() {
-    if (!codeVerified) {
-      setCodeError("请先输入正确的邀请码");
-      return;
-    }
+    // Guest does NOT need invite code — direct entry
+    try { document.cookie = "mango_guest=1;path=/;max-age=" + 60 * 60 * 24 * 30; } catch {}
     window.location.href = "/api/guest";
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!configured || loading || !codeVerified) return;
+    if (!configured || loading) return;
+    // Login needs code, signup also needs code
+    if (!codeVerified) { setError("请先输入正确的邀请码"); return; }
     setLoading(true);
     setError(null);
     setNotice(null);
@@ -99,9 +99,10 @@ export function AuthForm({ mode }: AuthFormProps) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         document.cookie = "mango_visited=1;path=/;max-age=" + 60 * 60 * 24 * 365;
-        // Seed demo codes on first login
+        // Clear guest cookie on login
+        document.cookie = "mango_guest=;path=/;max-age=0";
         import("@/lib/mango-code/mango-code").then(m => m.seedDemoCodes()).catch(() => {});
-        const redirectTo = searchParams.get("redirectedFrom") || "/dashboard";
+        const redirectTo = searchParams.get("redirectedFrom") || "/hub";
         router.push(redirectTo);
         router.refresh();
       } else {
@@ -111,17 +112,29 @@ export function AuthForm({ mode }: AuthFormProps) {
         });
         if (error) throw error;
         if (data.session) {
+          // Email confirmation disabled — auto sign in
           document.cookie = "mango_visited=1;path=/;max-age=" + 60 * 60 * 24 * 365;
+          document.cookie = "mango_guest=;path=/;max-age=0";
           import("@/lib/mango-code/mango-code").then(m => m.seedDemoCodes()).catch(() => {});
-          router.push("/dashboard");
+          router.push("/hub");
           router.refresh();
-        } else {
+        } else if (data.user) {
+          // Email confirmation required
           setStep("success");
-          setNotice("注册成功！请查看邮箱确认链接。");
+          setNotice("注册成功！请查看邮箱确认链接，确认后即可登录。");
+        } else {
+          setError("注册失败，请稍后重试");
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "操作失败，请重试");
+      const msg = err instanceof Error ? err.message : "操作失败";
+      if (msg.includes("already registered") || msg.includes("already exists")) {
+        setError("该邮箱已注册，请直接登录。");
+      } else if (msg.includes("Invalid login")) {
+        setError("邮箱或密码错误");
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
