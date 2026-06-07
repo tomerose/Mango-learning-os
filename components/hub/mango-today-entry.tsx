@@ -33,7 +33,7 @@ const INTENTIONS: { id: TodayIntent; label: string; icon: React.ElementType; rou
     id: "daily_plan",
     label: "安排今天",
     icon: Calendar,
-    route: "/planner",
+    route: "/agent",
     prompt: "帮我安排今天的学习计划：列出优先级任务、时间分配和预期成果。",
   },
   {

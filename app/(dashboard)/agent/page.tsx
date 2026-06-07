@@ -22,6 +22,7 @@ import type { AgentTask, AgentTaskInput, TimelineEvent, AgentToolName } from "@/
 import type { AgentArtifact } from "@/lib/agent/artifact-types";
 import { ArtifactRenderer } from "@/components/agent/artifact-renderer";
 import { OutcomeDocument } from "@/components/agent/outcome-document";
+import type { IntentType } from "@/lib/today/intent-router";
 import { OutcomeActionsBar } from "@/components/agent/outcome-actions-bar";
 import { readFileAsText, isSupportedFile, isLargeFile, formatFileSize } from "@/lib/file/file-reader";
 import { saveArtifact, getArtifact, listArtifacts } from "@/lib/artifact/artifact-store";
@@ -67,10 +68,42 @@ function AgentPageInner() {
   const [savedToLibrary, setSavedToLibrary] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
   const [intentType, setIntentType] = React.useState<string>("");
+  const [tabHint, setTabHint] = React.useState<string>(""); // V14.7.1: tab=knowledge hint
   const [plan] = React.useState(() => {
     try { return localStorage.getItem("mango-user-plan") || "standard"; } catch { return "standard"; }
   });
   const availableTools = getAvailableTools(plan);
+
+  // ── Parse markdown into sections for OutcomeDocument (V14.7.1) ──
+  function parseMarkdownSections(md: string): { title: string; content: string }[] {
+    if (!md) return [];
+    const sections: { title: string; content: string }[] = [];
+    const lines = md.split("\n");
+    let currentTitle = "";
+    let currentContent: string[] = [];
+    for (const line of lines) {
+      if (/^###?\s/.test(line)) {
+        if (currentTitle || currentContent.length > 0) {
+          sections.push({ title: currentTitle || "概述", content: currentContent.join("\n").trim() });
+        }
+        currentTitle = line.replace(/^###?\s*/, "").trim();
+        currentContent = [];
+      } else {
+        currentContent.push(line);
+      }
+    }
+    if (currentTitle || currentContent.length > 0) {
+      sections.push({ title: currentTitle || "概述", content: currentContent.join("\n").trim() });
+    }
+    return sections.length > 0 ? sections : [{ title: "内容", content: md.trim() }];
+  }
+
+  function qualityGrade(score: number): string {
+    if (score >= 80) return "excellent";
+    if (score >= 60) return "passed";
+    if (score >= 40) return "partial";
+    return "failed";
+  }
 
   React.useEffect(() => { setTasks(loadTasks().slice(0, 20)); setArtifactHistory(loadArtifactHistory().slice(0, 20)); }, []);
 
@@ -80,10 +113,14 @@ function AgentPageInner() {
     if (intentLoadedRef.current) return;
     const q = searchParams.get("q");
     const intent = searchParams.get("intent");
+    const tab = searchParams.get("tab");
     if (q) {
       intentLoadedRef.current = true;
       setComposeInput(q);
       setIntentType(intent ?? "");
+    }
+    if (tab === "knowledge") {
+      setTabHint("请粘贴笔记内容或点击「上传」按钮上传文件，Agent 将为你整理为结构化笔记。");
     }
   }, [searchParams]);
 
@@ -112,7 +149,7 @@ function AgentPageInner() {
     try {
       const res = await fetch("/api/agent/execute", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ intent: composeInput, files: composeFiles.map(f => ({ name: f.label ?? f.value, text: f.value ?? "" })) }),
+        body: JSON.stringify({ intent: composeInput, files: composeFiles.filter(f => !f.value.startsWith("⚠️") && !f.value.startsWith("文件")).map(f => ({ name: f.label ?? f.value, text: f.value ?? "" })) }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -179,6 +216,7 @@ function AgentPageInner() {
               <div id="agent-compose" className="card-card p-5 flex flex-col gap-3 mt-4 scroll-mt-20">
                 <div className="flex items-center gap-2"><MessageSquare className="size-4 text-primary" /><span className="text-sm font-medium font-serif">自由描述任务</span></div>
                 <Textarea value={composeInput} onChange={e => setComposeInput(e.target.value)} placeholder="用自然语言描述你想做的事…" className="text-sm min-h-24 rounded-xl" />
+                {tabHint && <p className="text-xs text-primary/70 bg-primary-subtle rounded-xl px-3 py-2">{tabHint}</p>}
                 <div className="flex items-center gap-2">
                   <VoiceInput onTranscript={(text) => setComposeInput(prev => prev + " " + text)} />
                   <label className="cursor-pointer flex items-center gap-1.5 text-xs text-fg-muted hover:text-fg"><FileUp className="size-3.5" />上传<input type="file" multiple onChange={handleFileInput} className="hidden" /></label>
@@ -225,15 +263,15 @@ function AgentPageInner() {
                   artifact={artifact}
                   onClose={() => setView("templates")}
                   onRegenerate={executeTask}
-                  onExport={(fmt) => {
-                    const content = artifact.artifactMarkdown || "";
-                    const mime = fmt === "html" ? "text/html" : "text/markdown;charset=utf-8";
-                    const ext = fmt === "html" ? "html" : "md";
-                    const blob = new Blob([content], { type: mime });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a"); a.href = url; a.download = `${artifact.artifactTitle || "artifact"}.${ext}`; a.click();
-                    URL.revokeObjectURL(url);
-                  }}
+                />
+                <OutcomeDocument
+                  title={artifact.artifactTitle || composeInput.slice(0, 60)}
+                  summary={artifact.artifactSummary || ""}
+                  sections={parseMarkdownSections(artifact.artifactMarkdown || "")}
+                  qualityScore={artifact.qualityScore || 0}
+                  qualityGrade={qualityGrade(artifact.qualityScore || 0)}
+                  intentType={(intentType || artifact.taskType || "general") as IntentType}
+                  generatedAt={artifact.createdAt || new Date().toISOString()}
                 />
                 <OutcomeActionsBar
                   onCopy={() => { navigator.clipboard.writeText(artifact.artifactMarkdown || "").then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {}); }}
@@ -245,7 +283,21 @@ function AgentPageInner() {
                     URL.revokeObjectURL(url);
                   }}
                   onExportHTML={() => {
-                    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${artifact.artifactTitle}</title><style>body{font-family:system-ui;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.8}</style></head><body>${artifact.artifactMarkdown?.replace(/\n/g,"<br>") || ""}</body></html>`;
+                    let md = artifact.artifactMarkdown || "";
+                    // Basic markdown → HTML
+                    let htmlBody = md
+                      .replace(/### (.+)/g, "<h3>$1</h3>")
+                      .replace(/## (.+)/g, "<h2>$1</h2>")
+                      .replace(/# (.+)/g, "<h1>$1</h1>")
+                      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+                      .replace(/\*(.+?)\*/g, "<em>$1</em>")
+                      .replace(/`([^`]+)`/g, "<code>$1</code>")
+                      .replace(/^- (.+)/gm, "<li>$1</li>")
+                      .replace(/(<li>.*<\/li>)/s, "<ul>$1</ul>")
+                      .replace(/\n\n/g, "</p><p>")
+                      .replace(/\n/g, "<br>");
+                    htmlBody = "<p>" + htmlBody + "</p>";
+                    const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>${artifact.artifactTitle || "生成结果"}</title><style>body{font-family:system-ui,-apple-system,sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.8;color:#1a1a1a}h1{font-size:1.5rem}h2{font-size:1.25rem;margin-top:1.5rem}h3{font-size:1.1rem;margin-top:1rem}code{background:#f0f0f0;padding:0.15em 0.4em;border-radius:4px;font-size:0.9em}li{margin:0.25em 0}</style></head><body>${htmlBody}</body></html>`;
                     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a"); a.href = url; a.download = `${artifact.artifactTitle || "artifact"}.html`; a.click();
@@ -253,13 +305,14 @@ function AgentPageInner() {
                   }}
                   onSave={async () => {
                     const now = new Date().toISOString();
+                    const parsedSections = parseMarkdownSections(artifact.artifactMarkdown || "");
                     const libArtifact: Artifact = {
                       id: createArtifactId(), type: "general", status: "complete",
                       title: artifact.artifactTitle || composeInput.slice(0, 80),
                       summary: artifact.artifactSummary || "",
                       content: artifact.artifactMarkdown || "",
-                      sections: [],
-                      tags: [intentType || "agent"], qualityScore: artifact.qualityScore || 0,
+                      sections: parsedSections.map((s, i) => ({ id: `sec_${Date.now()}_${Math.random().toString(36).slice(2,6)}`, title: s.title, content: s.content, order: i, importance: i === 0 ? "high" as const : "medium" as const })),
+                      tags: [intentType || artifact.taskType || "agent"], qualityScore: artifact.qualityScore || 0,
                       sources: (artifact.sources || []).map(s => ({ id: `s_${Date.now()}`, title: s.title || "", url: s.url, platform: s.source || "ai-generated", relevance: 0.8, reliability: "medium" as const })),
                       originTask: composeInput, exportFormats: ["markdown", "html"],
                       storageMode: "local", owner: "user", planTier: plan as any,

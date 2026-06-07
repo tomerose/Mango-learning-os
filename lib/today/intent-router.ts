@@ -59,7 +59,7 @@ export function createIntentPayload(input: string, source: IntentPayload["source
     type,
     userGoal: input.slice(0, 200),
     suggestedPrompt,
-    recommendedRoute: type === "daily_review" ? "/grow" : type === "daily_plan" ? "/planner" : "/agent",
+    recommendedRoute: type === "daily_review" ? "/grow" : "/agent",
     createdAt: new Date().toISOString(),
     source,
   };

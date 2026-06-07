@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 
 // ─────────────────────────────────────────────────────────────
 // Knowledge tree — file upload handler.
@@ -58,9 +58,9 @@ async function extractFromBuffer(
   ) {
     try {
       // officeparser is an optional dependency; silently degrade when unavailable
-      // @ts-expect-error — optional dependency may not be installed
+      // officeparser installed — optional dependency is now available
       const officeparser = await import("officeparser");
-      const text = String((await officeparser.parseOfficeAsync(buf)) ?? "");
+      const text = String((await officeparser.parseOffice(buf)) ?? "");
       if (text.length >= 20) return { text: text.slice(0, 80000) };
     } catch {
       // officeparser unavailable — fall through
