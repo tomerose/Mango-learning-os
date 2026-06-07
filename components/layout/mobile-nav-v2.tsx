@@ -17,63 +17,63 @@ export function MobileNavV2() {
   return (
     <>
       <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] px-2 pointer-events-none">
-        <div className="flex items-center gap-0.5 rounded-2xl border border-border/40 bg-bg/85 backdrop-blur-xl px-1.5 py-1.5 shadow-lg shadow-black/5 pointer-events-auto">
+        <div className="pointer-events-auto flex items-center gap-1 rounded-[26px] border border-white/12 bg-zinc-950/78 px-1.5 py-1.5 shadow-[0_22px_70px_rgba(0,0,0,0.42)] backdrop-blur-2xl">
           {mobileNavItemsV2.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             return (
               <Link key={item.id} href={item.href}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 rounded-xl px-2.5 py-1.5 text-[10px] font-medium transition-colors duration-150",
-                  isActive ? "text-primary" : "text-fg-muted",
+                  "relative flex min-h-12 min-w-[58px] flex-col items-center justify-center gap-0.5 rounded-[20px] px-2.5 py-1.5 text-[10px] font-semibold tracking-normal transition-colors duration-150",
+                  isActive ? "text-amber-100" : "text-white/42",
                 )}>
                 {isActive && (
-                  <motion.div layoutId="mobile-active" className="absolute -top-0.5 h-0.5 w-5 rounded-full bg-primary"
+                  <motion.div layoutId="mobile-active" className="absolute inset-0 rounded-[20px] bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
                     transition={{ type: "spring", stiffness: 500, damping: 30 }} />
                 )}
-                <motion.div whileTap={{ scale: 0.85 }}>
+                <motion.div whileTap={{ scale: 0.85 }} className="relative z-10">
                   <item.icon className={cn("size-5", isActive && "stroke-[2.5]")} />
                 </motion.div>
-                <span>{item.shortLabel}</span>
+                <span className="relative z-10">{item.shortLabel}</span>
               </Link>
             );
           })}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <motion.button whileTap={{ scale: 0.85 }}
-                className="flex flex-col items-center gap-0.5 rounded-xl px-2.5 py-1.5 text-[10px] font-medium text-fg-muted">
+                className="flex min-h-12 min-w-[54px] flex-col items-center justify-center gap-0.5 rounded-[20px] px-2.5 py-1.5 text-[10px] font-semibold text-white/42">
                 <MoreHorizontal className="size-5" />
-                <span>更多</span>
+                <span>More</span>
               </motion.button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="rounded-t-2xl pb-safe max-h-[60vh] overflow-y-auto">
-              <SheetHeader><SheetTitle>更多模块</SheetTitle></SheetHeader>
+            <SheetContent side="bottom" className="premium-sheet max-h-[70vh] overflow-y-auto rounded-t-[28px] pb-safe">
+              <SheetHeader><SheetTitle>More modules</SheetTitle></SheetHeader>
               <div className="flex flex-col gap-1 mt-4 mb-4">
                 {/* Secondary items */}
                 {moreNavItems.filter(n => n.tier === "secondary").map((item) => {
                   const isActive = pathname === item.href;
                   return (
                     <Link key={item.href} href={item.href} onClick={() => setOpen(false)}
-                      className={cn("flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors",
-                        isActive ? "bg-primary-subtle text-primary" : "hover:bg-bg-muted")}>
+                      className={cn("flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
+                        isActive ? "bg-primary/15 text-primary" : "hover:bg-muted")}>
                       <item.icon className="size-5" />
                       <div className="flex-1">{item.label}</div>
-                      <span className="text-xs text-fg-muted/50">{item.description}</span>
+                      <span className="text-xs text-muted-foreground/50">{item.description}</span>
                     </Link>
                   );
                 })}
                 {/* Divider */}
                 <div className="my-2 border-t border-border/30" />
-                <p className="text-[10px] text-fg-muted/50 px-4 uppercase tracking-wide font-medium">内测 / 即将上线</p>
+                <p className="px-4 text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground/50">Beta</p>
                 {/* Beta items */}
                 {moreNavItems.filter(n => n.tier === "beta").map((item) => {
                   const isActive = pathname === item.href;
                   return (
                     <Link key={item.href} href={item.href} onClick={() => setOpen(false)}
                       className={cn("flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors opacity-60",
-                        isActive ? "bg-bg-muted" : "hover:bg-bg-muted")}>
+                        isActive ? "bg-muted" : "hover:bg-muted")}>
                       <item.icon className="size-5" />
                       <div className="flex-1">{item.label}</div>
-                      <Badge variant="secondary" className="text-[9px]">内测</Badge>
+                      <Badge variant="secondary" className="text-[9px]">Beta</Badge>
                     </Link>
                   );
                 })}

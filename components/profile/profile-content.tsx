@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ReflectionsSection } from "@/components/profile/reflections-section";
 import { useStore } from "@/lib/store";
+import { LearningStatCard, MobileShell, ProfileIdentityCard } from "@/components/mobile/premium-mobile";
 
 const achievements = [
   { icon: Flame, name: "七日连击", desc: "连续学习 7 天", unlocked: true, color: "var(--chart-3)" },
@@ -31,7 +32,97 @@ function ProfileTab() {
   const totalTasksDone = tasks.filter((t) => t.done).length;
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
+    <div className="md:hidden">
+      <MobileShell>
+        <ProfileIdentityCard
+          avatar={
+            <Avatar className="size-20 shrink-0 border border-white/12 text-2xl">
+              <AvatarFallback className="bg-white/10 text-white">{mode === "cloud" ? "你" : "学"}</AvatarFallback>
+            </Avatar>
+          }
+          title="学习者"
+          subtitle={mode === "cloud" ? "云端同步已启用" : "游客模式 · 数据存于本地"}
+          level={`Lv.${level}`}
+          progress={levelProgress}
+        />
+
+        <section className="grid grid-cols-2 gap-3">
+          <LearningStatCard icon={Flame} label="Streak" value={`${streakDays} 天`} sub="当前连击" />
+          <LearningStatCard icon={Trophy} label="XP" value={`${totalXp}`} sub="累计经验" />
+          <LearningStatCard icon={Clock} label="Focus" value={`${minutesToday}`} sub="今日分钟" />
+          <LearningStatCard icon={Award} label="Done" value={`${totalTasksDone}`} sub="完成任务" />
+        </section>
+
+        <section className="mango-glass-card p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-white">Storage & privacy</p>
+              <p className="mt-1 text-xs leading-5 text-white/45">
+                {storagePreference === "local"
+                  ? "本地模式：敏感学习与 Mind Garden 数据优先保存在当前设备。"
+                  : "云端模式：登录后可跨设备同步。"}
+              </p>
+            </div>
+            <button
+              onClick={() => setStoragePreference(storagePreference === "local" ? "cloud" : "local")}
+              className="shrink-0 rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-on"
+            >
+              {storagePreference === "local" ? "切云端" : "切本地"}
+            </button>
+          </div>
+
+          {mode === "cloud" && (
+            <div className="mt-4 border-t border-white/10 pt-4">
+              <button
+                onClick={async () => {
+                  setSyncing(true); setSyncMsg("");
+                  try {
+                    await syncLocalToCloud();
+                    setSyncMsg("数据已同步到云端");
+                  } catch {
+                    setSyncMsg("同步失败，请稍后重试");
+                  } finally { setSyncing(false); }
+                }}
+                disabled={syncing}
+                className="w-full rounded-2xl border border-dashed border-primary/40 bg-primary/10 py-3 text-sm font-semibold text-amber-100 disabled:opacity-50"
+              >
+                {syncing ? "同步中..." : "上传本地数据到云端"}
+              </button>
+              {syncMsg && <p className="mt-2 text-center text-xs text-white/45">{syncMsg}</p>}
+            </div>
+          )}
+        </section>
+
+        <section className="mango-glass-card p-4">
+          <h2 className="text-base font-semibold text-white">Achievement wall</h2>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {achievements.map((a, i) => {
+              const Icon = a.unlocked ? a.icon : Lock;
+              return (
+                <div key={i} className={a.unlocked ? "rounded-2xl bg-white/[0.055] p-3" : "rounded-2xl border border-dashed border-white/10 p-3 opacity-55"}>
+                  <Icon className="size-5 text-amber-200" />
+                  <p className="mt-2 truncate text-sm font-semibold text-white">{a.name}</p>
+                  <p className="mt-1 truncate text-xs text-white/40">{a.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mango-paper-card p-3">
+          <ReflectionsSection />
+        </section>
+
+        <section className="mango-glass-card p-4">
+          <p className="text-sm font-semibold text-white">关于 MangoOS</p>
+          <p className="mt-2 text-xs leading-5 text-white/45">第三自习室出品 · 和你一起成长的学习伙伴。</p>
+          <p className="mt-3 border-t border-white/10 pt-3 text-xs text-white/42">WeChat · tokentome222 / sillyfind2025</p>
+        </section>
+      </MobileShell>
+    </div>
+
+    <div className="hidden flex-col gap-6 md:flex">
       {/* 身份卡片 */}
       <Card>
         <CardContent className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
@@ -179,6 +270,7 @@ function ProfileTab() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }
 

@@ -1,5 +1,18 @@
 # MangoLearningOS — Update Log
 
+## 2026-06-07 — Codex mobile premium cinematic UI pass
+- Branch: `ui/mobile-premium-cinematic-redesign`
+- Scope: UI-only mobile redesign; no backend/API/auth/Supabase/export/business logic files touched.
+- Added reusable mobile premium components in `components/mobile/premium-mobile.tsx`: MobileShell, cinematic hero, glass/paper cards, action cards, generation cards, agent task cards, profile identity card, command bar, progress/empty/error/sheet/toast shells.
+- Mobile navigation now uses four primary tabs: Today, Generate, Agent, Profile. Notes, Forest, Graph, Planner, Grow, Voice, and DNA remain accessible through More or secondary links.
+- `/hub` mobile now renders as Mission Cockpit with cinematic hero, stats, continue-learning, mission shortcuts, secondary module cards, and Mango command input.
+- `/exam` mobile now renders as Generate Studio with template cards and preserved ExamReviewTab generation/export/source/quality/history workflow.
+- `/agent` mobile now renders as Agent Workbench with task cards for Chat, Explain, Practice, Import, Identity, and DNA while preserving existing AgentChat, generators, importer, capture, and plan task creation.
+- `/profile` mobile now renders as Learning Identity OS with identity card, XP/stats, storage/privacy switch, cloud sync action, achievements, reflections, and about section.
+- `/planner` and `/grow` mobile routes received the shared cinematic shell while preserving original task, plan, flashcard, Mind Garden, journal, CBT, and companion logic.
+- Verification: `npm.cmd run type-check` passed; `npx.cmd next build --no-lint` passed and generated 77/77 static pages; HTTP smoke passed for `/hub`, `/exam`, `/agent`, `/profile`, `/planner`, `/grow`, `/voice`.
+- Known verification note: `npm.cmd run lint` remains blocked by existing unrelated `no-explicit-any` errors in Voice, Forest/Notes enrich, PWA, Deepgram, OCR, and Research paths. Browser screenshot automation was unavailable because the bundled `playwright` package could not resolve `playwright-core`.
+
 ## 2026-06-07 — Codex P0 Mind Garden privacy hardening
 - Mind Garden local mode now keeps reflection, mood/journal, self-check-style content, and companion/CBT/weekly-summary text off cloud paths unless cloud preference and explicit consent are present.
 - `/api/mind-garden/reflect`, `/api/mind-garden`, and `/api/ai/mind-journal` now enforce explicit cloud consent before cloud AI processing.

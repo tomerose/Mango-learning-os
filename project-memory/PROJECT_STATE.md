@@ -1,6 +1,6 @@
 # MangoLearningOS — Project State
 
-**Updated:** 2026-06-06 | **Version:** v7.3 内测版 | **Branch:** `claude/v10-study-pack`
+**Updated:** 2026-06-07 | **Version:** mobile premium cinematic UI pass | **Branch:** `ui/mobile-premium-cinematic-redesign`
 
 ## Stack (v7)
 Next.js 15.5 (App Router) · React 19 · TypeScript 5.8 · Tailwind CSS 4.1
@@ -11,6 +11,12 @@ shadcn/ui (New York) · Supabase (PostgreSQL + RLS) · DeepSeek AI · Vercel
 - Typography: Cormorant Garamond (serif display) + Inter (geometric sans)
 - Surface: 6-level (paper/card/floating/glass/focus/hero)
 - Shadow: 0 8px 30px rgb(0,0,0,0.04)
+
+## Mobile UI State (2026-06-07 Codex)
+- Mobile visual system now uses premium cinematic shell: charcoal background, mango-gold accent, translucent glass cards, warm paper content surfaces, safe-area bottom navigation, 44px touch targets, and reduced-motion CSS guard.
+- Four primary mobile tabs: Today (`/hub`), Generate (`/exam`), Agent (`/agent`), Profile (`/profile`).
+- Secondary mobile modules remain accessible: Notes/Forest/Graph through `/exam?tab=...`, Planner (`/planner`), Grow (`/grow`), Voice (`/voice`), DNA (`/dna`).
+- Protected backend/business paths untouched for this pass.
 
 ## Architecture
 - **Research Orchestrator (9 providers):** Web (DuckDuckGo), GitHub, Academic (arXiv), Bilibili, Douyin, Open Library, Free Dictionary, Gutendex, Local Files

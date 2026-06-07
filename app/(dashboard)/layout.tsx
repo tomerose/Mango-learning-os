@@ -17,10 +17,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <UpdateModal />
 
       {/* ── DESKTOP ── */}
-      <div className="hidden md:flex min-h-screen bg-bg">
+      <div className="hidden md:flex min-h-screen bg-background">
         <SidebarV2 />
         <div className="flex min-w-0 flex-1 flex-col ml-[68px] lg:ml-[240px] transition-all duration-300 ease-out">
-          <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-2 border-b border-border/30 bg-bg/70 backdrop-blur-xl px-6">
+          <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-2 border-b border-border/30 bg-background/70 backdrop-blur-xl px-6">
             <div className="flex-1" />
             <div className="flex items-center gap-1"><ThemeToggle /><UserMenu /></div>
           </header>
@@ -31,9 +31,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       {/* ── MOBILE ── */}
-      <div className="flex md:hidden min-h-screen flex-col bg-bg">
-        <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between px-4 mx-3 mt-3 rounded-full border border-border/30 bg-bg/70 backdrop-blur-xl">
-          <span className="text-small font-medium text-fg-muted">Mango</span>
+      <div className="flex md:hidden min-h-screen flex-col bg-[#070604] text-white">
+        <header className="sticky top-0 z-30 mx-3 mt-3 flex h-12 shrink-0 items-center justify-between rounded-full border border-white/10 bg-zinc-950/60 px-4 shadow-[0_18px_60px_rgba(0,0,0,0.24)] backdrop-blur-2xl">
+          <span className="text-small font-semibold tracking-normal text-white/70">MangoOS</span>
           <div className="flex items-center gap-0"><ThemeToggle /><UserMenu /></div>
         </header>
         <main className="flex-1 overflow-y-auto px-4 pt-4 pb-4">{children}</main>
