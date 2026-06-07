@@ -19,6 +19,8 @@ import { useSubjects } from "@/lib/subjects";
 import { buildLearningIdentity } from "@/lib/agent/learning-memory";
 import { getMistakesDue } from "@/lib/agent/mistake-bank";
 import { MobileShell, MissionHero, FloatingCommandBar, ActionCard, LearningStatCard, PrimaryMobileButton } from "@/components/mobile/premium-mobile";
+import { TierModeLabel } from "@/components/gates/plan-gate";
+import { usePlanTier } from "@/lib/plan/use-plan";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub V10.1 — Study Cockpit
@@ -125,6 +127,7 @@ export default function HubPage() {
   const [showOnboarding, setShowOnboarding] = React.useState(false);
   const [recentPacks, setRecentPacks] = React.useState<StudyPackSession[]>([]);
   const { stats, tasks, flashcards } = useStore();
+  const planTier = usePlanTier();
 
   React.useEffect(() => { setShowOnboarding(shouldShowOnboarding()); }, []);
   React.useEffect(() => { setRecentPacks(getRecentStudyPacks(3)); }, []);
@@ -155,8 +158,12 @@ export default function HubPage() {
 
           <FloatingCommandBar placeholder="告诉 Mango 你想学什么..." href="/agent" />
 
+          <div className="flex items-center justify-center">
+            <TierModeLabel tier={planTier} />
+          </div>
+
           {/* ═══ 4 OUTCOME CTAs ═══ */}
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100/40">快速产出</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100/40 mt-1">快速产出</p>
           <div className="grid grid-cols-2 gap-2">
             <ActionCard
               icon={BookOpen} title="生成复习讲义"

@@ -14,6 +14,7 @@ import { PrivacySection } from "./privacy-section";
 import { WeeklyUpdateSection } from "./weekly-update-section";
 import { BillingSection } from "./billing-section";
 import { MobileShell, ProfileIdentityCard, LearningStatCard } from "@/components/mobile/premium-mobile";
+import { PlanCompare } from "@/components/plan/plan-compare";
 import { Flame, Zap, Target, CheckCircle2, User } from "lucide-react";
 
 type Tab = "overview" | "billing" | "privacy";
@@ -180,12 +181,18 @@ export function ProfileContent() {
           )}
 
           {activeTab === "billing" && (
-            <div className="mango-paper-card p-4">
-              <BillingSection
-                currentPlan={plan}
-                planExpiresAt={planExpiresAt}
-                onUpgrade={handlePlanUpgrade}
-              />
+            <div className="space-y-4">
+              <div className="mango-paper-card p-4">
+                <BillingSection
+                  currentPlan={plan}
+                  planExpiresAt={planExpiresAt}
+                  onUpgrade={handlePlanUpgrade}
+                />
+              </div>
+              <div className="mango-glass-card p-4">
+                <p className="text-sm font-semibold text-white mb-4">Standard vs Pro 完整对比</p>
+                <PlanCompare />
+              </div>
             </div>
           )}
 

@@ -2,8 +2,10 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ArrowRight, Mic, Brain, Network, BookOpen, Heart, Layers, X } from "lucide-react";
+import { Sparkles, ArrowRight, Mic, Brain, Network, BookOpen, Heart, Layers, X, Zap } from "lucide-react";
 import { ONBOARDING_KEY } from "@/lib/version";
+import { PlanCompare } from "@/components/plan/plan-compare";
+import { usePlanTier } from "@/lib/plan/use-plan";
 
 const FEATURES = [
   { icon: Brain, label: "AI 学习伴侣", desc: "智能导师 + 5 种学习身份", color: "#C58B74" },
@@ -131,6 +133,24 @@ export function MangoOnboarding({ onComplete }: Props) {
                 </motion.div>
               ))}
             </div>
+
+            {/* Plan selection — choose your learning mode */}
+            {showEnter && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="w-full space-y-3"
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/30 text-center">
+                  选择你的学习模式
+                </p>
+                <PlanCompare compact />
+                <p className="text-[10px] text-white/25 text-center">
+                  后续可在个人中心升级或切换
+                </p>
+              </motion.div>
+            )}
 
             {/* Enter button */}
             <motion.button
