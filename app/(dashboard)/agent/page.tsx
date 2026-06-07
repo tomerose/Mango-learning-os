@@ -73,6 +73,8 @@ function AgentPageInner() {
   const [researchStages, setResearchStages] = React.useState<any[]>([]); // V14.7.2: pipeline stages
   const [researchSources, setResearchSources] = React.useState<any[]>([]); // V14.7.2: research result sources
   const [networkAvailable, setNetworkAvailable] = React.useState(true); // V14.7.2: network status
+  const [qualityV3, setQualityV3] = React.useState<any>(null); // V14.7.5: quality gate v3
+  const [deepenRounds, setDeepenRounds] = React.useState(0); // V14.7.5: auto-deepen rounds
   const [plan] = React.useState(() => {
     try { return localStorage.getItem("mango-user-plan") || "standard"; } catch { return "standard"; }
   });
@@ -171,6 +173,8 @@ function AgentPageInner() {
         setResearchStages(rp.stages ?? []);
         setResearchSources(rp.sources ?? []);
         setNetworkAvailable(rp.networkAvailable !== false);
+        if (data.qualityV3) setQualityV3(data.qualityV3);
+        if (data.qualityV3?.deepenRound !== undefined) setDeepenRounds(data.qualityV3.deepenRound);
       } else {
         setResearchStages([]);
         setResearchSources([]);
@@ -332,6 +336,34 @@ function AgentPageInner() {
                 {!networkAvailable && (
                   <p className="text-[11px] text-amber-600/80 bg-amber-50/60 rounded-lg px-3 py-1.5 text-center">⚠️ 网络不可用，本次生成未使用实时搜索。内容基于 AI 知识生成。</p>
                 )}
+                {/* V14.7.5: Quality Gate V3 breakdown */}
+                {qualityV3 && (
+                  <div className="card-card p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold">质量评估</span>
+                      <span className={`text-xs font-bold ${qualityV3.passed ? "text-emerald-600" : "text-amber-600"}`}>
+                        {qualityV3.percentage}/100 · {qualityV3.tier === "pro" || qualityV3.tier === "admin" ? `要求 ≥${qualityV3.thresholdRequired}` : ""}
+                        {deepenRounds > 0 && ` · 深化 ${deepenRounds} 次`}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1">
+                      {(qualityV3.dimensions || []).slice(0, 8).map((d: any) => (
+                        <div key={d.key} className="flex items-center justify-between text-[10px] bg-bg-subtle rounded-lg px-2 py-1">
+                          <span className={d.passed ? "text-fg-muted/90" : "text-amber-600"}>{d.label}</span>
+                          <span className={`font-semibold ${d.passed ? "text-fg" : "text-amber-600"}`}>{d.score}/{d.maxScore}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {qualityV3.improvementHints?.length > 0 && (
+                      <details className="text-[10px] text-amber-600/80">
+                        <summary className="cursor-pointer font-medium">改进建议 ({qualityV3.improvementHints.length})</summary>
+                        <ul className="mt-1 space-y-0.5 list-disc list-inside">
+                          {qualityV3.improvementHints.map((h: string, i: number) => <li key={i}>{h}</li>)}
+                        </ul>
+                      </details>
+                    )}
+                  </div>
+                )}
                 <OutcomeActionsBar
                   onCopy={() => { navigator.clipboard.writeText(artifact.artifactMarkdown || "").then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {}); }}
                   copied={copied}
@@ -361,6 +393,20 @@ function AgentPageInner() {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a"); a.href = url; a.download = `${artifact.artifactTitle || "artifact"}.html`; a.click();
                     URL.revokeObjectURL(url);
+                  }}
+                  onExportPDF={() => {
+                    const title = artifact.artifactTitle || "生成结果";
+                    const content = artifact.artifactMarkdown || "";
+                    const sourcesText = researchSources.length > 0
+                      ? researchSources.map((s: any, i: number) => `[${i + 1}] ${s.title} — ${s.url}`).join("\n")
+                      : "";
+                    const dateStr = new Date().toISOString().slice(0, 10);
+                    const printWindow = window.open("", "_blank");
+                    if (printWindow) {
+                      printWindow.document.write(`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><title>${title}</title><style>body{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;padding:0 1.5rem;line-height:1.8;color:#1a1a1a}h1{font-size:1.4rem;border-bottom:2px solid #e0e0e0;padding-bottom:0.5rem}h2{font-size:1.15rem;margin-top:1.5rem}h3{font-size:1rem}code{background:#f0f0f0;padding:0.15em 0.4em;border-radius:3px}pre{background:#f5f5f5;padding:1rem;border-radius:8px;overflow-x:auto}.sources{font-size:0.8rem;color:#666;border-top:1px solid #e0e0e0;margin-top:2rem;padding-top:1rem}.meta{font-size:0.75rem;color:#999;margin-bottom:1.5rem}@media print{body{margin:0;padding:0 1cm}}</style></head><body><h1>${title}</h1><div class="meta">MangoOS · ${dateStr} · 质量 ${qualityV3?.percentage || artifact.qualityScore || 0}分</div><div>${content.replace(/\n/g, "<br>")}</div>${sourcesText ? `<div class="sources"><h3>参考来源</h3><pre>${sourcesText}</pre></div>` : ""}</body></html>`);
+                      printWindow.document.close();
+                      printWindow.print();
+                    }
                   }}
                   onSave={async () => {
                     const now = new Date().toISOString();

@@ -7,6 +7,7 @@ interface Props {
   onCopy?: () => void;
   onExportMD?: () => void;
   onExportHTML?: () => void;
+  onExportPDF?: () => void;
   onSave?: () => void;
   onContinue?: () => void;
   saved?: boolean;
@@ -14,7 +15,7 @@ interface Props {
   className?: string;
 }
 
-export function OutcomeActionsBar({ onCopy, onExportMD, onExportHTML, onSave, onContinue, saved, copied, className }: Props) {
+export function OutcomeActionsBar({ onCopy, onExportMD, onExportHTML, onExportPDF, onSave, onContinue, saved, copied, className }: Props) {
   return (
     <div className={className}>
       <div className="flex flex-wrap gap-2">
@@ -47,6 +48,13 @@ export function OutcomeActionsBar({ onCopy, onExportMD, onExportHTML, onSave, on
           <button onClick={onExportHTML}
             className="inline-flex items-center gap-1.5 rounded-full bg-white/8 px-3.5 py-2 text-[11px] font-medium text-white/55 hover:text-white/80 transition-colors">
             <FileText className="size-3" />导出 HTML
+          </button>
+        )}
+
+        {onExportPDF && (
+          <button onClick={onExportPDF}
+            className="inline-flex items-center gap-1.5 rounded-full bg-red-400/10 px-3.5 py-2 text-[11px] font-medium text-red-300/80 hover:text-red-300 transition-colors">
+            <FileText className="size-3" />导出 PDF
           </button>
         )}
 

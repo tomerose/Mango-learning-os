@@ -1,8 +1,8 @@
 // POST /api/agent/execute — Agent execution with Pro Research Pipeline
-// V14.5: Pro users go through mandatory research pipeline.
-// Standard users keep lightweight generation.
+// V14.7.5: Pro/Admin 90-point Quality Gate with auto-deepen (max 2 rounds)
 import { NextRequest, NextResponse } from "next/server";
 import { resolveSession } from "@/lib/auth/session";
+import { evaluateQualityV3, buildDeependPrompt, TIER_THRESHOLDS, MAX_DEEPEN_ROUNDS } from "@/lib/agent/quality-gate-v3";
 import { guard, guardQuota } from "@/lib/plan/guard";
 import { recordQuotaUse } from "@/lib/quota/quota";
 import { detectTaskType, generateArtifact } from "@/lib/agent/generators";
@@ -30,20 +30,28 @@ export async function POST(req: NextRequest) {
   try {
     // ── Auth + Plan + Quota ──
     const session = await resolveSession(req);
-    const blocked = guard({ plan: session.plan }, "canUseMangoAgent");
-    if (blocked) return blocked;
-
-    const quotaResult = recordQuotaUse(session.userId ?? "guest", "agentTasks", session.plan);
-    if (!quotaResult.allowed) {
-      return guardQuota({ plan: session.plan }, "maxDailyAgentTasks", quotaResult.current)!;
-    }
-
     const { intent, files, forceResearch, noResearch } = (await req.json()) as ExecuteRequest;
     if (!intent?.trim()) {
       return NextResponse.json({ error: "Intent is required" }, { status: 400 });
     }
 
-    const isPro = session.plan === "pro" || session.plan === "admin";
+    // V14.7.5: DEV_FORCE_PLAN override (development only)
+    let effectivePlan = session.plan;
+    const devForcePlan = process.env.DEV_FORCE_PLAN;
+    const isDev = process.env.NODE_ENV === "development";
+    if (isDev && devForcePlan && ["pro", "admin", "standard", "guest"].includes(devForcePlan)) {
+      effectivePlan = devForcePlan as typeof session.plan;
+    }
+
+    const blocked = guard({ plan: effectivePlan }, "canUseMangoAgent");
+    if (blocked) return blocked;
+
+    const quotaResult = recordQuotaUse(session.userId ?? "guest", "agentTasks", effectivePlan);
+    if (!quotaResult.allowed) {
+      return guardQuota({ plan: effectivePlan }, "maxDailyAgentTasks", quotaResult.current)!;
+    }
+
+    const isPro = effectivePlan === "pro" || effectivePlan === "admin";
     const shouldResearch = (isPro && !noResearch) || forceResearch;
     const taskType = detectTaskType(intent);
     const taskId = `artifact-${Date.now()}`;
@@ -135,32 +143,79 @@ export async function POST(req: NextRequest) {
       const proArtifact: AgentArtifact = await generateArtifact({
         id: taskId,
         intent: researchAugmentedIntent.slice(0, 4000),
-        plan: session.plan,
+        plan: effectivePlan,
         taskType,
         files: files ?? [],
         toolsUsed: ["web_research" as AgentToolName, "notes_writer" as AgentToolName],
       });
 
-      // Stage 7: Quality gate
-      allStages.push({
-        name: "quality", label: "质量检查", status: "running",
-        detail: "验证内容完整性...",
-        startedAt: new Date().toISOString(),
-      });
-
-      const finalContent = proArtifact.artifactMarkdown ?? "";
-      const qualityResult = proContentQualityGate({
-        intent: intent.trim(), taskType,
-        queries, sources: rankedSources, evidenceMap, structure,
-        finalContent, qualityPassed: false, qualityScore: 0,
+      // V14.7.5: Auto-deepen loop (max 2 rounds)
+      let finalContent = proArtifact.artifactMarkdown ?? "";
+      let deepenRound = 0;
+      let qualityV3 = evaluateQualityV3(finalContent, intent.trim(), {
+        sourcesCount: rankedSources.length,
+        evidenceCount: evidenceMap.length,
         networkAvailable: collectorResult.networkAvailable,
-        stages: allStages,
+        structureSectionCount: structure.sections.length,
+        tier: effectivePlan,
+        deepenRound: 0,
       });
 
-      proArtifact.qualityScore = qualityResult.score;
+      // Auto-deepen: regenerate if below Pro/Admin threshold
+      while (qualityV3.willAutoDeepen && deepenRound < MAX_DEEPEN_ROUNDS) {
+        deepenRound++;
+        allStages.push({
+          name: `deepen_${deepenRound}`, label: `第 ${deepenRound} 次继续深化`,
+          status: "running",
+          detail: `当前质量 ${qualityV3.percentage}/100 · 要求 ≥${qualityV3.thresholdRequired} · 正在定向改进...`,
+          startedAt: new Date().toISOString(),
+        });
+
+        const deepenPrompt = buildDeependPrompt(intent.trim(), qualityV3, finalContent);
+        const deepenedArtifact = await generateArtifact({
+          id: `${taskId}_deepen_${deepenRound}`,
+          intent: deepenPrompt.slice(0, 4000),
+          plan: effectivePlan,
+          taskType,
+          files: files ?? [],
+          toolsUsed: ["web_research" as AgentToolName, "notes_writer" as AgentToolName],
+        });
+
+        finalContent = deepenedArtifact.artifactMarkdown ?? finalContent;
+        allStages[allStages.length - 1].status = "done";
+        allStages[allStages.length - 1].completedAt = new Date().toISOString();
+
+        // Re-evaluate
+        qualityV3 = evaluateQualityV3(finalContent, intent.trim(), {
+          sourcesCount: rankedSources.length,
+          evidenceCount: evidenceMap.length,
+          networkAvailable: collectorResult.networkAvailable,
+          structureSectionCount: structure.sections.length,
+          tier: effectivePlan,
+          deepenRound,
+        });
+
+        allStages[allStages.length - 1].detail = deepenRound >= MAX_DEEPEN_ROUNDS
+          ? `深化完成 · ${qualityV3.percentage}/100 · 已达最大深化次数`
+          : qualityV3.passed
+            ? `深化完成 · ${qualityV3.percentage}/100 ✅`
+            : `深化完成 · ${qualityV3.percentage}/100 · 仍未达标，建议补充资料`;
+      }
+
+      // Stage: Quality gate final
+      allStages.push({
+        name: "quality", label: "质量检查", status: "done",
+        detail: qualityV3.passed
+          ? `质量评分 ${qualityV3.percentage}/100 ✅ · 通过 ${TIER_THRESHOLDS[effectivePlan]} 分门槛`
+          : `质量评分 ${qualityV3.percentage}/100 · 未达 ${TIER_THRESHOLDS[effectivePlan]} 分 · ${qualityV3.improvementHints.length} 项待改善`,
+        completedAt: new Date().toISOString(),
+      });
+
+      proArtifact.artifactMarkdown = finalContent;
+      proArtifact.qualityScore = qualityV3.percentage;
       proArtifact.qualityCheck = {
-        passed: qualityResult.passed,
-        score: qualityResult.score,
+        passed: qualityV3.passed,
+        score: qualityV3.percentage,
         checks: {
           hasContent: finalContent.length > 500,
           hasStructure: structure.sections.length >= 3,
@@ -170,19 +225,15 @@ export async function POST(req: NextRequest) {
           sectionsMissing: [],
         },
       };
-      proArtifact.status = qualityResult.passed ? "completed" : "partial";
+      proArtifact.status = qualityV3.passed ? "completed" : "partial";
 
-      // Inject research data
+      // Inject research + quality data
       (proArtifact as any).researchSources = rankedSources;
       (proArtifact as any).evidenceMap = evidenceMap;
       (proArtifact as any).networkAvailable = collectorResult.networkAvailable;
       (proArtifact as any).pipelineStages = allStages;
-
-      allStages[allStages.length - 1].status = "done";
-      allStages[allStages.length - 1].completedAt = new Date().toISOString();
-      allStages[allStages.length - 1].detail = qualityResult.passed
-        ? `质量评分 ${qualityResult.score}/100 ✅`
-        : `质量评分 ${qualityResult.score}/100 · ${qualityResult.checks.filter(c => !c.passed).length} 项待改善`;
+      (proArtifact as any).qualityV3 = qualityV3;
+      (proArtifact as any).deepenRounds = deepenRound;
 
       proArtifact.updatedAt = new Date().toISOString();
 
@@ -194,12 +245,13 @@ export async function POST(req: NextRequest) {
           sources: rankedSources,
           evidenceMap,
           networkAvailable: collectorResult.networkAvailable,
-          qualityResult,
+          qualityResult: qualityV3,
         },
-        message: qualityResult.passed
-          ? `「${proArtifact.artifactTitle || intent.slice(0, 30)}」已生成 · 基于 ${rankedSources.length} 条来源`
-          : "生成完成，部分质量指标未达标，建议查看详情",
+        message: qualityV3.passed
+          ? `「${proArtifact.artifactTitle || intent.slice(0, 30)}」已生成 · ${qualityV3.percentage}分 · 基于 ${rankedSources.length} 条来源${deepenRound > 0 ? ` · 深化 ${deepenRound} 次` : ""}`
+          : `${qualityV3.percentage}分未达标（要求 ≥${TIER_THRESHOLDS[effectivePlan]}）· 已深化 ${deepenRound} 次 · 建议补充资料后重新生成`,
         proMode: true,
+        qualityV3,
       });
     }
 
@@ -266,7 +318,7 @@ export async function POST(req: NextRequest) {
     const stdArtifact: AgentArtifact = await generateArtifact({
       id: taskId,
       intent: stdAugmentedIntent.slice(0, 4000),
-      plan: session.plan,
+      plan: effectivePlan,
       taskType,
       files: files ?? [],
       toolsUsed: stdTools,
