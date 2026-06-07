@@ -1,6 +1,25 @@
 # MangoLearningOS — Update Log
 
-## 2026-06-07 — V14: AgentArtifact重构 (Current)
+## 2026-06-07 — V14.3: Production Outcome Engine (Current)
+- **Build:** 94 pages, 0 TS errors
+- **Source Pipeline:** Wikipedia + DuckDuckGo + Dictionary API 真实检索 · Pro 8来源/Standard 4来源
+- **Material Parser:** TXT/MD/PDF/DOCX 上传解析 + 主题提取 + 上下文注入
+- **Quality Repair:** 失败时定向反馈维度不足给 AI 重生成
+- **Flashcard Bridge:** artifact → 术语闪卡(SM-2) + 练习题(选择/填空/简答)
+- **Library 8 Actions:** 继续生成/拆计划/MD/DOCX导出/闪卡/练习/复制/删除
+- **Cloud Sync:** Supabase artifacts 表 + RLS · Guest 本地隔离
+- **Pro Value:** 2x token + deep sources + rich examples + DOCX/PDF
+- **New files:** source-adapter.ts, material-parser.ts, flashcard-bridge.ts, v14_3_artifact_cloud_sync.sql
+
+## 2026-06-07 — V14.2: Outcome Engine
+- Unified Artifact type system + 8-dimension quality gate (75pt threshold)
+- Outcome Engine: 6-stage pipeline + deterministic fallback
+- 10 task templates with section schemas
+- Library page /library + Sample Gallery
+- Today page as outcome command center
+- Planner bridge: artifact→plan(3/5/7 days)
+
+## 2026-06-07 — V14: AgentArtifact重构
 - **Build:** 94 pages, 0 TS errors
 - **AgentArtifact:** 每次执行返回完整结构化产出(id/taskType/artifactMarkdown/qualityCheck/sources/toolTraces)
 - **10专用生成器:** examReview/studyPack/documentReading/notesOrganize/mistakeTraining/englishSpeaking/presentation/conceptExplanation/knowledgeForest/general
