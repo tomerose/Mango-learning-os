@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,6 +21,15 @@ import { TASK_TEMPLATES, getAvailableTools, getToolInfo } from "@/lib/agent/tool
 import type { AgentTask, AgentTaskInput, TimelineEvent, AgentToolName } from "@/lib/agent/types";
 import type { AgentArtifact } from "@/lib/agent/artifact-types";
 import { ArtifactRenderer } from "@/components/agent/artifact-renderer";
+import { OutcomeDocument } from "@/components/agent/outcome-document";
+import { OutcomeActionsBar } from "@/components/agent/outcome-actions-bar";
+import { readFileAsText, isSupportedFile, isLargeFile, formatFileSize } from "@/lib/file/file-reader";
+import { saveArtifact, getArtifact, listArtifacts } from "@/lib/artifact/artifact-store";
+import { evaluateQualityV2 } from "@/lib/agent/quality-gate-v2";
+import type { Artifact } from "@/lib/artifact/types";
+import { createArtifactId } from "@/lib/artifact/types";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
 const VoiceInput = dynamic(() => import("@/components/agent/voice-input"), { ssr: false });
 
@@ -42,22 +51,41 @@ function loadTasks(): AgentTask[] {
 }
 function saveTasks(tasks: AgentTask[]) { try { localStorage.setItem("mango-agent-tasks-v1", JSON.stringify(tasks.slice(0, 50))); } catch {} }
 
-export default function AgentPage() {
+function AgentPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [view, setView] = React.useState<View>("templates");
   const [tasks, setTasks] = React.useState<AgentTask[]>([]);
   const [activeTask, setActiveTask] = React.useState<AgentTask | null>(null);
   const [composeInput, setComposeInput] = React.useState("");
   const [composeFiles, setComposeFiles] = React.useState<AgentTaskInput[]>([]);
+  const [fileUploading, setFileUploading] = React.useState(false);
   const [timeline, setTimeline] = React.useState<TimelineEvent[]>([]);
   const [artifact, setArtifact] = React.useState<AgentArtifact | null>(null);
   const [artifactHistory, setArtifactHistory] = React.useState<AgentArtifact[]>([]);
   const [expandedOutputId, setExpandedOutputId] = React.useState<string | null>(null);
+  const [savedToLibrary, setSavedToLibrary] = React.useState(false);
+  const [copied, setCopied] = React.useState(false);
+  const [intentType, setIntentType] = React.useState<string>("");
   const [plan] = React.useState(() => {
     try { return localStorage.getItem("mango-user-plan") || "standard"; } catch { return "standard"; }
   });
   const availableTools = getAvailableTools(plan);
 
   React.useEffect(() => { setTasks(loadTasks().slice(0, 20)); setArtifactHistory(loadArtifactHistory().slice(0, 20)); }, []);
+
+  // ── Read Mango Today intent from URL params (V14.7.1 fix) ────
+  const intentLoadedRef = React.useRef(false);
+  React.useEffect(() => {
+    if (intentLoadedRef.current) return;
+    const q = searchParams.get("q");
+    const intent = searchParams.get("intent");
+    if (q) {
+      intentLoadedRef.current = true;
+      setComposeInput(q);
+      setIntentType(intent ?? "");
+    }
+  }, [searchParams]);
 
   function startFromTemplate(templateId: string) {
     const tpl = TASK_TEMPLATES.find(t => t.id === templateId);
@@ -84,7 +112,7 @@ export default function AgentPage() {
     try {
       const res = await fetch("/api/agent/execute", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ intent: composeInput, files: composeFiles.map(f => ({ name: f.label ?? f.value, text: "" })) }),
+        body: JSON.stringify({ intent: composeInput, files: composeFiles.map(f => ({ name: f.label ?? f.value, text: f.value ?? "" })) }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -104,9 +132,21 @@ export default function AgentPage() {
   }
 
   function deleteTask(id: string) { const f = tasks.filter(t => t.id !== id); setTasks(f); saveTasks(f); }
-  function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files; if (!files) return;
-    for (const f of Array.from(files)) setComposeFiles(prev => [...prev, { type: "file" as const, value: f.name, label: f.name, mimeType: f.type }]);
+    for (const f of Array.from(files)) {
+      setFileUploading(true);
+      const result = await readFileAsText(f);
+      setFileUploading(false);
+      if (result.error) {
+        setComposeFiles(prev => [...prev, { type: "file" as const, value: result.error ?? "文件读取失败", label: `⚠️ ${f.name}`, mimeType: f.type }]);
+      } else if (!isSupportedFile(f)) {
+        setComposeFiles(prev => [...prev, { type: "file" as const, value: `⚠️ 暂不支持此格式 (${f.type || f.name.split('.').pop()})，请使用 txt/md/csv/json`, label: `⚠️ ${f.name}`, mimeType: f.type }]);
+      } else {
+        const text = (result.text ?? "").slice(0, 8000);
+        setComposeFiles(prev => [...prev, { type: "file" as const, value: text, label: `${f.name} (${formatFileSize(f.size)})`, mimeType: f.type }]);
+      }
+    }
   }
 
   return (
@@ -177,20 +217,61 @@ export default function AgentPage() {
           {view === "result" && (
             <motion.div key="result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <Button variant="outline" size="sm" onClick={() => { setView("templates"); setArtifact(null); }} className="gap-1.5 rounded-xl text-xs"><Plus className="size-3.5" />新任务</Button>
+                <Button variant="outline" size="sm" onClick={() => { setView("templates"); setArtifact(null); setSavedToLibrary(false); }} className="gap-1.5 rounded-xl text-xs"><Plus className="size-3.5" />新任务</Button>
               </div>
               {artifact ? (
+                <>
                 <ArtifactRenderer
                   artifact={artifact}
                   onClose={() => setView("templates")}
                   onRegenerate={executeTask}
                   onExport={(fmt) => {
-                    const blob = new Blob([artifact.artifactMarkdown], { type: "text/markdown" });
+                    const content = artifact.artifactMarkdown || "";
+                    const mime = fmt === "html" ? "text/html" : "text/markdown;charset=utf-8";
+                    const ext = fmt === "html" ? "html" : "md";
+                    const blob = new Blob([content], { type: mime });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url; a.download = `${artifact.artifactTitle || "artifact"}.${ext}`; a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                />
+                <OutcomeActionsBar
+                  onCopy={() => { navigator.clipboard.writeText(artifact.artifactMarkdown || "").then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {}); }}
+                  copied={copied}
+                  onExportMD={() => {
+                    const blob = new Blob([artifact.artifactMarkdown || ""], { type: "text/markdown;charset=utf-8" });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a"); a.href = url; a.download = `${artifact.artifactTitle || "artifact"}.md`; a.click();
                     URL.revokeObjectURL(url);
                   }}
+                  onExportHTML={() => {
+                    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${artifact.artifactTitle}</title><style>body{font-family:system-ui;max-width:720px;margin:2rem auto;padding:0 1rem;line-height:1.8}</style></head><body>${artifact.artifactMarkdown?.replace(/\n/g,"<br>") || ""}</body></html>`;
+                    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url; a.download = `${artifact.artifactTitle || "artifact"}.html`; a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  onSave={async () => {
+                    const now = new Date().toISOString();
+                    const libArtifact: Artifact = {
+                      id: createArtifactId(), type: "general", status: "complete",
+                      title: artifact.artifactTitle || composeInput.slice(0, 80),
+                      summary: artifact.artifactSummary || "",
+                      content: artifact.artifactMarkdown || "",
+                      sections: [],
+                      tags: [intentType || "agent"], qualityScore: artifact.qualityScore || 0,
+                      sources: (artifact.sources || []).map(s => ({ id: `s_${Date.now()}`, title: s.title || "", url: s.url, platform: s.source || "ai-generated", relevance: 0.8, reliability: "medium" as const })),
+                      originTask: composeInput, exportFormats: ["markdown", "html"],
+                      storageMode: "local", owner: "user", planTier: plan as any,
+                      createdAt: now, updatedAt: now,
+                    };
+                    await saveArtifact(libArtifact);
+                    setSavedToLibrary(true);
+                  }}
+                  saved={savedToLibrary}
+                  onContinue={() => { setComposeInput(artifact.artifactTitle || composeInput); setView("templates"); }}
                 />
+                </>
               ) : (
                 <div className="card-card p-8 text-center">
                   <AlertTriangle className="size-10 text-amber-400 mx-auto mb-3" />
@@ -229,5 +310,13 @@ export default function AgentPage() {
       </div>
     </div>
     </PageTransition>
+  );
+}
+
+export default function AgentPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-fg-muted">加载中…</div>}>
+      <AgentPageInner />
+    </Suspense>
   );
 }
