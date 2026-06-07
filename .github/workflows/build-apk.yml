@@ -1,60 +1,42 @@
 name: Build Android APK
 
-on:
-  workflow_dispatch:
+on: [workflow_dispatch]
 
 jobs:
-  build-apk:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with: { node-version: '20' }
-
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with: { target: '34' }
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-35 build-tools;35.0.0 platform-tools'
 
-      - name: Install Capacitor
-        run: npm install @capacitor/core @capacitor/cli @capacitor/android
-
-      - name: Init Capacitor project
+      - name: Create Capacitor project
         run: |
-          mkdir -p www && echo '<html></html>' > www/index.html
-          npx cap init "Mango Learning OS" "com.mango.learningos" --web-dir=www
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          mkdir -p www
+          echo '<!DOCTYPE html><html><meta charset="utf-8"><title>Mango</title><meta http-equiv="refresh" content="0;url=https://mangoleaningos.top"></html>' > www/index.html
 
-      - name: Configure PWA mode
+      - name: Configure and Init
         run: |
-          cat > capacitor.config.json << 'EOF'
-          {
-            "appId": "com.mango.learningos",
-            "appName": "Mango Learning OS",
-            "webDir": "www",
-            "server": {
-              "url": "https://mangoleaningos.top",
-              "cleartext": false
-            },
-            "android": {
-              "allowMixedContent": false
-            }
-          }
-          EOF
+          cat > capacitor.config.json << 'ENDCONFIG'
+          {"appId":"com.mango.learningos","appName":"Mango","webDir":"www","server":{"url":"https://mangoleaningos.top","cleartext":false}}
+          ENDCONFIG
+          npx cap init "Mango" "com.mango.learningos" --web-dir=www
+          npx cap add android
+          npx cap sync
 
-      - name: Add Android platform
-        run: npx cap add android
-
-      - name: Sync
-        run: npx cap sync
+      - name: Set Gradle memory
+        run: echo "org.gradle.jvmargs=-Xmx2048m" >> android/gradle.properties
 
       - name: Build APK
-        run: cd android && ./gradlew assembleRelease
+        run: cd android && ./gradlew assembleRelease --no-daemon
 
-      - name: Find and upload APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Mango-Learning-OS-APK
-          path: android/app/build/outputs/apk/**/*.apk
+          name: Mango-APK
+          path: android/app/build/outputs/apk/release/*.apk
