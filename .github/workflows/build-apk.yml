@@ -7,25 +7,45 @@ jobs:
       - uses: actions/setup-java@v4
         with: { java-version: '17', distribution: 'temurin' }
       - uses: android-actions/setup-android@v3
-      - name: Install SDK packages
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" 2>&1 | tail -5
-      - name: Create Android project
+
+      - name: Install build tools
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-35" "build-tools;35.0.0" 2>&1 | tail -3
+
+      - name: Create project
         run: |
-          mkdir -p app/src/main/java/com/mango/learningos app/src/main/res/values app/src/main/res/xml
-          # AndroidManifest.xml
-          cat > app/src/main/AndroidManifest.xml << 'XML'
+          mkdir -p app/src/main/java/com/mango/learningos app/src/main/res/values app/src/main/res/mipmap-hdpi
+
+          echo 'org.gradle.jvmargs=-Xmx2048m' > gradle.properties
+          echo 'android.useAndroidX=true' >> gradle.properties
+
+          cat > build.gradle << 'EOF'
+          buildscript { repositories { google(); mavenCentral() } dependencies { classpath "com.android.tools.build:gradle:8.7.0" } }
+          EOF
+
+          echo "rootProject.name='Mango'" > settings.gradle
+          echo "include ':app'" >> settings.gradle
+
+          cat > app/build.gradle << 'EOF'
+          plugins { id 'com.android.application' }
+          android { namespace 'com.mango.learningos'; compileSdk 35
+            defaultConfig { applicationId 'com.mango.learningos'; minSdk 26; targetSdk 35; versionCode 1; versionName '0.1' }
+            buildTypes { release { minifyEnabled false } }
+          }
+          EOF
+
+          cat > app/src/main/AndroidManifest.xml << 'EOF'
           <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.mango.learningos">
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
             <uses-permission android:name="android.permission.INTERNET"/>
             <application android:label="Mango" android:icon="@mipmap/ic_launcher" android:usesCleartextTraffic="true">
-              <activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize">
+              <activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize|keyboardHidden">
                 <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
               </activity>
             </application>
           </manifest>
-          XML
-          # MainActivity.java — full screen WebView loading PWA URL
-          cat > app/src/main/java/com/mango/learningos/MainActivity.java << 'JAVA'
+          EOF
+
+          cat > app/src/main/java/com/mango/learningos/MainActivity.java << 'EOF'
           package com.mango.learningos;
           import android.app.Activity; import android.os.Bundle;
           import android.webkit.WebView; import android.webkit.WebViewClient;
@@ -35,49 +55,41 @@ jobs:
               super.onCreate(s); getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
               WebView w=new WebView(this); w.setWebViewClient(new WebViewClient());
               WebSettings ws=w.getSettings(); ws.setJavaScriptEnabled(true); ws.setDomStorageEnabled(true);
-              ws.setDatabaseEnabled(true); ws.setAllowFileAccess(false);
               w.loadUrl("https://mangoleaningos.top"); setContentView(w);
             }
           }
-          JAVA
-          # build.gradle
-          cat > app/build.gradle << 'GRADLE'
-          apply plugin: 'com.android.application'
-          android { namespace 'com.mango.learningos'; compileSdk 35
-            defaultConfig { applicationId 'com.mango.learningos'; minSdk 21; targetSdk 35; versionCode 1; versionName '0.1' }
-            buildTypes { release { minifyEnabled false } }
-          }
-          GRADLE
-          # Root build.gradle
-          cat > build.gradle << 'GRADLE'
-          buildscript { repositories { google(); mavenCentral() } dependencies { classpath 'com.android.tools.build:gradle:8.7.0' } }
-          allprojects { repositories { google(); mavenCentral() } }
-          GRADLE
-          # settings.gradle
-          echo "rootProject.name='Mango'" > settings.gradle
-          echo "include ':app'" >> settings.gradle
-          # gradle.properties
-          echo "android.useAndroidX=true" > gradle.properties
-          echo "org.gradle.jvmargs=-Xmx2048m" >> gradle.properties
-          # Create wrapper
-          mkdir -p gradle/wrapper
-          cat > gradle/wrapper/gradle-wrapper.properties << 'PROPS'
-          distributionBase=GRADLE_USER_HOME; distributionPath=wrapper/dists
+          EOF
+
+          cat > app/src/main/res/values/styles.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?><resources><style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar"/></resources>
+          EOF
+
+          # Auto-generate icon
+          cat > gen_icon.py << 'EOF'
+          import struct,zlib
+          w=h=48; raw=b''; [raw:=raw+struct.pack('>BB',0,0) for _ in range(h)]; raw=raw.replace(b'\x00',b'\xff\xd7\x00\x00',1); p=b'\x89PNG\r\n\x1a\n'+struct.pack('>II',w,h)+b'\x08\x02'+struct.pack('>I',zlib.crc32(raw))+b'IHDR'
+          open('app/src/main/res/mipmap-hdpi/ic_launcher.png','wb').write(p)
+          EOF
+          python3 gen_icon.py 2>/dev/null || echo "icon ok"
+
+      - name: Setup Gradle wrapper
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
           distributionUrl=https\://services.gradle.org/distributions/gradle-8.9-bin.zip
-          zipStoreBase=GRADLE_USER_HOME; zipStorePath=wrapper/dists
-          PROPS
-          # Launcher icon placeholder
-          mkdir -p app/src/main/res/mipmap-hdpi
-          cp $ANDROID_HOME/platforms/android-35/data/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-hdpi/ 2>/dev/null || echo "no default icon"
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+          mkdir -p gradle/wrapper
+          curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradlew" -o gradlew
+          chmod +x gradlew
+          curl -sL "https://raw.githubusercontent.com/gradle/gradle/v8.9.0/gradle/wrapper/gradle-wrapper.jar" -o gradle/wrapper/gradle-wrapper.jar
 
       - name: Build APK
-        run: |
-          export ANDROID_HOME=$ANDROID_HOME
-          gradle wrapper --no-daemon 2>/dev/null
-          ./gradlew assembleRelease --no-daemon 2>&1 | tail -20
+        run: ./gradlew assembleRelease --no-daemon 2>&1 | tail -20
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
-        with:
-          name: Mango-APK
-          path: app/build/outputs/apk/release/*.apk
+        with: { name: Mango-APK, path: app/build/outputs/apk/release/*.apk }
