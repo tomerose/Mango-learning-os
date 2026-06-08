@@ -125,6 +125,32 @@ async function searchDictionary(word: string): Promise<ArtifactSource[]> {
   }
 }
 
+// ═══ V14.8.1: Tavily Search — AI-native search, fast + semantic ═══
+// Docs: https://docs.tavily.com — 1,000 free searches/month
+
+async function searchTavily(query: string, max: number = 5): Promise<ArtifactSource[]> {
+  const apiKey = process.env.TAVILY_API_KEY;
+  if (!apiKey) return []; // Graceful skip if not configured
+  try {
+    const res = await fetch("https://api.tavily.com/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+      body: JSON.stringify({ query, search_depth: "advanced", max_results: max, include_answer: true }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const sources: ArtifactSource[] = [];
+    if (data.answer) {
+      sources.push({ id: `tav_ans_${Date.now()}`, title: "AI 摘要", url: "", platform: "tavily" as const, relevance: 0.95, reliability: "high" as const, excerpt: data.answer.slice(0, 500) });
+    }
+    for (const r of (data.results || []).slice(0, max)) {
+      sources.push({ id: `tav_${Date.now()}_${sources.length}`, title: r.title || query, url: r.url || "", platform: "tavily" as const, relevance: r.score ? r.score / 100 : 0.8, reliability: "high" as const, excerpt: (r.content || r.snippet || "").slice(0, 500) });
+    }
+    return sources;
+  } catch { return []; }
+}
+
 // ═══ V14.8.1: Jina Reader — free URL-to-markdown, zero setup ═══
 // Docs: https://jina.ai/reader — 10M free tokens, no API key needed
 
@@ -163,6 +189,12 @@ export async function searchSources(query: SourceQuery): Promise<SourceResult> {
   const allSources: ArtifactSource[] = [];
 
   const tasks: Promise<ArtifactSource[]>[] = [];
+
+  // V14.8.1: Tavily first (fastest + semantic + free 1K/mo)
+  if (process.env.TAVILY_API_KEY) {
+    searched.push("tavily");
+    tasks.push(searchTavily(query.query, maxPer));
+  }
 
   if (platforms.includes("wikipedia")) {
     searched.push("wikipedia");
