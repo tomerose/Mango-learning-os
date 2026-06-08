@@ -1,7 +1,8 @@
 /**
- * MangoOS V14.7.5 — Quality Gate v3
+ * MangoOS V14.8 — Quality Gate v4 Hard Gate
  * Tier-based scoring with Pro/Admin 90-point enforcement.
  * Pro/Admin below threshold → auto-deepen (max 2 rounds).
+ * Still below → "Needs Review" + Admin queue flag.
  */
 import type { PlanTier } from "@/lib/plan/types";
 
@@ -27,6 +28,14 @@ export interface QualityResultV3 {
   willAutoDeepen: boolean;
   deepenRound: number;
   tier: PlanTier;
+  /** V14.8: Specific required fixes per failed dimension */
+  requiredFixes: string[];
+  /** V14.8: Flag for Admin Review queue if Pro/Admin still below threshold after deepening */
+  needsAdminReview: boolean;
+  /** V14.8: Citation count detected in output */
+  citationCount: number;
+  /** V14.8: Source count used */
+  sourceCount: number;
 }
 
 // ═══ Tier-based thresholds ═══════════════════════════════════════
@@ -224,11 +233,28 @@ export function evaluateQualityV3(
     .filter(d => d.suggestion)
     .map(d => `[${d.label}] ${d.suggestion}`);
 
+  const requiredFixes = dimensions
+    .filter(d => !d.passed && d.suggestion)
+    .map(d => `[${d.label}] ${d.suggestion}`);
+
+  const citationCount = (content.match(/\[[\d]+\]/g) || []).length +
+    (content.match(/来源[：:]/g) || []).length;
+
+  const sourceCount = opts.sourcesCount ?? 0;
+
+  // V14.8: Needs admin review if Pro/Admin still fails after max deepening
+  const needsAdminReview = !passed && (tier === "pro" || tier === "admin")
+    && (opts.deepenRound ?? 0) >= MAX_DEEPEN_ROUNDS;
+
   return {
     totalScore, maxScore, percentage, grade, passed, thresholdRequired: threshold,
     dimensions, improvementHints, willAutoDeepen,
     deepenRound: opts.deepenRound ?? 0,
     tier,
+    requiredFixes,
+    needsAdminReview,
+    citationCount,
+    sourceCount,
   };
 }
 
