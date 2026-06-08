@@ -45,25 +45,28 @@ export default function AdminCodesPage() {
   };
 
   React.useEffect(() => {
-    const c = createClient();
-    setSb(c);
-    c.auth.getSession().then(async ({ data }) => {
-      if (!data.session) { router.push("/login"); return; }
-      const u = data.session.user;
-      const email = u.email || "";
-      // Check admin via profiles table
-      const { data: profile } = await c.from("profiles").select("plan, is_admin").eq("id", u.id).maybeSingle();
-      const plan = (profile as any)?.plan;
-      const isAdminUser = (profile as any)?.is_admin || plan === "admin" || plan === "pro";
-      // Fallback: check email against known admin list
-      const adminEmails = ["portelamicheli636@gmail.com"];
-      if (!isAdminUser && !adminEmails.includes(email)) {
-        setIsAdminUser(false); setChecking(false); return;
-      }
-      setIsAdminUser(true);
-      setChecking(false);
-      load(c);
-    }).catch(() => { router.push("/hub"); });
+    try {
+      const c = createClient();
+      setSb(c);
+      c.auth.getSession().then(async ({ data }) => {
+        if (!data.session) { router.push("/login"); return; }
+        const u = data.session.user;
+        const email = u.email || "";
+        // Direct email check first (most reliable)
+        const adminEmails = ["portelamicheli636@gmail.com"];
+        if (adminEmails.includes(email)) {
+          setIsAdminUser(true); setChecking(false); load(c); return;
+        }
+        // Then try profiles table
+        try {
+          const { data: profile } = await c.from("profiles").select("plan, is_admin").eq("id", u.id).maybeSingle();
+          if ((profile as any)?.is_admin || (profile as any)?.plan === "admin") {
+            setIsAdminUser(true); setChecking(false); load(c); return;
+          }
+        } catch {}
+        setIsAdminUser(false); setChecking(false);
+      }).catch(() => { setIsAdminUser(false); setChecking(false); });
+    } catch { setChecking(false); }
   }, [router]);
 
   async function load(c?: any) {
