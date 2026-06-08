@@ -17,7 +17,7 @@ import { collectSources } from "@/lib/agent/source-collector";
 // System prompt builder is used inline below
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+// V14.8.1: Fluid Compute handles timeout; remove explicit maxDuration to avoid Hobby build errors
 
 interface ExecuteRequest {
   intent: string;
