@@ -14,6 +14,7 @@ import { MobileShell, MissionHero, EmptyState, SkeletonState, ErrorState } from 
 import { listArtifacts, deleteArtifact, getArtifact } from "@/lib/artifact/artifact-store";
 import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "@/lib/artifact/types";
 import type { ArtifactMeta } from "@/lib/artifact/artifact-store";
+import { createClient } from "@/lib/supabase/client";
 import { SAMPLE_ARTIFACTS } from "@/lib/artifact/samples";
 import { artifactToPlan, planToStoreTasks } from "@/lib/outcome/planner-bridge";
 import { artifactToFlashcards } from "@/lib/outcome/flashcard-bridge";
@@ -57,10 +58,13 @@ export default function LibraryPage() {
     loadArtifacts();
   }, [typeFilter]);
 
+  const [outcomes, setOutcomes] = React.useState<any[]>([]);
+
   async function loadArtifacts() {
     setLoading(true);
     setError(false);
     try {
+      // Load legacy artifacts (IndexedDB)
       const result = await listArtifacts({
         types: typeFilter !== "all" ? [typeFilter] : undefined,
         search: search || undefined,
@@ -68,6 +72,12 @@ export default function LibraryPage() {
         sortDir: "desc",
       });
       setArtifacts(result);
+      // V14.8.1: Also load outcome_documents from Supabase
+      try {
+        const c = createClient();
+        const { data: docs } = await c.from("outcome_documents").select("*").order("created_at", { ascending: false }).limit(50);
+        if (docs) setOutcomes(docs);
+      } catch {}
     } catch {
       setError(true);
     }
@@ -159,6 +169,14 @@ export default function LibraryPage() {
     setTimeout(() => setPlanGenerated(false), 1500);
   }
 
+  // V14.8.1: Merge legacy artifacts + outcome_documents
+  const outcomeItems: ArtifactMeta[] = outcomes.map((d: any) => ({
+    id: d.id, type: "general", title: d.title, summary: d.summary || "",
+    tags: [d.tier || "pro"], qualityScore: d.quality_score || 0, status: d.status,
+    subject: d.tier, createdAt: d.created_at, updatedAt: d.updated_at,
+    storageMode: "cloud",
+  } as ArtifactMeta));
+
   const displayItems = showSamples
     ? SAMPLE_ARTIFACTS.map(a => ({
         id: a.id, type: a.type, title: a.title, summary: a.summary,
@@ -166,7 +184,7 @@ export default function LibraryPage() {
         subject: a.subject, createdAt: a.createdAt, updatedAt: a.updatedAt,
         storageMode: "local",
       } as ArtifactMeta))
-    : artifacts;
+    : [...outcomeItems, ...artifacts];
 
   return (
     <>
