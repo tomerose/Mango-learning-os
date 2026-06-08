@@ -65,17 +65,21 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   async function handleSocialLogin(provider: string) {
-    if (!configured) return;
-    if (provider === "qq") { setError("QQ 登录即将上线"); return; }
+    if (!configured) {
+      setError("第三方登录需要配置 Supabase 云端服务");
+      return;
+    }
+    if (provider === "qq") { setError("QQ 登录即将上线，请使用邮箱注册"); return; }
+    setError(null);
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider as "google" | "github",
         options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
-      if (error) setError(error.message);
+      if (error) setError(`第三方登录失败: ${error.message}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "第三方登录失败");
+      setError(err instanceof Error ? err.message : "第三方登录失败，请使用邮箱登录");
     }
   }
 
@@ -236,15 +240,23 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
 
         {/* Auth mode switcher */}
-        <p className="text-[13px] text-fg-muted/90">
-          {isLogin ? "还没有账号？" : "已有账号？"}{" "}
-          <Link
-            href={isLogin ? "/signup" : "/login"}
-            className="text-primary font-medium hover:underline underline-offset-2"
-          >
-            {isLogin ? "注册" : "登录"}
-          </Link>
-        </p>
+        {isLogin ? (
+          <div className="text-center space-y-2">
+            <p className="text-[13px] text-fg-muted/90">还没有账号？</p>
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-primary/30 bg-primary-subtle/50 px-4 py-2 text-[13px] font-medium text-primary hover:bg-primary-subtle transition-colors"
+            >
+              注册新账号 <ArrowRight className="size-3" />
+            </Link>
+            <p className="text-[10px] text-fg-subtle/90">注册同样使用邀请码 tokentome222</p>
+          </div>
+        ) : (
+          <p className="text-[13px] text-fg-muted/90">
+            已有账号？{" "}
+            <Link href="/login" className="text-primary font-medium hover:underline underline-offset-2">登录</Link>
+          </p>
+        )}
 
         {/* Footer */}
         <p className="text-[10px] text-fg-subtle/80 tracking-widest uppercase">
@@ -375,14 +387,21 @@ export function AuthForm({ mode }: AuthFormProps) {
           </form>
 
           {/* ── Social Login ── */}
-          <div className="border-t border-border/30 pt-4 mt-1">
-            <p className="text-[10px] text-fg-subtle/90 text-center mb-3">或使用第三方账号</p>
-            <div className="grid grid-cols-3 gap-2">
-              <SocialButton provider="google" label="Google" onClick={() => handleSocialLogin("google")} />
-              <SocialButton provider="github" label="GitHub" onClick={() => handleSocialLogin("github")} />
-              <SocialButton provider="qq" label="QQ" onClick={() => handleSocialLogin("qq")} />
+          {configured ? (
+            <div className="border-t border-border/30 pt-4 mt-1">
+              <p className="text-[10px] text-fg-subtle/90 text-center mb-3">或使用第三方账号</p>
+              <div className="grid grid-cols-3 gap-2">
+                <SocialButton provider="google" label="Google" onClick={() => handleSocialLogin("google")} />
+                <SocialButton provider="github" label="GitHub" onClick={() => handleSocialLogin("github")} />
+                <SocialButton provider="qq" label="QQ" onClick={() => handleSocialLogin("qq")} disabled />
+              </div>
+              <p className="text-[10px] text-fg-subtle/90 text-center mt-2">第三方登录需配置 OAuth 提供商</p>
             </div>
-          </div>
+          ) : (
+            <div className="border-t border-border/30 pt-4 mt-1">
+              <p className="text-[10px] text-fg-subtle/90 text-center">云端功能未配置，第三方登录不可用</p>
+            </div>
+          )}
         </div>
 
         {/* Back to code */}
@@ -433,16 +452,21 @@ const SOCIAL_INFO: Record<string, { icon: string; color: string }> = {
   qq: { icon: "QQ", color: "hover:bg-blue-50 hover:border-blue-200" },
 };
 
-function SocialButton({ provider, label, onClick }: { provider: string; label: string; onClick: () => void }) {
+function SocialButton({ provider, label, onClick, disabled }: { provider: string; label: string; onClick: () => void; disabled?: boolean }) {
   const info = SOCIAL_INFO[provider] ?? { icon: "?", color: "" };
   return (
     <button
       type="button"
+      disabled={!!disabled}
       onClick={onClick}
-      className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-border text-[11px] font-medium text-fg-muted transition-all ${info.color}`}
+      className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-[11px] font-medium transition-all ${
+        disabled
+          ? "border-border/30 text-fg-subtle/90 cursor-not-allowed opacity-50"
+          : `border-border text-fg-muted/90 ${info.color}`
+      }`}
     >
       <span className="font-bold text-[13px]">{info.icon}</span>
-      <span className="hidden sm:inline">{label}</span>
+      <span className="hidden sm:inline">{disabled ? "即将上线" : label}</span>
     </button>
   );
 }
