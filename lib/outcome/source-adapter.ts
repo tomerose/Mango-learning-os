@@ -125,6 +125,34 @@ async function searchDictionary(word: string): Promise<ArtifactSource[]> {
   }
 }
 
+// ═══ V14.8.1: Jina Reader — free URL-to-markdown, zero setup ═══
+// Docs: https://jina.ai/reader — 10M free tokens, no API key needed
+
+async function searchJina(query: string, mode: "search" | "read", url?: string): Promise<ArtifactSource[]> {
+  try {
+    const jinaUrl = mode === "search"
+      ? `https://s.jina.ai/${encodeURIComponent(query)}`
+      : `https://r.jina.ai/${encodeURIComponent(url || query)}`;
+    const res = await fetch(jinaUrl, {
+      headers: { "Accept": "text/markdown", "X-Return-Format": "markdown" },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok) return [];
+    const text = await res.text();
+    if (!text || text.length < 50) return [];
+    // Return one rich source with full content
+    return [{
+      id: `jina_${Date.now()}`,
+      title: url ? (url.split("/").pop()?.replace(/-/g, " ") || query) : query.slice(0, 80),
+      url: url || `https://s.jina.ai/${encodeURIComponent(query)}`,
+      platform: "jina-reader" as const,
+      relevance: 0.95,
+      reliability: "high" as const,
+      excerpt: text.slice(0, 2000),
+    }];
+  } catch { return []; }
+}
+
 // ── Main search orchestrator ────────────────────────────────────
 
 export async function searchSources(query: SourceQuery): Promise<SourceResult> {
@@ -149,6 +177,10 @@ export async function searchSources(query: SourceQuery): Promise<SourceResult> {
     searched.push("duckduckgo");
     tasks.push(searchDuckDuckGoV2(query.query, maxPer));
   }
+  // V14.8.1: Jina Reader — free deep search with full content
+  searched.push("jina-reader");
+  tasks.push(searchJina(query.query, "search").catch(() => []));
+
   if (platforms.includes("dictionary") && /^[a-zA-Z\s-]+$/.test(query.query)) {
     searched.push("dictionary");
     tasks.push(searchDictionary(query.query));
