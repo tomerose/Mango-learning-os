@@ -33,24 +33,26 @@ export async function collectSources(
   stages.push({ name: "search", label: "联网搜索资料", status: "running", detail: "正在搜索..." });
 
   let searchedCount = 0;
-  const maxQueries = isPro ? queries.length : Math.min(3, queries.length);
+  const maxQueries = isPro ? Math.max(8, queries.length) : Math.min(3, queries.length);
+  const maxResults = isPro ? 3 : 2;
 
   try {
     for (const query of queries.slice(0, maxQueries)) {
-      // Skip if already have enough sources for Standard
+      // Skip if already have enough sources
       if (!isPro && allSources.length >= 6) break;
+      if (isPro && allSources.length >= 12) break;
 
       try {
         const result = await searchSources({
           query: query.query,
-          maxResults: isPro ? 4 : 2,
+          maxResults,
           platforms: isPro
             ? ["wikipedia", "duckduckgo", "dictionary"]
             : ["wikipedia", "duckduckgo"],
         });
 
         searchedCount++;
-        networkAvailable = result.sources.length > 0;
+        if (result.sources.length > 0) networkAvailable = true;
 
         for (const src of result.sources) {
           allSources.push({

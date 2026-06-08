@@ -252,19 +252,69 @@ export async function POST(req: NextRequest) {
 
       proArtifact.updatedAt = new Date().toISOString();
 
-      // Save to outcome tables if Supabase configured
+      // V14.8.1: Save full outcome to all 5 tables
+      let savedDocId: string | null = null;
       try {
         const { createClient } = await import("@supabase/supabase-js");
         const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-        await sb.from("agent_runs").insert({
+        const now = new Date().toISOString();
+
+        // agent_runs
+        const { data: runData } = await sb.from("agent_runs").insert({
           user_id: session.userId, user_email: session.email, tier: effectivePlan,
           prompt: intent.trim(), task_type: taskType,
           status: proPassed ? "completed" : "needs_review",
           quality_score: qualityV3.percentage, source_count: rankedSources.length,
           citation_count: (finalContent.match(/\[\d+\]/g) || []).length,
-          export_status: "pending"
+          export_status: "pending", created_at: now, updated_at: now
+        }).select("id").single();
+
+        // outcome_documents
+        const { data: docData } = await sb.from("outcome_documents").insert({
+          user_id: session.userId, run_id: runData?.id,
+          title: proArtifact.artifactTitle || intent.slice(0, 80),
+          summary: proArtifact.artifactSummary || finalContent.slice(0, 300),
+          content: finalContent,
+          sections: structure.sections.map(s => ({ title: s.title, content: "" })),
+          status: proPassed ? "completed" : "needs_review",
+          quality_score: qualityV3.percentage, tier: effectivePlan,
+          latest_version: 1, created_at: now, updated_at: now
+        }).select("id").single();
+        if (docData) savedDocId = docData.id;
+
+        // outcome_versions v1
+        await sb.from("outcome_versions").insert({
+          document_id: docData?.id, version_number: 1,
+          content: finalContent,
+          sections: structure.sections.map(s => ({ title: s.title, content: "" })),
+          quality_score: qualityV3.percentage, source_count: rankedSources.length,
+          citation_count: (finalContent.match(/\[\d+\]/g) || []).length,
+          created_at: now
         });
-      } catch {}
+
+        // outcome_sources
+        if (rankedSources.length > 0) {
+          await sb.from("outcome_sources").insert(
+            rankedSources.map(s => ({
+              document_id: docData?.id, title: s.title, url: s.url,
+              platform: s.platform, summary: s.snippet?.slice(0, 300),
+              relevance_reason: `score:${s.compositeScore}`, used: true,
+              created_at: now
+            }))
+          );
+        }
+
+        // outcome_exports
+        await sb.from("outcome_exports").insert({
+          document_id: docData?.id, export_type: "html",
+          status: "pending", created_at: now, updated_at: now
+        });
+        await sb.from("outcome_exports").insert({
+          document_id: docData?.id, export_type: "pdf",
+          status: "pending", created_at: now, updated_at: now
+        });
+
+      } catch (e) { console.error("[outcome save]", e); }
 
       return NextResponse.json({
         success: proPassed,
