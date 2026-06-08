@@ -1,57 +1,47 @@
 // POST /api/admin/generate-code — Generate Mango Code(s)
-// Hard-gated: admin role required
+// Admin only — gated by ADMIN_EMAILS or plan=admin
 import { NextRequest, NextResponse } from "next/server";
 import { resolveSession } from "@/lib/auth/session";
-import { generateCodes } from "@/lib/mango-code/mango-code";
+import { generateCodes, isAdminSession } from "@/lib/mango-code/mango-code";
 import type { GenerateCodeRequest } from "@/lib/mango-code/types";
 
 export async function POST(req: NextRequest) {
   const session = await resolveSession(req);
 
-  // V14.7.5: DEV_FORCE_PLAN override (development only)
-  let effectivePlan = session.plan;
-  const devForcePlan = process.env.DEV_FORCE_PLAN;
-  const isDev = process.env.NODE_ENV === "development";
-  if (isDev && devForcePlan && ["pro", "admin"].includes(devForcePlan)) {
-    effectivePlan = devForcePlan as typeof session.plan;
+  if (!session.isAuthenticated) {
+    return NextResponse.json({ success: false, error: { code: "UNAUTHORIZED", message: "请先登录" } }, { status: 401 });
   }
-
-  // Admin gate — server-side, not bypassable
-  if (effectivePlan !== "admin") {
-    return NextResponse.json(
-      { error: "需要管理员权限", code: "ADMIN_REQUIRED" },
-      { status: 403 },
-    );
+  if (!isAdminSession(session.plan, session.email)) {
+    return NextResponse.json({ success: false, error: { code: "FORBIDDEN", message: "需要管理员权限" } }, { status: 403 });
   }
 
   try {
-    const body = await req.json() as GenerateCodeRequest;
+    const body = await req.json() as GenerateCodeRequest & { durationType?: string; maxUses?: number };
 
     if (!body.planGranted || !["standard", "pro", "admin"].includes(body.planGranted)) {
-      return NextResponse.json(
-        { error: "请选择有效的计划类型 (standard, pro, admin)", code: "INVALID_INPUT" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: { code: "INVALID_INPUT", message: "请选择有效等级" } }, { status: 400 });
     }
 
-    if (body.durationDays < 0 || body.durationDays > 3650) {
-      return NextResponse.json(
-        { error: "有效期必须在 0-3650 天之间", code: "INVALID_INPUT" },
-        { status: 400 },
-      );
-    }
-
-    const result = generateCodes(body, session.userId!);
+    const result = await generateCodes({
+      planGranted: body.planGranted,
+      durationDays: body.durationDays ?? 30,
+      durationType: body.durationType ?? "days",
+      count: body.count ?? 5,
+      maxRedemptions: body.maxUses ?? 1,
+      notes: body.notes,
+      expiresAt: body.expiresAt,
+    }, session.userId!);
 
     return NextResponse.json({
       success: true,
-      ...result,
-      message: `成功生成 ${result.codes.length} 个兑换码`,
+      data: {
+        codes: result.codes,
+        planGranted: result.planGranted,
+        durationDays: result.durationDays,
+        count: result.codes.length,
+      },
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: "生成失败", code: "SERVER_ERROR" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: { code: "SERVER_ERROR", message: "生成失败" } }, { status: 500 });
   }
 }

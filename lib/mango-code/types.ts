@@ -39,9 +39,11 @@ export interface RedeemRequest {
 }
 
 export interface GenerateCodeRequest {
-  planGranted: PlanTier;
-  durationDays: number;
+  planGranted: string; // "free" | "standard" | "pro" | "admin"
+  durationDays?: number;
+  durationType?: string;  // "days" | "month" | "year" | "lifetime"
   maxRedemptions?: number;
+  maxUses?: number;
   expiresAt?: string;
   notes?: string;
   count?: number; // batch generate
