@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       const codes: string[] = [];
       for (let i = 0; i < (count || 1); i++) {
         const code = mk(planGranted);
-        const { error } = await sb.from("mango_codes").insert({ code, plan_granted: planGranted, duration_type: durationType || "days", duration_value: durationValue || 30, max_uses: maxUses || 1, note: note || null });
+        const { error } = await sb.from("mango_codes").insert({ code, plan_granted: planGranted, status: "active" });
         if (!error) codes.push(code);
       }
       return codes.length > 0 ? NextResponse.json({ success: true, codes }) : NextResponse.json({ success: false, error: "写入失败" });
