@@ -62,6 +62,16 @@ td{padding:10px 8px;border-bottom:1px solid #f0ece4}
 <h1>Mango Code 管理</h1>
 <p class="sub">管理内测、Pro 权益与兑换码</p>
 
+<div id="login-box" style="display:none;max-width:360px;margin:60px auto">
+  <div class="card">
+    <h2>🔐 管理员登录</h2>
+    <div class="field" style="margin-bottom:10px"><label>邮箱</label><input id="login-email" type="email" placeholder="admin@gmail.com"></div>
+    <div class="field" style="margin-bottom:10px"><label>密码</label><input id="login-pw" type="password" placeholder="输入密码" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-primary" onclick="doLogin()" style="width:100%;justify-content:center">登录</button>
+  </div>
+</div>
+
+<div id="main-box">
 <div id="error-box"></div>
 
 <div class="stats" id="stats"></div>
@@ -76,7 +86,7 @@ td{padding:10px 8px;border-bottom:1px solid #f0ece4}
     <div class="field"><label>使用次数</label><input id="g-uses" type="number" value="1" min="1"></div>
     <div class="field"><label>备注</label><input id="g-note" placeholder="如：内测月卡"></div>
   </div>
-  <button class="btn btn-primary" onclick="generate()">🔑 生成兑换码</button>
+  <button class="btn btn-primary" id="g-btn" onclick="generate()">🔑 生成兑换码</button>
   <div id="result-box"></div>
 </div>
 
@@ -88,6 +98,7 @@ td{padding:10px 8px;border-bottom:1px solid #f0ece4}
 </div>
 
 <div class="toast" id="toast"></div>
+</div><!-- /main-box -->
 
 <script>
 const SB_URL = "https://gwhlkumqkcyclvlahkkp.supabase.co";
@@ -108,11 +119,23 @@ function t(txt,ok){const e=document.getElementById("toast");e.textContent=txt;e.
 function ebox(msg){const e=document.getElementById("error-box");e.textContent=msg;e.style.display=msg?"block":"none"}
 
 async function init(){
-  ebox("");
   const {data:{session}} = await sb.auth.getSession();
-  if(!session){ebox("请先登录管理员账号 → <a href=/login>/login</a>");return}
-  if(session.user.email !== ADMIN_EMAIL){ebox("无管理员权限 — "+session.user.email);return}
-  load();
+  if(session && session.user.email === ADMIN_EMAIL){
+    document.getElementById("login-box").style.display="none";
+    document.getElementById("main-box").style.display="block";
+    load(); return;
+  }
+  document.getElementById("login-box").style.display="block";
+  document.getElementById("main-box").style.display="none";
+}
+async function doLogin(){
+  const email=document.getElementById("login-email").value;
+  const pw=document.getElementById("login-pw").value;
+  const {error} = await sb.auth.signInWithPassword({email,password:pw});
+  if(error){t("登录失败: "+error.message,0);return}
+  if(email !== ADMIN_EMAIL){t("非管理员账号",0);await sb.auth.signOut();return}
+  t("登录成功",1);
+  setTimeout(init,500);
 }
 
 async function load(){
