@@ -45,75 +45,56 @@ export default function AdminCodesPage() {
   };
 
   React.useEffect(() => {
-    try {
-      const c = createClient();
-      setSb(c);
-      c.auth.getSession().then(async ({ data }) => {
-        if (!data.session) { router.push("/login"); return; }
-        const u = data.session.user;
-        const email = u.email || "";
-        // Direct email check first (most reliable)
-        const adminEmails = ["portelamicheli636@gmail.com"];
-        if (adminEmails.includes(email)) {
-          setIsAdminUser(true); setChecking(false); load(c); return;
-        }
-        // Then try profiles table
-        try {
-          const { data: profile } = await c.from("profiles").select("plan, is_admin").eq("id", u.id).maybeSingle();
-          if ((profile as any)?.is_admin || (profile as any)?.plan === "admin") {
-            setIsAdminUser(true); setChecking(false); load(c); return;
-          }
-        } catch {}
-        setIsAdminUser(false); setChecking(false);
-      }).catch(() => { setIsAdminUser(false); setChecking(false); });
-    } catch { setChecking(false); }
+    const c = createClient();
+    c.auth.getSession().then(({ data }) => {
+      if (!data.session) { router.push("/login"); return; }
+      const email = data.session.user.email || "";
+      if (email === "portelamicheli636@gmail.com") {
+        setIsAdminUser(true); setChecking(false); load(); return;
+      }
+      setIsAdminUser(false); setChecking(false);
+    }).catch(() => { setIsAdminUser(false); setChecking(false); });
   }, [router]);
 
-  async function load(c?: any) {
-    const client = c || sb;
-    if (!client) return;
-    setLoading(true); setError("");
-    const { data, error: err } = await client.from("mango_codes").select("*").order("created_at", { ascending: false }).limit(200);
-    if (err) { setError(err.message); setLoading(false); return; }
-    const all = data || [];
-    setCodes(all);
-    setStats({
-      total: all.length, active: all.filter((r: any) => r.status === "active").length,
-      used: all.filter((r: any) => r.status === "used").length,
-      expired: all.filter((r: any) => r.status === "expired").length,
-      disabled: all.filter((r: any) => r.status === "disabled" || r.status === "revoked").length,
+  async function api(action: string, body?: any) {
+    const res = await fetch("/api/admin/codes/manage", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, ...body }),
     });
+    return res.json();
+  }
+
+  async function load() {
+    setLoading(true); setError("");
+    const data = await api("list");
+    if (data.success) {
+      const all = data.codes || [];
+      setCodes(all);
+      setStats({ total: all.length, active: all.filter((r: any) => r.status === "active").length, used: all.filter((r: any) => r.status === "used").length, expired: all.filter((r: any) => r.status === "expired").length, disabled: all.filter((r: any) => r.status === "disabled" || r.status === "revoked").length });
+    } else { setError(data.error || "加载失败"); }
     setLoading(false);
   }
 
   async function handleGenerate() {
-    if (!sb) return;
     setGenerating(true); setGenResult(null);
-    const newCodes: string[] = [];
-    for (let i = 0; i < parseInt(genCount); i++) {
-      const c = makeCode(genPlan);
-      const { error } = await sb.from("mango_codes").insert({ code: c, plan_granted: genPlan, duration_type: genDtype, duration_value: parseInt(genDuration), max_uses: parseInt(genUses), note: genNote || null });
-      if (!error) newCodes.push(c);
-    }
+    const data = await api("generate", { planGranted: genPlan, durationType: genDtype, durationValue: parseInt(genDuration), count: parseInt(genCount), maxUses: parseInt(genUses), note: genNote || null });
     setGenerating(false);
-    if (newCodes.length > 0) { setGenResult(newCodes); toast("success", `已生成 ${newCodes.length} 个 ${PL[genPlan]} 码`); load(); }
-    else toast("error", "生成失败，请确认 Supabase RLS 策略已配置");
+    if (data.success && data.codes?.length > 0) { setGenResult(data.codes); toast("success", `已生成 ${data.codes.length} 个 ${PL[genPlan]} 码`); load(); }
+    else toast("error", data.error || "生成失败");
   }
 
   async function toggle(c: string, s: string) {
-    if (!sb) return;
     const ns = s === "active" ? "disabled" : "active";
-    const { error } = await sb.from("mango_codes").update({ status: ns }).eq("code", c);
-    if (!error) { toast("success", `${c.slice(0, 16)}... → ${SL[ns]}`); load(); }
-    else toast("error", error.message);
+    const data = await api("toggle", { code: c, status: ns });
+    if (data.success) { toast("success", `${c.slice(0, 16)}... → ${SL[ns]}`); load(); }
+    else toast("error", data.error || "操作失败");
   }
 
   async function del(c: string) {
     if (!confirm(`删除 ${c}？`)) return;
-    if (!sb) return;
-    const { error } = await sb.from("mango_codes").delete().eq("code", c);
-    if (!error) { toast("success", "已删除"); load(); }
-    else toast("error", error.message);
+    const data = await api("delete", { code: c });
+    if (data.success) { toast("success", "已删除"); load(); }
+    else toast("error", data.error || "删除失败");
   }
 
   function copyAll(a: string[]) { navigator.clipboard.writeText(a.join("\n")).then(() => toast("success", "已复制"), () => toast("error", "复制失败")); }
