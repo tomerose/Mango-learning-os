@@ -20,8 +20,13 @@ export async function GET(req: NextRequest) {
   const guard = await adminGuard(req);
   if ("error" in guard) return guard.error;
 
-  const [codes, stats] = await Promise.all([listCodes(), getCodeStats()]);
-  return NextResponse.json({ success: true, data: { codes, stats } });
+  try {
+    const [codes, stats] = await Promise.all([listCodes(), getCodeStats()]);
+    return NextResponse.json({ success: true, data: { codes, stats } });
+  } catch (err: any) {
+    console.error("[admin/codes GET]", err?.message || err);
+    return NextResponse.json({ success: false, error: { code: "SERVER_ERROR", message: err?.message || "查询失败" } }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: NextRequest) {

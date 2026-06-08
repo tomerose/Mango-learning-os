@@ -62,7 +62,10 @@ export default function AdminCodesPage() {
       const res = await fetch("/api/admin/codes");
       if (res.status === 401) { setError("请先登录管理员账号"); setLoading(false); return; }
       if (res.status === 403) { setError("无管理员权限"); setLoading(false); return; }
-      if (!res.ok) throw new Error("加载失败");
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error((errJson as any)?.error?.message || `服务器错误 (${res.status})`);
+      }
       const json = await res.json();
       if (json.success) {
         setCodes(json.data.codes || []);
