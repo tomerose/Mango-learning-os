@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mango Code 管理</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,-apple-system,sans-serif;background:#f7f4ef;color:#1a1a1a;padding:20px;max-width:1100px;margin:0 auto}
+h1{font-size:1.8rem;font-weight:700;margin-bottom:4px}
+.sub{color:#666;font-size:0.85rem;margin-bottom:24px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+.stat{background:#fff;border:1px solid #e8e4dc;border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px}
+.stat .icon{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:18px}
+.stat .val{font-size:1.5rem;font-weight:700}
+.stat .lbl{font-size:0.7rem;color:#888}
+.card{background:#fff;border:1px solid #e8e4dc;border-radius:16px;padding:20px;margin-bottom:16px}
+.card h2{font-size:1rem;font-weight:600;margin-bottom:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.field{flex:1;min-width:100px;display:flex;flex-direction:column;gap:4px}
+.field label{font-size:0.7rem;font-weight:600;color:#888;text-transform:uppercase}
+.field select,.field input{height:40px;border:1px solid #e0dcd4;border-radius:10px;padding:0 12px;font-size:0.85rem;background:#fafaf8;outline:none}
+.field select:focus,.field input:focus{border-color:#c58b74}
+.btn{padding:10px 22px;border-radius:12px;font-size:0.85rem;font-weight:600;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.btn-primary{background:linear-gradient(135deg,#e8963a,#d4782e);color:#fff;box-shadow:0 2px 8px rgba(200,120,50,.2)}
+.btn-primary:hover{box-shadow:0 4px 16px rgba(200,120,50,.35)}
+.btn-sm{padding:6px 14px;font-size:0.75rem;border-radius:8px}
+.btn-outline{background:#fff;border:1px solid #ddd;color:#555}
+.btn-outline:hover{background:#f5f5f0}
+.btn-danger{background:#fff;border:1px solid #fcc;color:#e55}
+.btn-danger:hover{background:#fff5f5}
+table{width:100%;border-collapse:collapse;font-size:0.82rem}
+th{text-align:left;padding:10px 8px;border-bottom:2px solid #eee;font-size:0.7rem;color:#999;text-transform:uppercase;font-weight:600}
+td{padding:10px 8px;border-bottom:1px solid #f0ece4}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.7rem;font-weight:600}
+.bg-amber{background:#fef3e0;color:#b8600c}
+.bg-blue{background:#e8f0fe;color:#1a5fb4}
+.bg-red{background:#fde8e8;color:#c02020}
+.bg-green{background:#e6f4ea;color:#1a7431}
+.bg-gray{background:#f0f0f0;color:#666}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:30px;font-size:0.85rem;font-weight:500;z-index:99;display:none}
+.toast.show{display:block;animation:fadeUp .3s ease}
+.toast-ok{background:#1a7431;color:#fff}
+.toast-err{background:#c02020;color:#fff}
+@keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+#result-box{background:#e6f4ea;border-radius:12px;padding:14px;margin-top:12px;display:none}
+#result-box .codes{background:#fff;border-radius:8px;padding:10px;font-family:monospace;font-size:0.8rem;max-height:160px;overflow-y:auto;margin-top:8px}
+#error-box{background:#fde8e8;color:#c02020;padding:12px 16px;border-radius:12px;margin-bottom:16px;display:none}
+.err-actions{display:flex;gap:8px;margin-top:12px}
+@media(max-width:640px){.row{flex-direction:column}table{display:none}.mobile-cards{display:block!important}}
+.mobile-cards{display:none}
+.mobile-card{border:1px solid #e8e4dc;border-radius:12px;padding:12px;margin-bottom:8px}
+.mobile-card .code{font-family:monospace;font-size:0.8rem;font-weight:600;margin-bottom:6px}
+.mobile-card .meta{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:0.7rem;color:#888;margin-bottom:8px}
+.mobile-card .actions{display:flex;gap:4px;border-top:1px solid #f0ece4;padding-top:8px}
+.empty{text-align:center;padding:40px 0;color:#999}
+</style>
+</head>
+<body>
+
+<h1>Mango Code 管理</h1>
+<p class="sub">管理内测、Pro 权益与兑换码</p>
+
+<div id="error-box"></div>
+
+<div class="stats" id="stats"></div>
+
+<div class="card">
+  <h2>➕ 生成新兑换码</h2>
+  <div class="row">
+    <div class="field"><label>等级</label><select id="g-plan"><option value="pro">Pro</option><option value="standard">Standard</option><option value="admin">Admin</option></select></div>
+    <div class="field"><label>时长类型</label><select id="g-dtype"><option value="days">天</option><option value="month">月</option><option value="year">年</option><option value="lifetime">永久</option></select></div>
+    <div class="field"><label>时长值</label><input id="g-dval" type="number" value="30" min="0"></div>
+    <div class="field"><label>数量</label><input id="g-count" type="number" value="5" min="1" max="100"></div>
+    <div class="field"><label>使用次数</label><input id="g-uses" type="number" value="1" min="1"></div>
+    <div class="field"><label>备注</label><input id="g-note" placeholder="如：内测月卡"></div>
+  </div>
+  <button class="btn btn-primary" onclick="generate()">🔑 生成兑换码</button>
+  <div id="result-box"></div>
+</div>
+
+<div class="card">
+  <h2>📋 所有兑换码 <button class="btn btn-sm btn-outline" style="float:right" onclick="load()">🔄 刷新</button></h2>
+  <table id="table"><thead><tr><th>Code</th><th>等级</th><th>时长</th><th>状态</th><th>使用</th><th>创建</th><th>操作</th></tr></thead><tbody id="tbody"></tbody></table>
+  <div class="mobile-cards" id="mcards"></div>
+  <div class="empty" id="empty" style="display:none">还没有 Mango Code · 使用上方面板生成</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL = "https://gwhlkumqkcyclvlahkkp.supabase.co";
+const SB_KEY = "sb_publishable_4JqH1QBk0As288ZviZqndQ_8z8QGeeQ";
+const ADMIN_EMAIL = "portelamicheli636@gmail.com";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+let allCodes = [];
+
+const L = {standard:"Standard",pro:"Pro",admin:"Admin"};
+const SC = {active:"bg-green",used:"bg-gray",expired:"bg-gray",disabled:"bg-red",revoked:"bg-red"};
+const SL = {active:"可用",used:"已使用",expired:"已过期",disabled:"已停用",revoked:"已撤销"};
+const CH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const g4 = ()=>{let s="";for(let i=0;i<4;i++)s+=CH[Math.floor(Math.random()*CH.length)];return s};
+const mkc = p=>`MANGO-${p==="admin"?"ADM":p==="pro"?"PRO":"STD"}-${g4()}-${g4()}-${g4()}`;
+
+function t(txt,ok){const e=document.getElementById("toast");e.textContent=txt;e.className="toast show "+(ok?"toast-ok":"toast-err");setTimeout(()=>e.classList.remove("show"),2500)}
+function ebox(msg){const e=document.getElementById("error-box");e.textContent=msg;e.style.display=msg?"block":"none"}
+
+async function init(){
+  ebox("");
+  const {data:{session}} = await sb.auth.getSession();
+  if(!session){ebox("请先登录管理员账号 → <a href=/login>/login</a>");return}
+  if(session.user.email !== ADMIN_EMAIL){ebox("无管理员权限 — "+session.user.email);return}
+  load();
+}
+
+async function load(){
+  const {data,error} = await sb.from("mango_codes").select("*").order("created_at",{ascending:false}).limit(200);
+  if(error){ebox(error.message);return}
+  allCodes = data||[];
+  renderStats();
+  renderList();
+}
+
+function renderStats(){
+  const a=allCodes;
+  const st={total:a.length,active:a.filter(r=>r.status==="active").length,used:a.filter(r=>r.status==="used").length,expired:a.filter(r=>r.status==="expired").length,disabled:a.filter(r=>r.status==="disabled"||r.status==="revoked").length};
+  document.getElementById("stats").innerHTML=[
+    {l:"总计",v:st.total,i:"📦"},
+    {l:"可用",v:st.active,i:"✅"},
+    {l:"已使用",v:st.used,i:"👤"},
+    {l:"已过期",v:st.expired,i:"⏰"},
+    {l:"已停用",v:st.disabled,i:"🚫"},
+  ].map(s=>`<div class=stat><div class=icon>${s.i}</div><div><div class=val>${s.v}</div><div class=lbl>${s.l}</div></div></div>`).join("");
+}
+
+function renderList(){
+  if(allCodes.length===0){document.getElementById("empty").style.display="block";document.getElementById("table").style.display="none";document.getElementById("mcards").innerHTML="";return}
+  document.getElementById("empty").style.display="none";
+  document.getElementById("table").style.display="";
+  document.getElementById("tbody").innerHTML=allCodes.map(c=>`<tr>
+    <td><span style=font-family:monospace;font-size:0.8rem>${c.code}</span></td>
+    <td><span class="badge ${c.plan_granted==="pro"?"bg-amber":c.plan_granted==="admin"?"bg-red":"bg-blue"}">${L[c.plan_granted]||c.plan_granted}</span></td>
+    <td>${c.duration_type==="lifetime"||c.duration_value===0?"永久":c.duration_value+"天"}</td>
+    <td><span class="badge ${SC[c.status]||""}">${SL[c.status]||c.status}</span></td>
+    <td>${c.used_count}/${c.max_uses}</td>
+    <td>${new Date(c.created_at).toLocaleDateString("zh-CN")}</td>
+    <td>
+      <button class="btn btn-sm btn-outline" onclick="copy1('${c.code}')">📋</button>
+      ${c.status==="active"?`<button class="btn btn-sm btn-outline" onclick="toggle('${c.code}','disabled')">⏸</button>`:""}
+      ${c.status==="disabled"?`<button class="btn btn-sm btn-outline" onclick="toggle('${c.code}','active')">▶</button>`:""}
+      <button class="btn btn-sm btn-danger" onclick="del('${c.code}')">🗑</button>
+    </td></tr>`).join("");
+  document.getElementById("mcards").innerHTML=allCodes.map(c=>`<div class=mobile-card>
+    <div class=code>${c.code}</div>
+    <div class=meta><span class="badge ${c.plan_granted==="pro"?"bg-amber":c.plan_granted==="admin"?"bg-red":"bg-blue"}">${L[c.plan_granted]}</span> ${c.duration_type==="lifetime"||c.duration_value===0?"永久":c.duration_value+"天"} · <span class="badge ${SC[c.status]}">${SL[c.status]}</span> · ${c.used_count}/${c.max_uses}次 · ${new Date(c.created_at).toLocaleDateString("zh-CN")}</div>
+    <div class=actions>
+      <button class="btn btn-sm btn-outline" onclick="copy1('${c.code}')">复制</button>
+      ${c.status==="active"?`<button class="btn btn-sm btn-outline" onclick="toggle('${c.code}','disabled')">停用</button>`:""}
+      ${c.status==="disabled"?`<button class="btn btn-sm btn-outline" onclick="toggle('${c.code}','active')">启用</button>`:""}
+      <button class="btn btn-sm btn-danger" onclick="del('${c.code}')">删除</button>
+    </div></div>`).join("");
+}
+
+async function generate(){
+  const plan=document.getElementById("g-plan").value;
+  const dtype=document.getElementById("g-dtype").value;
+  const dval=parseInt(document.getElementById("g-dval").value)||0;
+  const count=parseInt(document.getElementById("g-count").value)||5;
+  const uses=parseInt(document.getElementById("g-uses").value)||1;
+  const note=document.getElementById("g-note").value||null;
+  const codes=[];
+  for(let i=0;i<count;i++){
+    const c=mkc(plan);
+    const {error}=await sb.from("mango_codes").insert({code:c,plan_granted:plan,duration_type:dtype,duration_value:dval,max_uses:uses,note});
+    if(!error)codes.push(c);
+  }
+  if(codes.length>0){
+    document.getElementById("result-box").style.display="block";
+    document.getElementById("result-box").innerHTML=`✅ 已生成 ${codes.length} 个 ${L[plan]} 码<div class=codes>${codes.join("\n")}</div><button class="btn btn-sm btn-outline" style=margin-top:8px onclick="navigator.clipboard.writeText(\`${codes.join("\\n")}\`);t('已复制',1)">📋 复制全部</button>`;
+    t(`已生成 ${codes.length} 个码`,1);
+    load();
+  }else{t("生成失败",0)}
+}
+
+async function toggle(code,status){
+  const {error}=await sb.from("mango_codes").update({status}).eq("code",code);
+  if(!error){t(status==="active"?"已启用":"已停用",1);load()}else t(error.message,0)
+}
+async function del(code){
+  if(!confirm("确定删除 "+code+"？"))return;
+  const {error}=await sb.from("mango_codes").delete().eq("code",code);
+  if(!error){t("已删除",1);load()}else t(error.message,0)
+}
+function copy1(s){navigator.clipboard.writeText(s);t("已复制",1)}
+
+init();
+</script>
+</body>
+</html>
