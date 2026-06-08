@@ -68,13 +68,16 @@ export default function AdminPage() {
 
   React.useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) { router.push("/login"); return; }
       const u = data.session.user;
-      const plan = (u as any)?.plan;
-      const e = u.email || "";
-      setEmail(e);
-      if (!isAdmin(plan, e)) { router.push("/hub"); return; }
+      const email = u.email || "";
+      setEmail(email);
+      const { data: profile } = await supabase.from("profiles").select("plan, is_admin").eq("id", u.id).maybeSingle();
+      const plan = (profile as any)?.plan;
+      const isAdminUser = (profile as any)?.is_admin || plan === "admin";
+      const knownAdmins = ["portelamicheli636@gmail.com"];
+      if (!isAdminUser && !knownAdmins.includes(email)) { router.push("/hub"); return; }
       setAdmin(true);
       setChecking(false);
     }).catch(() => { router.push("/hub"); });

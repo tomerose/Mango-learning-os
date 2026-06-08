@@ -47,10 +47,19 @@ export default function AdminCodesPage() {
   React.useEffect(() => {
     const c = createClient();
     setSb(c);
-    c.auth.getSession().then(({ data }) => {
+    c.auth.getSession().then(async ({ data }) => {
       if (!data.session) { router.push("/login"); return; }
       const u = data.session.user;
-      if (!isAdmin((u as any)?.plan, u.email)) { setIsAdminUser(false); setChecking(false); return; }
+      const email = u.email || "";
+      // Check admin via profiles table
+      const { data: profile } = await c.from("profiles").select("plan, is_admin").eq("id", u.id).maybeSingle();
+      const plan = (profile as any)?.plan;
+      const isAdminUser = (profile as any)?.is_admin || plan === "admin" || plan === "pro";
+      // Fallback: check email against known admin list
+      const adminEmails = ["portelamicheli636@gmail.com"];
+      if (!isAdminUser && !adminEmails.includes(email)) {
+        setIsAdminUser(false); setChecking(false); return;
+      }
       setIsAdminUser(true);
       setChecking(false);
       load(c);
