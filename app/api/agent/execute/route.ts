@@ -52,7 +52,8 @@ export async function POST(req: NextRequest) {
     }
 
     const isPro = effectivePlan === "pro" || effectivePlan === "admin";
-    const shouldResearch = (isPro && !noResearch) || forceResearch;
+    // V14.8.1: Pro/Admin ALWAYS research — noResearch escape hatch removed
+    const shouldResearch = isPro || forceResearch;
     const taskType = detectTaskType(intent);
     const taskId = `artifact-${Date.now()}`;
 
@@ -225,7 +226,21 @@ export async function POST(req: NextRequest) {
           sectionsMissing: [],
         },
       };
-      proArtifact.status = qualityV3.passed ? "completed" : "partial";
+      // V14.8.1: Pro/Admin hard gate — below 90 = FAILED, never "partial"
+      const proPassed = qualityV3.passed;
+      proArtifact.status = proPassed ? "completed" : "failed";
+      proArtifact.qualityCheck = {
+        passed: proPassed,
+        score: qualityV3.percentage,
+        checks: {
+          hasContent: finalContent.length > 500,
+          hasStructure: structure.sections.length >= 3,
+          hasExamples: /例题|案例|示例|example/i.test(finalContent),
+          hasActions: /练习|任务|步骤|行动|下一步/i.test(finalContent),
+          sectionsPresent: structure.sections.map(s => s.title),
+          sectionsMissing: [],
+        },
+      };
 
       // Inject research + quality data
       (proArtifact as any).researchSources = rankedSources;
@@ -237,21 +252,33 @@ export async function POST(req: NextRequest) {
 
       proArtifact.updatedAt = new Date().toISOString();
 
+      // Save to outcome tables if Supabase configured
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+        await sb.from("agent_runs").insert({
+          user_id: session.userId, user_email: session.email, tier: effectivePlan,
+          prompt: intent.trim(), task_type: taskType,
+          status: proPassed ? "completed" : "needs_review",
+          quality_score: qualityV3.percentage, source_count: rankedSources.length,
+          citation_count: (finalContent.match(/\[\d+\]/g) || []).length,
+          export_status: "pending"
+        });
+      } catch {}
+
       return NextResponse.json({
-        success: proArtifact.status === "completed" || proArtifact.status === "partial",
+        success: proPassed,
         artifact: proArtifact,
-        researchPipeline: {
-          stages: allStages,
-          sources: rankedSources,
-          evidenceMap,
-          networkAvailable: collectorResult.networkAvailable,
-          qualityResult: qualityV3,
-        },
-        message: qualityV3.passed
-          ? `「${proArtifact.artifactTitle || intent.slice(0, 30)}」已生成 · ${qualityV3.percentage}分 · 基于 ${rankedSources.length} 条来源${deepenRound > 0 ? ` · 深化 ${deepenRound} 次` : ""}`
-          : `${qualityV3.percentage}分未达标（要求 ≥${TIER_THRESHOLDS[effectivePlan]}）· 已深化 ${deepenRound} 次 · 建议补充资料后重新生成`,
-        proMode: true,
         qualityV3,
+        failedDimensions: qualityV3.dimensions.filter((d: any) => !d.passed).map((d: any) => ({ key: d.key, label: d.label, score: d.score, suggestion: d.suggestion })),
+        researchPipeline: {
+          stages: allStages, sources: rankedSources, evidenceMap,
+          networkAvailable: collectorResult.networkAvailable,
+        },
+        message: proPassed
+          ? `「${proArtifact.artifactTitle || intent.slice(0, 30)}」已生成 · ${qualityV3.percentage}分 · ${rankedSources.length}条来源${deepenRound > 0 ? ` · 深化${deepenRound}次` : ""}`
+          : `❌ 未达标 ${qualityV3.percentage}分（要求≥${TIER_THRESHOLDS[effectivePlan]}）· 已深化${deepenRound}次`,
+        proMode: true,
       });
     }
 

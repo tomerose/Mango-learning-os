@@ -69,12 +69,14 @@ function AgentPageInner() {
   const [copied, setCopied] = React.useState(false);
   const [intentType, setIntentType] = React.useState<string>("");
   const [tabHint, setTabHint] = React.useState<string>(""); // V14.7.1: tab=knowledge hint
-  const [proMode, setProMode] = React.useState(false); // V14.7.2: Pro research pipeline active
-  const [researchStages, setResearchStages] = React.useState<any[]>([]); // V14.7.2: pipeline stages
-  const [researchSources, setResearchSources] = React.useState<any[]>([]); // V14.7.2: research result sources
-  const [networkAvailable, setNetworkAvailable] = React.useState(true); // V14.7.2: network status
-  const [qualityV3, setQualityV3] = React.useState<any>(null); // V14.7.5: quality gate v3
-  const [deepenRounds, setDeepenRounds] = React.useState(0); // V14.7.5: auto-deepen rounds
+  const [proMode, setProMode] = React.useState(false);
+  const [researchStages, setResearchStages] = React.useState<any[]>([]);
+  const [researchSources, setResearchSources] = React.useState<any[]>([]);
+  const [networkAvailable, setNetworkAvailable] = React.useState(true);
+  const [qualityV3, setQualityV3] = React.useState<any>(null);
+  const [deepenRounds, setDeepenRounds] = React.useState(0);
+  const [taskFailed, setTaskFailed] = React.useState(false); // V14.8.1: Pro/Admin hard gate fail
+  const [failedDims, setFailedDims] = React.useState<any[]>([]); // V14.8.1: failed dimensions detail
   const [plan] = React.useState(() => {
     try { return localStorage.getItem("mango-user-plan") || "standard"; } catch { return "standard"; }
   });
@@ -143,6 +145,8 @@ function AgentPageInner() {
     if (!composeInput.trim()) return;
     setView("running");
     setArtifact(null);
+    setTaskFailed(false);
+    setFailedDims([]);
     const taskId = `task-${Date.now()}`;
     const iso = new Date().toISOString();
     const events: TimelineEvent[] = [];
@@ -175,6 +179,9 @@ function AgentPageInner() {
         setNetworkAvailable(rp.networkAvailable !== false);
         if (data.qualityV3) setQualityV3(data.qualityV3);
         if (data.qualityV3?.deepenRound !== undefined) setDeepenRounds(data.qualityV3.deepenRound);
+        // V14.8.1: Capture failed dimensions for Pro/Admin hard gate
+        if (!data.success && data.failedDimensions) setFailedDims(data.failedDimensions);
+        setTaskFailed(!data.success && data.proMode === true);
       } else {
         setResearchStages([]);
         setResearchSources([]);
@@ -286,6 +293,31 @@ function AgentPageInner() {
               <div className="flex items-center justify-between">
                 <Button variant="outline" size="sm" onClick={() => { setView("templates"); setArtifact(null); setSavedToLibrary(false); }} className="gap-1.5 rounded-xl text-xs"><Plus className="size-3.5" />新任务</Button>
               </div>
+              {/* V14.8.1: Pro/Admin hard gate FAILED banner */}
+              {taskFailed && (
+                <div className="card-card p-5 bg-red-50/50 border border-red-200 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="size-5 text-red-500" />
+                    <p className="text-sm font-semibold text-red-700">Pro 成品未达标</p>
+                  </div>
+                  <p className="text-xs text-red-600">
+                    当前质量评分 {qualityV3?.percentage || artifact?.qualityScore}分，Pro 要求 ≥90 分。
+                    已自动深化 {deepenRounds || (qualityV3?.deepenRound ?? 0)} 次，仍未通过。
+                  </p>
+                  {failedDims.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-semibold text-red-500">未达标维度：</p>
+                      {failedDims.map((d: any) => (
+                        <p key={d.key} className="text-[10px] text-red-500/80">• {d.label}: {d.score}分 — {d.suggestion || "需改进"}</p>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 pt-1">
+                    <Button size="sm" onClick={executeTask} className="rounded-lg gap-1 text-xs"><RotateCcw className="size-3" />重新生成</Button>
+                    <p className="text-[10px] text-red-400">建议补充资料或修改任务描述后重试</p>
+                  </div>
+                </div>
+              )}
               {artifact ? (
                 <>
                 <ArtifactRenderer
