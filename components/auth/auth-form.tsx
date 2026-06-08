@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { SimpleCaptcha } from "@/components/auth/captcha";
 
 const LOGIN_CODE = "tokentome222";
-const SIGNUP_CODE = "sillyfind2025";
+const SIGNUP_CODE = "tokentome222";
 
 interface AuthFormProps {
   mode: "login" | "signup";
@@ -169,7 +169,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               {isLogin ? "登录到 Mango" : "注册 Mango"}
             </p>
             <p className="text-[12px] text-fg-muted/90 leading-relaxed">
-              输入邀请码以继续。{isLogin ? "已有账号请使用登录邀请码。" : "新用户请使用注册邀请码。"}
+              输入邀请码以继续。{isLogin ? "已有账号请输入登录邀请码。" : "新用户请输入注册邀请码。"}
             </p>
           </div>
 
