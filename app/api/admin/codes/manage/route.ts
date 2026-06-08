@@ -32,12 +32,14 @@ export async function POST(req: NextRequest) {
       const CH = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       const g4 = () => { let s = ""; for (let i = 0; i < 4; i++) s += CH[Math.floor(Math.random() * CH.length)]; return s; };
       const prefix = planGranted === "admin" ? "MANGO-ADM-" : planGranted === "pro" ? "MANGO-PRO-" : "MANGO-STD-";
+      let lastError = "";
       for (let i = 0; i < (count || 1); i++) {
         const code = `${prefix}${g4()}-${g4()}-${g4()}`;
         const { error } = await sb.from("mango_codes").insert({ code, plan_granted: planGranted, duration_type: durationType || "days", duration_value: durationValue || 30, max_uses: maxUses || 1, note: note || null });
-        if (!error) codes.push(code);
+        if (!error) { codes.push(code); } else { lastError = error.message || JSON.stringify(error); }
       }
-      return NextResponse.json({ success: true, codes });
+      if (codes.length > 0) return NextResponse.json({ success: true, codes });
+      return NextResponse.json({ success: false, error: lastError || "所有插入均失败" });
     }
 
     if (action === "toggle") {
