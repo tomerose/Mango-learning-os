@@ -57,6 +57,19 @@ export async function POST(req: NextRequest) {
     const taskType = detectTaskType(intent);
     const taskId = `artifact-${Date.now()}`;
 
+    // V14.8.1: Create agent_run at START so frontend can poll status
+    let runId: string | null = null;
+    try {
+      const { createClient } = await import("@supabase/supabase-js");
+      const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+      const { data } = await sb.from("agent_runs").insert({
+        user_id: session.userId, user_email: session.email, tier: effectivePlan,
+        prompt: intent.trim(), task_type: taskType, status: "running", quality_score: 0,
+        source_count: 0, citation_count: 0, export_status: "pending"
+      }).select("id").single();
+      if (data) runId = data.id;
+    } catch {}
+
     const allStages: PipelineStageStatus[] = [];
 
     // ── PRO PATH: Research-first pipeline ───────────────────────
@@ -259,19 +272,19 @@ export async function POST(req: NextRequest) {
         const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
         const now = new Date().toISOString();
 
-        // agent_runs
-        const { data: runData } = await sb.from("agent_runs").insert({
-          user_id: session.userId, user_email: session.email, tier: effectivePlan,
-          prompt: intent.trim(), task_type: taskType,
-          status: proPassed ? "completed" : "needs_review",
-          quality_score: qualityV3.percentage, source_count: rankedSources.length,
-          citation_count: (finalContent.match(/\[\d+\]/g) || []).length,
-          export_status: "pending", created_at: now, updated_at: now
-        }).select("id").single();
+        // Update existing agent_run (created at start)
+        if (runId) {
+          await sb.from("agent_runs").update({
+            status: proPassed ? "completed" : "needs_review",
+            quality_score: qualityV3.percentage, source_count: rankedSources.length,
+            citation_count: (finalContent.match(/\[\d+\]/g) || []).length,
+            updated_at: now
+          }).eq("id", runId);
+        }
 
         // outcome_documents
         const { data: docData } = await sb.from("outcome_documents").insert({
-          user_id: session.userId, run_id: runData?.id,
+          user_id: session.userId, run_id: runId,
           title: proArtifact.artifactTitle || intent.slice(0, 80),
           summary: proArtifact.artifactSummary || finalContent.slice(0, 300),
           content: finalContent,
@@ -329,6 +342,7 @@ export async function POST(req: NextRequest) {
           ? `「${proArtifact.artifactTitle || intent.slice(0, 30)}」已生成 · ${qualityV3.percentage}分 · ${rankedSources.length}条来源${deepenRound > 0 ? ` · 深化${deepenRound}次` : ""}`
           : `❌ 未达标 ${qualityV3.percentage}分（要求≥${TIER_THRESHOLDS[effectivePlan]}）· 已深化${deepenRound}次`,
         proMode: true,
+        runId,
       });
     }
 
