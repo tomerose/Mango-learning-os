@@ -3,16 +3,27 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { mobileNavItemsV2, moreNavItems } from "@/lib/navigation-v2";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/supabase/client";
+import { isAdmin } from "@/lib/admin";
 
 export function MobileNavV2() {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const [showAdmin, setShowAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) return;
+      setShowAdmin(isAdmin((data.session.user as any)?.plan, data.session.user.email));
+    }).catch(() => {});
+  }, []);
 
   return (
     <>
@@ -77,6 +88,20 @@ export function MobileNavV2() {
                     </Link>
                   );
                 })}
+
+                {/* Admin — only visible to admin users */}
+                {showAdmin && (
+                  <>
+                    <div className="my-1 border-t border-amber-200/30" />
+                    <Link href="/admin" onClick={() => setOpen(false)}
+                      className={cn("flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors",
+                        pathname.startsWith("/admin") ? "bg-amber-50 text-amber-700" : "text-amber-600/80 hover:bg-amber-50/50")}>
+                      <Shield className="size-5" />
+                      <div className="flex-1">Admin Console</div>
+                      <Badge className="text-[9px] bg-amber-100 text-amber-700">Admin</Badge>
+                    </Link>
+                  </>
+                )}
               </div>
             </SheetContent>
           </Sheet>

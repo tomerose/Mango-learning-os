@@ -3,16 +3,28 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { navItemsV2 } from "@/lib/navigation-v2";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/supabase/client";
+import { isAdmin } from "@/lib/admin";
 
 export function SidebarV2() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = React.useState(false);
+  const [showAdmin, setShowAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }) => {
+      if (!data.session) return;
+      const u = data.session.user;
+      setShowAdmin(isAdmin((u as any)?.plan, u.email));
+    }).catch(() => {});
+  }, []);
 
   return (
     <aside className={cn(
@@ -99,6 +111,32 @@ export function SidebarV2() {
           }
           return link;
         })}
+
+        {/* Admin — only visible to admin users */}
+        {showAdmin && (
+          <>
+            {!collapsed && <div className="my-2 border-t border-amber-200/40" />}
+            {!collapsed && <p className="text-[9px] text-amber-600/70 px-3 pb-1 uppercase tracking-widest font-medium">Admin</p>}
+            {(() => {
+              const isActive = pathname === "/admin" || pathname.startsWith("/admin/");
+              const link = (
+                <Link key="admin" href="/admin"
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
+                    isActive ? "bg-amber-50 text-amber-700" : "text-amber-600/70 hover:bg-amber-50/50 hover:text-amber-700",
+                    collapsed && "justify-center px-2",
+                  )}>
+                  <Shield className="size-5 shrink-0" strokeWidth={1.5} />
+                  {!collapsed && <span>Admin</span>}
+                </Link>
+              );
+              if (collapsed) {
+                return <Tooltip key="admin" delayDuration={200}><TooltipTrigger asChild>{link}</TooltipTrigger><TooltipContent side="right" className="text-xs">Admin Console</TooltipContent></Tooltip>;
+              }
+              return link;
+            })()}
+          </>
+        )}
       </nav>
     </aside>
   );
