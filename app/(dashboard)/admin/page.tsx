@@ -76,7 +76,7 @@ export default function AdminPage() {
       const { data: profile } = await supabase.from("profiles").select("plan, is_admin").eq("id", u.id).maybeSingle();
       const plan = (profile as any)?.plan;
       const isAdminUser = (profile as any)?.is_admin || plan === "admin";
-      const knownAdmins = ["portelamicheli636@gmail.com"];
+      const knownAdmins = ["1211000567@qq.com"];
       if (!isAdminUser && !knownAdmins.includes(email)) { router.push("/hub"); return; }
       setAdmin(true);
       setChecking(false);

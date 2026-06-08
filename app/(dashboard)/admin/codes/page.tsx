@@ -49,7 +49,7 @@ export default function AdminCodesPage() {
     c.auth.getSession().then(({ data }) => {
       if (!data.session) { router.push("/login"); return; }
       const email = data.session.user.email || "";
-      if (email === "portelamicheli636@gmail.com") {
+      if (email === "1211000567@qq.com") {
         setIsAdminUser(true); setChecking(false); load(); return;
       }
       setIsAdminUser(false); setChecking(false);
