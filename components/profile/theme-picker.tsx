@@ -31,7 +31,11 @@ function getStoredTheme(): ThemeVariant {
 
 function applyTheme(variant: ThemeVariant) {
   if (typeof document === "undefined") return;
-  document.documentElement.setAttribute("data-mango-theme", variant);
+  if (variant === "warm-paper") {
+    document.documentElement.removeAttribute("data-mango-theme");
+  } else {
+    document.documentElement.setAttribute("data-mango-theme", variant);
+  }
   localStorage.setItem("mango-theme-variant", variant);
 }
 

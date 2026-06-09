@@ -118,32 +118,53 @@
 
 /* ═══════════════════════════════════════════════════════════════
    V14.8.1 Taste-Skill Theme Variants
-   Controlled via data-mango-theme attribute on <html>
+   Uses direct element selectors (not CSS variables) for visible effect.
+   Tailwind utilities are build-time; runtime theming needs direct CSS.
    ═══════════════════════════════════════════════════════════════ */
 
-/* Minimalist (Notion/Linear vibe) */
-[data-mango-theme="minimalist"] {
-  --color-bg:            oklch(0.99 0 0);
-  --color-bg-subtle:     oklch(0.97 0 0);
-  --color-bg-muted:      oklch(0.95 0 0);
-  --color-surface:       oklch(0.995 0 0);
-  --radius-lg: 0.625rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 0.875rem;
-  --shadow-md: 0 0 0 1px oklch(0 0 0 / 0.06);
-  --shadow-lg: 0 0 0 1px oklch(0 0 0 / 0.08), 0 2px 8px oklch(0 0 0 / 0.04);
+/* ── Minimalist (Notion/Linear vibe): tighter radius, border-shadows, cooler bg ── */
+[data-mango-theme="minimalist"] body {
+  background: oklch(0.985 0 0);
+}
+[data-mango-theme="minimalist"] .surface-card,
+[data-mango-theme="minimalist"] [class*="rounded-2xl"],
+[data-mango-theme="minimalist"] .mango-hero-card {
+  border-radius: 0.625rem !important;
+}
+[data-mango-theme="minimalist"] .shadow-md,
+[data-mango-theme="minimalist"] .shadow-lg,
+[data-mango-theme="minimalist"] .shadow-xl {
+  box-shadow: 0 0 0 1px oklch(0 0 0 / 0.06) !important;
+}
+[data-mango-theme="minimalist"] .bg-sidebar {
+  background: oklch(0.97 0 0);
+  border-right: 1px solid oklch(0 0 0 / 0.06);
 }
 
-/* High-End Visual (premium, lower contrast, spring motion) */
-[data-mango-theme="high-end"] {
-  --color-bg:            oklch(0.985 0.003 80);
-  --color-bg-subtle:     oklch(0.975 0.004 80);
-  --color-surface:       oklch(0.992 0.001 80);
-  --color-fg:            oklch(0.22 0.02 100);
-  --color-fg-muted:      oklch(0.40 0.015 100);
-  --color-primary:       oklch(0.52 0.12 75);
-  --shadow-lg:  0 8px 32px oklch(0.25 0.03 100 / 0.06);
-  --shadow-xl:  0 16px 48px oklch(0.25 0.03 100 / 0.08);
+/* ── High-End: softer bg, deeper blur shadows, slower motion ── */
+[data-mango-theme="high-end"] body {
+  background: oklch(0.982 0.003 85);
+}
+[data-mango-theme="high-end"] .surface-card,
+[data-mango-theme="high-end"] [class*="rounded-2xl"],
+[data-mango-theme="high-end"] .mango-hero-card {
+  border-radius: 1.75rem !important;
+}
+[data-mango-theme="high-end"] .shadow-md {
+  box-shadow: 0 4px 20px oklch(0.25 0.03 100 / 0.06) !important;
+}
+[data-mango-theme="high-end"] .shadow-lg {
+  box-shadow: 0 8px 40px oklch(0.25 0.03 100 / 0.08) !important;
+}
+[data-mango-theme="high-end"] .shadow-xl {
+  box-shadow: 0 16px 56px oklch(0.25 0.03 100 / 0.10) !important;
+}
+[data-mango-theme="high-end"] * {
+  --duration-normal: 0.5s;
+}
+[data-mango-theme="high-end"] .bg-sidebar {
+  background: oklch(0.975 0.004 85);
+  border-right: 1px solid oklch(0.25 0.03 100 / 0.04);
 }
 
 /* ── Dark Mode: Deep warm charcoal ────────────────────────────── */

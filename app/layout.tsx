@@ -4,6 +4,7 @@ import "./local-fonts.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SWRegister } from "@/components/sw-register";
 import { QuickStartGuide } from "@/components/onboarding/quick-start-guide";
+import { MangoFarewellLetter } from "@/components/hub/mango-farewell-letter";
 
 export const metadata: Metadata = {
   title: "Mango Learning OS",
@@ -59,6 +60,7 @@ export default function RootLayout({
         </ThemeProvider>
         <SWRegister />
         <QuickStartGuide />
+        <MangoFarewellLetter />
       </body>
     </html>
   );
