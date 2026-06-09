@@ -167,6 +167,37 @@ const DIMENSIONS: DimDef[] = [
       return { score: 0, suggestion: "未保存到 Library" };
     },
   },
+  {
+    // V14.8.1 — stop-slop dimension: detect AI writing tells
+    key: "authenticity", label: "写作真实性(反AI味)", weight: 8,
+    check: (c) => {
+      let penalty = 0;
+      const slopPatterns = [
+        /值得注意的是/g, /总而言之/g, /更重要的是/g, /令人惊讶的是/g,
+        /深入探讨/g, /释放.*潜力/g, /彻底改变/g, /无缝的/g, /尖端的/g,
+        /动态的/g, /沉浸式/g, /不仅.*而且/g,
+        /极其/g, /非常/g, /特别/g, /无比/g,
+      ];
+      for (const p of slopPatterns) {
+        const matches = (c.content.match(p) || []).length;
+        penalty += matches * 2;
+      }
+      // Count em dashes
+      const emDashCount = (c.content.match(/—/g) || []).length;
+      if (emDashCount > 3) penalty += (emDashCount - 3) * 2;
+      // Passive voice heuristic (被...结构)
+      const passiveCount = (c.content.match(/被\S{1,3}/g) || []).length;
+      if (passiveCount > 5) penalty += (passiveCount - 5);
+
+      const score = Math.max(0, 8 - penalty);
+      return {
+        score,
+        suggestion: penalty >= 4
+          ? `检测到 ${penalty} 处 AI 模板痕迹，建议清洗：去掉套话、em dash、被动语态`
+          : undefined,
+      };
+    },
+  },
 ];
 
 // ═══ Main evaluation ═══════════════════════════════════════════

@@ -8,8 +8,7 @@
    A Personal Learning Sanctuary — not a dashboard.
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Google Fonts: Editorial Serif + Geometric Sans ──────────── */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap');
+/* ── Fonts: self-hosted (see app/local-fonts.css) ──────────── */
 
 :root {
   /* ═══ 8pt Grid Spacing ═══ */
@@ -69,15 +68,15 @@
   --color-border-strong: rgba(0,0,0,0.10);
   --color-border-hover:  rgba(0,0,0,0.16);
 
-  /* ═══ Shadow (Light) — softer, warmer ═══ */
-  --shadow-xs:  0 1px 2px rgba(0,0,0,0.03);
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
-  --shadow-md:  0 4px 8px rgba(0,0,0,0.04), 0 2px 4px rgba(0,0,0,0.03);
-  --shadow-lg:  0 8px 30px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.03);
-  --shadow-xl:  0 16px 32px rgba(0,0,0,0.06), 0 8px 16px rgba(0,0,0,0.03);
-  --shadow-2xl: 0 8px 30px rgba(0,0,0,0.04), 0 24px 48px rgba(0,0,0,0.06);
+  /* ═══ Shadow (Light) — impeccable: always tinted, never pure black ═══ */
+  --shadow-xs:  0 1px 2px oklch(0.25 0.03 140 / 0.03);
+  --shadow-sm:  0 1px 3px oklch(0.25 0.03 140 / 0.04), 0 1px 2px oklch(0.25 0.03 140 / 0.03);
+  --shadow-md:  0 4px 8px oklch(0.25 0.03 140 / 0.04), 0 2px 4px oklch(0.25 0.03 140 / 0.03);
+  --shadow-lg:  0 8px 30px oklch(0.25 0.03 140 / 0.05), 0 4px 8px oklch(0.25 0.03 140 / 0.03);
+  --shadow-xl:  0 16px 32px oklch(0.25 0.03 140 / 0.06), 0 8px 16px oklch(0.25 0.03 140 / 0.03);
+  --shadow-2xl: 0 8px 30px oklch(0.25 0.03 140 / 0.05), 0 24px 48px oklch(0.25 0.03 140 / 0.07);
 
-  /* ═══ Motion ═══ */
+  /* ═══ Motion — impeccable: no bounce/elastic (feels dated), snappy + decelerate only ═══ */
   --duration-instant: 80ms;
   --duration-micro:   150ms;
   --duration-fast:    200ms;
@@ -87,7 +86,7 @@
 
   --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* impeccable: spring without bounce */
   --ease-snappy: cubic-bezier(0.2, 0, 0, 1);
 
   /* ═══ Calm Academic OS V11 — Mango Identity ═══ */
@@ -115,6 +114,36 @@
   /* Reading-optimized layout */
   --reading-width: 720px;
   --reading-line-height: 1.8;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   V14.8.1 Taste-Skill Theme Variants
+   Controlled via data-mango-theme attribute on <html>
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Minimalist (Notion/Linear vibe) */
+[data-mango-theme="minimalist"] {
+  --color-bg:            oklch(0.99 0 0);
+  --color-bg-subtle:     oklch(0.97 0 0);
+  --color-bg-muted:      oklch(0.95 0 0);
+  --color-surface:       oklch(0.995 0 0);
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 0.875rem;
+  --shadow-md: 0 0 0 1px oklch(0 0 0 / 0.06);
+  --shadow-lg: 0 0 0 1px oklch(0 0 0 / 0.08), 0 2px 8px oklch(0 0 0 / 0.04);
+}
+
+/* High-End Visual (premium, lower contrast, spring motion) */
+[data-mango-theme="high-end"] {
+  --color-bg:            oklch(0.985 0.003 80);
+  --color-bg-subtle:     oklch(0.975 0.004 80);
+  --color-surface:       oklch(0.992 0.001 80);
+  --color-fg:            oklch(0.22 0.02 100);
+  --color-fg-muted:      oklch(0.40 0.015 100);
+  --color-primary:       oklch(0.52 0.12 75);
+  --shadow-lg:  0 8px 32px oklch(0.25 0.03 100 / 0.06);
+  --shadow-xl:  0 16px 48px oklch(0.25 0.03 100 / 0.08);
 }
 
 /* ── Dark Mode: Deep warm charcoal ────────────────────────────── */

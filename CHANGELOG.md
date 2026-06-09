@@ -4,6 +4,39 @@ All notable changes to Mango Learning OS. Uses [Semantic Versioning](https://sem
 
 ---
 
+## [14.8.1] — 2026-06-08 · *Outcome Loop + Agent Enforcement*
+
+### Added
+- **Agent Enforcement** — Pro/Admin mandatory research, noResearch escape removed, hard 90 quality gate (<90 → FAILED state)
+- **Outcome Loop MVP** — 5-table persistence: agent_runs, outcome_documents, outcome_versions, outcome_sources, outcome_exports
+- **Quality Gate v4** — requiredFixes, needsAdminReview, citationCount dimensions
+- **Tavily Search** — AI-native semantic search, 1K free/month
+- **Jina Reader** — Free deep search, zero setup, 10M tokens
+- **Admin Review Page** — `/admin/review` with full outcome document inspection
+- **Admin Research QC Page** — `/admin/research-qc` with quality metrics
+- **Export API** — POST `/api/export` — HTML + PDF (ezPDF server-side)
+- **Supabase Realtime** — WebSocket-based instant progress updates for agent runs
+- **Agent Status API** — runId-based polling with progress tracking
+- **Auto-deepen** — Pro/Admin agents auto-retry up to 2 rounds if quality <90
+- **Source collection** — Pro → 12 sources, 8 search queries
+- **Fonts self-hosted** — Cormorant Garamond + Inter served locally, zero external dependency
+
+### Fixed
+- Agent result displayed as raw markdown → integrated OutcomeDocument with section parsing
+- Save-to-Library empty sections → parse markdown ## headers into ArtifactSection[]
+- Error files sent to Agent API → filter out files with error values
+- Duplicate copy/export buttons → preserved both (ArtifactRenderer + OutcomeActionsBar)
+
+## [14.8.0] — 2026-06-07 · *Weekend Closeout*
+
+### Added
+- Quality Gate v3 → v4 preparation
+- GitHub research notes for V14.8
+- Agent pipeline architecture design
+- Fluid Compute readiness assessment
+
+---
+
 ## [1.2.0] — 2026-06-05 · *Apple Glass*
 
 ### Added

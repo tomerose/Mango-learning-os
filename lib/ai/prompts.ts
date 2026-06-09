@@ -9,6 +9,15 @@ import type { ChatMessage } from "@/lib/ai/client";
 //   概念 → 直觉 → 推导 → 例子 → 易错点 → 应用
 // ─────────────────────────────────────────────────────────────
 
+/** V14.8.1 — stop-slop integration: anti-AI-tell rules applied to all generations.
+ *  Source: github.com/hardikpandya/stop-slop (MIT) */
+const ANTI_SLOP_RULES = `
+【写作风格强制规则 — 禁止以下 AI 模板痕迹】
+禁止短语：不仅…而且…(滥用)、值得注意的是、总而言之、更重要的是、令人惊讶的是、深入探讨、释放潜力、彻底改变、无缝的、尖端的、动态的、沉浸式。
+禁止结构：被动语态(除非必要)、二元对比开头("有些人…另一些人…")、戏剧化短句堆砌、修辞设问开场、元评论("好的，我来…"、"当然，我很乐意…"、"以下是…")。
+句子规则：禁止 Wh- 疑问句开头("什么是…？让我们来…")、禁止 em dash 滥用、禁止"极其/非常/特别/无比"等空洞强调词。
+输出要求：直接陈述。逻辑优先。中文自然流畅。不用模板化过渡句。`;
+
 const SUBJECT_PERSONA: Record<SubjectId, string> = {
   ai: "你是一位资深 AI/机器学习导师，擅长把 Transformer、反向传播、概率图模型等抽象概念讲到直觉层面，并给出可运行的代码示例。",
   economics:
@@ -36,7 +45,7 @@ export function buildTutorMessages(
 ): ChatMessage[] {
   const system: ChatMessage = {
     role: "system",
-    content: `${SUBJECT_PERSONA[subject]}\n\n${TUTOR_FRAMEWORK}`,
+    content: `${SUBJECT_PERSONA[subject]}\n\n${TUTOR_FRAMEWORK}\n\n${ANTI_SLOP_RULES}`,
   };
   return [system, ...history];
 }
@@ -50,7 +59,7 @@ export function buildQuizPrompt(
   return [
     {
       role: "system",
-      content: `${SUBJECT_PERSONA[subject]}\n\n你是一个出题引擎。只输出严格合法的 JSON，不要任何额外文字或代码块标记。`,
+      content: `${SUBJECT_PERSONA[subject]}\n\n你是一个出题引擎。只输出严格合法的 JSON，不要任何额外文字或代码块标记。\n${ANTI_SLOP_RULES}`,
     },
     {
       role: "user",
@@ -73,7 +82,7 @@ export function buildErrorAnalysisPrompt(
   return [
     {
       role: "system",
-      content: `${SUBJECT_PERSONA[subject]}\n\n你是错题分析专家。诊断学生的思维误区，而不仅是给出正确答案。`,
+      content: `${SUBJECT_PERSONA[subject]}\n\n你是错题分析专家。诊断学生的思维误区，而不仅是给出正确答案。\n${ANTI_SLOP_RULES}`,
     },
     {
       role: "user",
@@ -162,7 +171,7 @@ Step 5: 应用练习（预估 25 分钟）
 
 export function buildStructuredLearnPrompt(topic: string): ChatMessage[] {
   return [
-    { role: "system", content: STRUCTURED_LEARN_SYSTEM },
+    { role: "system", content: `${STRUCTURED_LEARN_SYSTEM}\n\n${ANTI_SLOP_RULES}` },
     { role: "user", content: `请分析：${topic}` },
   ];
 }

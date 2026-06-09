@@ -69,10 +69,11 @@ export function CinematicHero({
     <motion.section
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-      className={cn("mango-hero-card relative overflow-hidden rounded-[28px] p-5 text-white", className)}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className={cn("mango-hero-card relative overflow-hidden rounded-2xl p-5 text-white", className)}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_0%,rgba(251,191,36,0.24),transparent_34%),radial-gradient(circle_at_80%_12%,rgba(255,255,255,0.11),transparent_30%)]" />
+      {/* V14.8.1 taste-skill: oklch gradients, no rgba */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_0%,oklch(0.58_0.16_75/0.24),transparent_34%),radial-gradient(circle_at_80%_12%,oklch(1_0_0/0.11),transparent_30%)]" />
       <div className="absolute -right-16 -top-16 size-44 rounded-full bg-primary/25 blur-3xl" />
       <div className="relative z-10 flex flex-col gap-5">
         <div className="flex items-start justify-between gap-4">

@@ -1,6 +1,6 @@
 # MangoLearningOS — Project State
 
-**Updated:** 2026-06-08 | **Version:** V14.7.3 Public Activation & Vision | **Branch:** `main`
+**Updated:** 2026-06-09 | **Version:** V14.8.1 Outcome Loop + Agent Enforcement | **Branch:** `main`
 
 ## Stack (v7)
 Next.js 15.5 (App Router) · React 19 · TypeScript 5.8 · Tailwind CSS 4.1
@@ -18,9 +18,15 @@ shadcn/ui (New York) · Supabase (PostgreSQL + RLS) · DeepSeek AI · Vercel
 - Secondary mobile modules remain accessible: Notes/Forest/Graph through `/exam?tab=...`, Planner (`/planner`), Grow (`/grow`), Voice (`/voice`), DNA (`/dna`).
 - Protected backend/business paths untouched for this pass.
 
-## Architecture
-- **Research Orchestrator (9 providers):** Web (DuckDuckGo), GitHub, Academic (arXiv), Bilibili, Douyin, Open Library, Free Dictionary, Gutendex, Local Files
-- **Content Quality Engine v2:** 7-gate validation (relevance, grounding, structure, completeness, anti-generic, formatting, actionability)
+## Architecture (V14.8.1)
+
+### Core Systems
+- **Research Orchestrator (11 providers):** Web (DuckDuckGo), GitHub, Academic (arXiv), Bilibili, Douyin, Open Library, Free Dictionary, Gutendex, Local Files, **Tavily Search (1K/mo free)**, **Jina Reader (10M tokens free)**
+- **Content Quality Engine v4:** 7-gate validation + requiredFixes + needsAdminReview + citationCount (hard 90 gate for Pro/Admin)
+- **Agent Execution Pipeline:** Pro/Admin mandatory research → source collection → AI synthesis → Quality Gate v4 → auto-deepen (up to 2 rounds if <90)
+- **Outcome Loop:** 5-table persistence (agent_runs, outcome_documents, outcome_versions, outcome_sources, outcome_exports) + Admin Review + Research QC
+- **Fluid Compute:** `after()` background processing → runId → polling + Supabase Realtime zero-latency updates
+- **Export API:** ezPDF server-side PDF + HTML/Markdown export
 - **Feature Output Contracts:** 6 feature contracts (exam-review, tutor, mind-garden, knowledge-capture, career, research)
 - **Exam Review Module:** Full pipeline (input → research → 18-section handout → Word/PDF/MD export)
 - **Mind Garden v2:** 10 safe modes, crisis detection, privacy toggle (local/cloud)
@@ -42,22 +48,33 @@ shadcn/ui (New York) · Supabase (PostgreSQL + RLS) · DeepSeek AI · Vercel
 | `/dna` | Mango DNA | Persona profile, agent gallery |
 | `/profile` | Mango | XP, level, stats, contact card |
 
-## API Routes (v7.3)
-- `/api/exam-review/generate` — Full exam handout (online research → AI → 18 sections)
+## API Routes (V14.8.1 — 24 groups)
+- `/api/agent/execute` — Agent pipeline: research → quality gate → outcome persistence → export
+- `/api/agent/status` — Agent run polling (runId → status/progress)
+- `/api/ai/chat` — Streaming AI chat (SSE)
+- `/api/ai/quiz` — Quiz generation
+- `/api/exam-review/generate` — Full exam handout (18 sections)
 - `/api/exam-review/export` — Word/PDF/Markdown/HTML export
+- `/api/exam/github-sync` — GitHub raw URL import/export
+- `/api/export` — HTML/PDF server-side export (ezPDF)
 - `/api/mind-garden/reflect` — 10-mode safe mental wellness + crisis detection
-- `/api/forest/enrich` — Multi-source forest enrichment (Wikipedia + GitHub + web)
-- `/api/notes/enrich` — AI note enrichment (Wikipedia + DDG)
+- `/api/forest/enrich` — Multi-source forest enrichment
+- `/api/notes/enrich` — AI note enrichment
 - `/api/notes/import/file` — File import (Word/PDF/MD)
 - `/api/notes/import/url` — URL content fetch
+- `/api/cognitive/mindmap` — Cognitive mindmap generation
 - `/api/wechat/webhook` — WeChat Official Account webhook
 - `/api/wecom/webhook` — WeCom bot webhook
 - `/api/cron/wechat-daily` — Daily WeChat content push
+- `/api/admin/*` — Admin Review + Research QC pages
+- `/api/data/*` — Data export/analytics
 
-## Research Providers (9 total)
+## Research Providers (11 total)
 | Provider | Status | API Key |
 |----------|--------|---------|
 | Web Search (DuckDuckGo) | ✅ Free | None |
+| Tavily Search | ✅ 1K/mo free | TAVILY_API_KEY |
+| Jina Reader | ✅ Free 10M tokens | None |
 | GitHub | ✅ Free 60/h | GITHUB_TOKEN optional |
 | Academic (arXiv) | ✅ Free | None |
 | Bilibili (哔哩哔哩) | ✅ Free | None |
@@ -68,7 +85,8 @@ shadcn/ui (New York) · Supabase (PostgreSQL + RLS) · DeepSeek AI · Vercel
 | Local Files | ✅ | User upload |
 
 ## Database (Supabase)
-- 21 tables (unchanged from v6)
+- 26 tables (V14.8.1: +5 outcome loop tables + mango_codes) — all deployed ✅
+- Outcome tables: agent_runs, outcome_documents, outcome_versions, outcome_sources, outcome_exports
 - All tables RLS-protected
 
 ## Agent Collaboration and Synchronization Rules

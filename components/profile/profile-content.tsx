@@ -15,9 +15,11 @@ import { WeeklyUpdateSection } from "./weekly-update-section";
 import { BillingSection } from "./billing-section";
 import { MobileShell, ProfileIdentityCard, LearningStatCard } from "@/components/mobile/premium-mobile";
 import { PlanCompare } from "@/components/plan/plan-compare";
+import { ThemePicker } from "@/components/profile/theme-picker";
+import { CareerPrep } from "@/components/profile/career-prep";
 import { Flame, Zap, Target, CheckCircle2, User } from "lucide-react";
 
-type Tab = "overview" | "billing" | "privacy";
+type Tab = "overview" | "billing" | "privacy" | "career";
 
 export function ProfileContent() {
   const { stats, tasks, mode, notes } = useStore();
@@ -134,6 +136,7 @@ export function ProfileContent() {
               { id: "overview" as Tab, label: "概览", icon: "📊" },
               { id: "billing" as Tab, label: "计划", icon: "💎" },
               { id: "privacy" as Tab, label: "隐私", icon: "🔒" },
+              { id: "career" as Tab, label: "求职", icon: "💼" },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -201,6 +204,12 @@ export function ProfileContent() {
               <PrivacySection />
             </div>
           )}
+
+          {activeTab === "career" && (
+            <CareerPrep />
+          )}
+
+          <ThemePicker />
         </MobileShell>
       </div>
 
@@ -277,6 +286,9 @@ export function ProfileContent() {
         )}
 
         {activeTab === "privacy" && <PrivacySection />}
+        {activeTab === "career" && <CareerPrep />}
+
+        <ThemePicker />
       </div>
     </>
   );

@@ -1,6 +1,6 @@
 # MangoLearningOS — Session Handoff
 
-> **Last session:** 2026-06-06 | **Version:** V6 Final + Deepgram | **Next: React Native App**
+> **Last session:** 2026-06-09 | **Version:** V14.8.1 Outcome Loop + Agent Enforcement | **Next: V14.9**
 
 ## Quick Start
 ```bash
@@ -8,6 +8,18 @@ cd "D:\Claudecoda学习\AI-Learning-OS"
 npm run dev -- -p 3030
 # Production: https://mangoleaningos.top (Vercel auto-deploy)
 ```
+## Recent Changes (V14.8.1)
+- Fonts self-hosted (zero external dependency, China build safe)
+- Agent enforcement: Pro/Admin hard 90 gate, FAILED state, outcome 5-table persistence
+- Quality Gate v4: requiredFixes, needsAdminReview, citationCount
+- Tavily Search (1K/mo free) + Jina Reader (10M tokens free) integrated
+- Fluid Compute ready: `after()` background + Supabase Realtime
+- ezPDF server-side PDF export + Admin Review/Research QC pages
+- Package.json version → 14.8.1
+
+## Known Gaps
+- [ ] Community Forests (structure ready, needs backend)
+- [ ] React Native app (plan ready, not started)
 
 ## Architecture (5 Windows + Voice)
 | Route | Name | Key Features |

@@ -25,6 +25,7 @@ import { VersionBadge } from "@/components/hub/version-badge";
 import { VisionCard } from "@/components/hub/vision-card";
 import { ExperimentLog } from "@/components/hub/experiment-log";
 import { FeedbackEntry } from "@/components/hub/feedback-entry";
+import { GoalGapCard } from "@/components/dashboard/goal-gap-card";
 
 /* ═══════════════════════════════════════════════════════════════
    Hub V10.1 — Study Cockpit
@@ -230,6 +231,7 @@ export default function HubPage() {
           <section className="px-1 space-y-3">
             <VersionBadge />
             <VisionCard />
+            <GoalGapCard />
             <ExperimentLog />
             <FeedbackEntry />
           </section>
@@ -384,6 +386,7 @@ export default function HubPage() {
           <div className="flex flex-col gap-4">
             <VersionBadge />
             <VisionCard />
+            <GoalGapCard />
             <ExperimentLog />
             <FeedbackEntry />
           </div>

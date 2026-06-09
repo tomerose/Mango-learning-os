@@ -1,18 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./local-fonts.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SWRegister } from "@/components/sw-register";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { QuickStartGuide } from "@/components/onboarding/quick-start-guide";
 
 export const metadata: Metadata = {
   title: "Mango Learning OS",
@@ -55,12 +46,9 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="theme-color" content="#F7F4EF" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
-        {/* Cormorant Garamond (editorial serif) + Inter (geometric sans) */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet" />
+        {/* Fonts self-hosted — zero external dependency */}
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className="antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -70,6 +58,7 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
         <SWRegister />
+        <QuickStartGuide />
       </body>
     </html>
   );

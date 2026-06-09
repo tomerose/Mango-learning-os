@@ -111,11 +111,11 @@ export function Sidebar() {
           <span className="text-base">Mango Learning OS</span>
         </Link>
         <div className="flex-1 overflow-y-auto py-2">{nav}</div>
-        <div className="flex flex-col gap-0.5 px-5 py-4">
-          <span className="text-[11px] font-medium tracking-wide text-zinc-400 dark:text-zinc-500">
+        <div className="flex flex-col gap-0.5 px-5 py-4 border-t border-sidebar-border/30 mt-2">
+          <span className="text-[11px] font-semibold tracking-widest uppercase text-foreground/35">
             第三自习室出品
           </span>
-          <span className="text-[11px] italic tracking-wide text-zinc-400/80 dark:text-zinc-500/80">
+          <span className="text-[11px] italic tracking-wide text-foreground/25">
             把焦虑变成准备
           </span>
         </div>
