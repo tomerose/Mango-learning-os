@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Key, Loader2, AlertCircle, Sparkles, ArrowRight,
-  Eye, EyeOff, ShieldCheck, Gift, LogIn,
+  Eye, EyeOff, ShieldCheck, Gift, LogIn, ScrollText,
 } from "lucide-react";
+import { showFarewellLetter } from "@/components/hub/mango-farewell-letter";
 
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -257,6 +258,16 @@ export function AuthForm({ mode }: AuthFormProps) {
             <Link href="/login" className="text-primary font-medium hover:underline underline-offset-2">登录</Link>
           </p>
         )}
+
+        {/* V0.1 封存用户书入口 */}
+        <button
+          type="button"
+          onClick={showFarewellLetter}
+          className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/60 hover:text-primary transition-colors"
+        >
+          <ScrollText className="size-3" />
+          Mango 用户书
+        </button>
 
         {/* Footer */}
         <p className="text-[10px] text-fg-subtle/80 tracking-widest uppercase">

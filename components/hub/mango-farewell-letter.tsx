@@ -1,50 +1,32 @@
 "use client";
 
 /**
- * MangoOS V14.8.1 — Mango用户书 (Farewell Letter)
+ * MangoOS V0.1 — Mango用户书 (Farewell Letter)
  *
- * 内测版封存告别信。显示在主页面，告知用户：
- * 1. 感谢这段时间的陪伴
- * 2. 内测版即将封存
- * 3. 学习阶段结束后会有更好的产品
- * 4. 人生是多面的，要坚持自己
- *
- * 7天后自动隐藏。用户可手动关闭。
+ * 每次打开网站自动弹出。点击关闭后可在登录旁 "📜 用户书" 重新打开。
+ * 无 localStorage 持久化 — 每次访问都弹。
  */
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, BookOpen, Compass, Gift } from "lucide-react";
 
-const LETTER_SEEN_KEY = "mango-farewell-v14-seen";
-
-function hasBeenSeen(): boolean {
-  if (typeof window === "undefined") return true;
-  const ts = localStorage.getItem(LETTER_SEEN_KEY);
-  if (!ts) return false;
-  return Date.now() - Number(ts) < 30 * 24 * 60 * 60 * 1000; // 30 days
-}
-
-function markSeen() {
-  if (typeof window !== "undefined") {
-    localStorage.setItem(LETTER_SEEN_KEY, String(Date.now()));
-  }
-}
-
 export function MangoFarewellLetter() {
   const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {
-    if (!hasBeenSeen()) {
-      const t = setTimeout(() => setVisible(true), 2000);
-      return () => clearTimeout(t);
-    }
+    // Show every time, immediately — no storage check
+    const t = setTimeout(() => setVisible(true), 800);
+    // Listen for custom event to re-open
+    const handler = () => setVisible(true);
+    window.addEventListener("mango:show-letter", handler);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("mango:show-letter", handler);
+    };
   }, []);
 
-  const close = () => {
-    setVisible(false);
-    markSeen();
-  };
+  const close = () => setVisible(false);
 
   return (
     <AnimatePresence>
@@ -62,7 +44,7 @@ export function MangoFarewellLetter() {
 
           {/* Letter card */}
           <motion.div
-            className="fixed inset-x-4 top-[10%] z-[61] mx-auto max-w-lg overflow-hidden rounded-2xl bg-surface shadow-2xl md:inset-x-auto md:w-full"
+            className="fixed inset-x-4 top-[5%] md:top-[10%] z-[61] mx-auto max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-surface shadow-2xl md:inset-x-auto md:w-full"
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
@@ -175,4 +157,11 @@ export function MangoFarewellLetter() {
       )}
     </AnimatePresence>
   );
+}
+
+/** Helper: trigger the farewell letter from anywhere. Call `showFarewellLetter()` in onClick. */
+export function showFarewellLetter() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("mango:show-letter"));
+  }
 }
