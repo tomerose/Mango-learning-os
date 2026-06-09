@@ -98,10 +98,22 @@ export function MangoFarewellLetter() {
             {/* Body */}
             <div className="px-6 py-5 space-y-4 text-sm text-muted-foreground leading-relaxed">
               <p>
-                <strong className="text-foreground">MangoOS 内测版 V14.8.1 即将封存。</strong>
+                <strong className="text-foreground">MangoOS 内测版 V0.1 即将封存。</strong>
                 在过去几周里，从一个想法变成了 101 个页面、26 张数据库表、
                 11 个数据源、一个完整的 AI Agent 系统。它不完美，但它是真实的。
               </p>
+
+              <div className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 p-4 border border-amber-200/40">
+                <p className="text-xs leading-relaxed text-foreground/80">
+                  这一个多月里，<strong className="text-foreground">一千多人选择了注册 MangoOS</strong>，
+                  我们收集到了<strong className="text-foreground">超过 60 条建议和鼓励</strong>。
+                  我的 QQ 邮箱每天都在响 — 有人说"期末复习讲义帮了大忙"，
+                  有人说"Mind Garden 陪她度过了最难的一周"，有人说"这个项目让他也想学编程"。
+                  服务器用量一次次超标，我一边手忙脚乱地扩容，一边忍不住笑。
+                  <strong className="text-foreground">这真的是一次很特殊的旅程。</strong>
+                  谢谢你们让一个学生的业余项目变得如此真实。
+                </p>
+              </div>
 
               <div className="flex items-start gap-3 rounded-xl bg-bg-subtle p-4">
                 <BookOpen className="size-5 mt-0.5 shrink-0 text-primary" />
