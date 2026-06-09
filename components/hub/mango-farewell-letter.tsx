@@ -13,8 +13,9 @@
  */
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, BookOpen, Compass } from "lucide-react";
+import { X, Heart, BookOpen, Compass, Gift } from "lucide-react";
 
 const LETTER_SEEN_KEY = "mango-farewell-v14-seen";
 
@@ -32,14 +33,17 @@ function markSeen() {
 }
 
 export function MangoFarewellLetter() {
+  const pathname = usePathname();
   const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {
+    // Only show on main pages, not login/signup
+    if (pathname === "/login" || pathname === "/signup") return;
     if (!hasBeenSeen()) {
       const t = setTimeout(() => setVisible(true), 2000);
       return () => clearTimeout(t);
     }
-  }, []);
+  }, [pathname]);
 
   const close = () => {
     setVisible(false);
@@ -137,6 +141,18 @@ export function MangoFarewellLetter() {
                     这些才是真正塑造你的东西。
                     不要被别人定义的成功限制了想象力。
                     <strong className="text-foreground">坚持自己。</strong>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-xl bg-bg-subtle p-4">
+                <Gift className="size-5 mt-0.5 shrink-0 text-primary" />
+                <div>
+                  <p className="font-semibold text-foreground">想继续用 Pro 功能？</p>
+                  <p className="text-xs mt-0.5">
+                    封存期间，Pro 权限不会关闭。如果你还没有 Pro，
+                    找到 Mango 创作者（QQ: 1211000567@qq.com），
+                    说明你是谁、想用 MangoOS 做什么，可以领取一枚 Mango Code 激活 Pro。
                   </p>
                 </div>
               </div>
