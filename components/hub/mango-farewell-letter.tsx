@@ -13,7 +13,6 @@
  */
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, BookOpen, Compass, Gift } from "lucide-react";
 
@@ -33,17 +32,14 @@ function markSeen() {
 }
 
 export function MangoFarewellLetter() {
-  const pathname = usePathname();
   const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {
-    // Only show on main pages, not login/signup
-    if (pathname === "/login" || pathname === "/signup") return;
     if (!hasBeenSeen()) {
       const t = setTimeout(() => setVisible(true), 2000);
       return () => clearTimeout(t);
     }
-  }, [pathname]);
+  }, []);
 
   const close = () => {
     setVisible(false);
