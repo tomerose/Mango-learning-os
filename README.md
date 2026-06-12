@@ -221,3 +221,22 @@ MIT
 ---
 
 **第三自习室出品 · 把焦虑变成准备**
+
+---
+
+## 赞助
+
+如果这个项目对你有帮助，请我喝杯咖啡 ☕
+
+<div align="center">
+<table>
+  <tr>
+    <td align="center"><b>微信赞赏</b></td>
+    <td align="center"><b>支付宝</b></td>
+  </tr>
+  <tr>
+    <td><img src="assets/wechat-pay.jpg" width="200" alt="微信赞赏码"></td>
+    <td><img src="assets/alipay.jpg" width="200" alt="支付宝收款码"></td>
+  </tr>
+</table>
+</div>
